@@ -26,7 +26,7 @@ def parse_requirements(file_path: Path):
 
 setup(
     name='OpenVisionSuite',
-    version=get_version(),
+    version='{{VERSION_PLACEHOLDER}}',
     python_requires='>=3.9',
     description='Template for Python Project',
     long_description=README,
