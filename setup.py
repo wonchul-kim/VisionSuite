@@ -1,7 +1,7 @@
 import re 
 from pathlib import Path 
 
-from setuptools import setup 
+from setuptools import setup, find_packages
 
 FILE = Path(__file__).resolve()
 PARENT = FILE.parent 
@@ -24,17 +24,33 @@ def parse_requirements(file_path: Path):
     
     return requirements 
 
+# setup(
+#     name='visionsuite',
+#     version='{{VERSION_PLACEHOLDER}}',
+#     python_requires='>=3.9',
+#     description='Template for Python Project',
+#     long_description=README,
+#     long_description_content_type='text/markdown',
+#     packages=['visionsuite'] + [str(x) for x in Path('athena').rglob('*/') if x.is_dir() and '__' not in str(x)],
+#     package_data={
+#         '': ['*.yaml'],
+#     },
+#     include_package_data=True,
+#     install_requires=parse_requirements(PARENT / 'requirements.txt'),
+# )
 setup(
     name='visionsuite',
     version='{{VERSION_PLACEHOLDER}}',
     python_requires='>=3.9',
-    description='Template for Python Project',
+    description=('Template for Python Athena'),
     long_description=README,
     long_description_content_type='text/markdown',
-    packages=['visionsuite'] + [str(x) for x in Path('athena').rglob('*/') if x.is_dir() and '__' not in str(x)],
+    # packages=['athena'] + [str(x) for x in Path('athena').rglob('*/') if x.is_dir() and '__' not in str(x)],
+    packages=find_packages(exclude=[]),
     package_data={
-        '': ['*.yaml'],
-    },
+        '': ['*.yaml', '*.json'], },
     include_package_data=True,
-    install_requires=parse_requirements(PARENT / 'requirements.txt'),
+    # install_requires=parse_requirements(PARENT / 'requirements/requirements.txt'),
+    # cmdclass={
+    #     'develop': CustomDevelopCommand, }
 )
