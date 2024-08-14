@@ -88,7 +88,7 @@ class CustomDevelopCommand(_develop):
 
 setup(
     name='OpenVisionSuite',
-    version=get_version(),
+    version='{{VERSION_PLACEHOLDER}}',
     python_requires='>=3.9',
     description=('Template for Python openvisionsuite'),
     long_description=README,
