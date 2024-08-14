@@ -4,7 +4,7 @@ from typing import Any, Literal, Union
 from omegaconf import ListConfig
 from pydantic import BaseModel, Field
 
-from aivcommon.configs.utils.helpers import string_to_list_of_type
+from visionsuite.utils.helpers import string_to_list_of_type
 
 
 class DeviceIdsConfig(str, Enum):
