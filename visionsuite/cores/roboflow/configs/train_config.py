@@ -1,8 +1,8 @@
 from pydantic import Field
 from typing import Any, Literal
 
-from aivcommon.configs.utils.helpers import string_to_list_of_type
-from aivcommon.configs.src.bases import BaseConfig
+from visionsuite.utils.helpers import string_to_list_of_type
+from visionsuite.utils.configs.base_config import BaseConfig
 
 
 
