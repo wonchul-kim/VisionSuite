@@ -1,44 +1,40 @@
-import os
-import re
-import subprocess as sp
-from pathlib import Path
+import re 
+from pathlib import Path 
 
-from dotenv import load_dotenv
-from setuptools import find_packages, setup
-from setuptools.command.develop import develop as _develop
+from setuptools import setup 
 
 FILE = Path(__file__).resolve()
-PARENT = FILE.parent
+PARENT = FILE.parent 
 README = (PARENT / 'README.md').read_text(encoding='utf-8')
-
 
 def get_version():
     file = PARENT / 'openvisionsuite/__init__.py'
-    version = re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', file.read_text(encoding='utf-8'), re.M)[1]
+    
+    return re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', file.read_text(encoding='utf-8'), re.M)[1]
 
-    try:
-        version = sp.check_output(["git", "describe", "--tags", "--abbrev=0"]).decode().strip()[1:]
-        return os.environ.get('PACKAGE_VERSION', version)  # Default version if git tag retrieval fails
-    except Exception as err:
-        print("Error:", err)
-        return os.environ.get('PACKAGE_VERSION', version)  # Default version if git tag retrieval fails
-
-
+def parse_requirements(file_path: Path):
+    
+    requirements = []
+    for line in Path(file_path).read_text().splitlines():
+        line = line.strip()
+        
+        if line and not line.startswith('#'):
+            requirements.append(line.split("#")[0].strip())
+            
+    
+    return requirements 
 
 setup(
     name='OpenVisionSuite',
-    version='{{VERSION_PLACEHOLDER}}',
+    version=get_version(),
     python_requires='>=3.9',
-    description=('Template for Python openvisionsuite'),
+    description='Template for Python Project',
     long_description=README,
     long_description_content_type='text/markdown',
-    # packages=['openvisionsuite'] + [str(x) for x in Path('openvisionsuite').rglob('*/') if x.is_dir() and '__' not in str(x)],
-    packages=find_packages(exclude=[]),
+    packages=['openvisionsuite'] + [str(x) for x in Path('athena').rglob('*/') if x.is_dir() and '__' not in str(x)],
     package_data={
-        '': ['*.yaml', '*.json'], },
+        '': ['*.yaml'],
+    },
     include_package_data=True,
-    # install_requires=parse_requirements(PARENT / 'requirements/requirements.txt'),
-    # cmdclass={
-    #     'develop': CustomDevelopCommand, }
+    install_requires=parse_requirements(PARENT / 'requirements.txt'),
 )
-
