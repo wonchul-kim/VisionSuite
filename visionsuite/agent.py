@@ -1,5 +1,5 @@
 
-from visionsuite.src.roboflow.configs.train_config import TrainConfig as YoloV8TrainConfig
+from visionsuite.cores.roboflow.configs.train_config import TrainConfig as YoloV8TrainConfig
 
 class Agent:
     
