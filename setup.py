@@ -8,7 +8,7 @@ PARENT = FILE.parent
 README = (PARENT / 'README.md').read_text(encoding='utf-8')
 
 def get_version():
-    file = PARENT / 'openvisionsuite/__init__.py'
+    file = PARENT / 'visionsuite/__init__.py'
     
     return re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', file.read_text(encoding='utf-8'), re.M)[1]
 
@@ -25,13 +25,13 @@ def parse_requirements(file_path: Path):
     return requirements 
 
 setup(
-    name='OpenVisionSuite',
+    name='visionsuite',
     version='{{VERSION_PLACEHOLDER}}',
     python_requires='>=3.9',
     description='Template for Python Project',
     long_description=README,
     long_description_content_type='text/markdown',
-    packages=['openvisionsuite'] + [str(x) for x in Path('athena').rglob('*/') if x.is_dir() and '__' not in str(x)],
+    packages=['visionsuite'] + [str(x) for x in Path('athena').rglob('*/') if x.is_dir() and '__' not in str(x)],
     package_data={
         '': ['*.yaml'],
     },
