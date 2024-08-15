@@ -36,7 +36,7 @@ try:
         package_data={
             '': ['*.yaml', '*.json'], },
         include_package_data=True,
-        install_requires=parse_requirements(PARENT / 'requirements/requirements.txt'),
+        install_requires=parse_requirements(PARENT / 'requirements.txt'),
     )
 except:
     setup(
@@ -51,5 +51,5 @@ except:
         package_data={
             '': ['*.yaml', '*.json'], },
         include_package_data=True,
-        install_requires=parse_requirements(PARENT / 'requirements/requirements.txt'),
+        install_requires=parse_requirements(PARENT / 'requirements.txt'),
     )
