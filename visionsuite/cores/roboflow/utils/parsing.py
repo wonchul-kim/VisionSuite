@@ -37,11 +37,11 @@ def get_params(params: Union[str, Dict]):
 
 def get_weights(task: str, model_name: str, backbone: str):
     weights = None
-    if task == 'detection' or task == 'det':
+    if task == 'hbb_detection' or task == 'det':
         weights = f'{model_name}{backbone}.pt'
-    elif 'obb' in task:
+    elif task == 'obb_detection':
         weights = f'{model_name}{backbone}-obb.pt'
-    elif 'seg' in task:
+    elif task == 'instance_segmentation':
         weights = f'{model_name}{backbone}-seg.pt'
     else:
         NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
