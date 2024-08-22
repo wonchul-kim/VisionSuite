@@ -1,6 +1,6 @@
 from typing import Union 
 
-from visionsuite.cores.roboflow.utils import labelme2yolo_iseg, labelme2yolo_hbb
+from visionsuite.cores.roboflow.utils import labelme2yolo_iseg, labelme2yolo_hbb, labelme2yolo_obb
 
 class DatasetConverter:
     
@@ -27,7 +27,7 @@ class DatasetConverter:
         elif self.__task == 'instance_segmentation':
             self._converter = labelme2yolo_iseg
         elif self.__task == 'obb_detection':
-            pass
+            self._converter = labelme2yolo_obb
         else:
             raise NotImplementedError(f"There is no such converter for {self.__task}")
         
