@@ -6,6 +6,10 @@ class DatasetConverter:
     
     def __init__(self, task):
         self.__task = task
+        self.input_dir = None
+        self.output_dir = None 
+        self.copy_image = True 
+        self.image_ext = 'bmp'
 
         self._set_converter()
         
@@ -27,22 +31,35 @@ class DatasetConverter:
         else:
             raise NotImplementedError(f"There is no such converter for {self.__task}")
         
-    def run(self, input_dir: str, output_dir: str, 
-                        copy_image: bool, image_ext: Union[list, str]):
+    def run(self, input_dir: str, copy_image: bool=True, image_ext: Union[list, str]='bmp', output_dir: str=None):
+                      
+        def _set_output_dir(input_dir, output_dir):
+            if output_dir is None:
+                if self.__task == 'hbb_detection':
+                    output_dir = input_dir + '_yolo_hbb'
+                elif self.__task == 'instance_segmentation':
+                    output_dir = input_dir + '_yolo_iseg'
+                elif self.__task == 'obb_detection':
+                    output_dir = input_dir + '_yolo_obb'
+
+            return output_dir
+        
+        output_dir = _set_output_dir(input_dir, output_dir)
+        self.input_dir = input_dir
+        self.output_dir = output_dir
+        self.copy_image = copy_image
+        self.image_ext = image_ext
         
         self._converter(input_dir, output_dir, copy_image, image_ext)
             
         
-
-
 if __name__ == '__main__':
     input_dir = '/HDD/datasets/projects/visionsuite/yolo/hbb_detection/split_dataset'
-    output_dir = '/HDD/datasets/projects/visionsuite/yolo/hbb_detection/split_dataset_yolo_hbb'
 
     copy_image = True
     image_ext = 'png'
        
     converter = DatasetConverter('hbb_detection')
-    converter.run(input_dir, output_dir, copy_image, image_ext)
+    converter.run(input_dir, copy_image=copy_image, image_ext=image_ext)
     
             
