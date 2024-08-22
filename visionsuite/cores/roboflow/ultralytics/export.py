@@ -1,4 +1,9 @@
-from ultralytics import YOLO
+try:
+    from ultralytics import YOLO
+except (ImportError, AssertionError):
+    import subprocess
+    subprocess.run(["pip", "install", "ultralytics"])
+    from ultralytics import YOLO
 from visionsuite.cores.roboflow.utils.parsing import get_params
 
 def export(weights: str, target: str, params):
