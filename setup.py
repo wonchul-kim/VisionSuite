@@ -8,11 +8,13 @@ PARENT = FILE.parent
 README = (PARENT / 'README.md').read_text(encoding='utf-8')
 
 def get_version():
+    
     file = PARENT / 'visionsuite/__init__.py'
     
     return re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', file.read_text(encoding='utf-8'), re.M)[1]
 
 def parse_requirements(file_path: Path):
+    
     requirements = []
     for line in Path(file_path).read_text().splitlines():
         line = line.strip()
