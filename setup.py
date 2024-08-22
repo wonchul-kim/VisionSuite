@@ -13,7 +13,6 @@ def get_version():
     return re.search(r'^__version__ = [\'"]([^\'"]*)[\'"]', file.read_text(encoding='utf-8'), re.M)[1]
 
 def parse_requirements(file_path: Path):
-    
     requirements = []
     for line in Path(file_path).read_text().splitlines():
         line = line.strip()
