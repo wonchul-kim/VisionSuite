@@ -1,3 +1,4 @@
 # utils
 pydantic
 omegaconf
+pyyaml==5.4.1
