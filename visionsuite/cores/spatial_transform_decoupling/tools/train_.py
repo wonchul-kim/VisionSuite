@@ -25,7 +25,7 @@ import visionsuite.cores.spatial_transform_decoupling.mmrotate
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', default='/HDD/etc/std/Spatial-Transform-Decoupling/src/configs/rotated_imted/dota/vit/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v.py')
+    parser.add_argument('--config', default='/HDD/_projects/github/VisionSuite/visionsuite/cores/spatial_transform_decoupling/configs/rotated_imted/dota/vit/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v.py')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
