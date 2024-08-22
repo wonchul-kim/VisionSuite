@@ -1,6 +1,13 @@
 import os.path as osp
 from typing import Union, Dict
-from ultralytics import YOLO, settings
+    
+try:
+    from ultralytics import YOLO, settings
+except (ImportError, AssertionError):
+    import subprocess
+    subprocess.run(["pip", "install", "ultralytics"])
+    from ultralytics import YOLO, settings
+    
 settings.update({'wandb': False})
 
 from visionsuite.cores.roboflow.utils.parsing import get_cfg, get_params, get_weights
