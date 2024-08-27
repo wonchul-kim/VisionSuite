@@ -41,6 +41,8 @@ class Agent:
             return {"TrainConfig": YoloV8TrainConfig.model_json_schema(mode='serialization')}
         elif model == 'yolov10':
             return {"TrainConfig": YoloV10TrainConfig.model_json_schema(mode='serialization')}
+        else:
+            return {'TrainConfig': {}}
     
     @staticmethod
     def get_yolov8_backbones():
