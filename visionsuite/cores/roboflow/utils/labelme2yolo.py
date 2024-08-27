@@ -165,21 +165,27 @@ def labelme2yolo_iseg(input_dir, output_dir, image_ext,
             
         txt.close()
 
-    txt = open(osp.join(output_dir, 'classes.txt'), 'w')
+    txt = open(osp.join(output_dir, 'classes2idx.txt'), 'w')
     for key, val in class2idx.items():
         txt.write(f'{val}: {key}\n')
     txt.close()
-            
-            
-def labelme2yolo_obb(input_dir: str, output_dir: str=None, copy_image=True, image_ext='bmp'):
+    
+    txt = open(osp.join(output_dir, 'idx2class.txt'), 'w')
+    for key, val in class2idx.items():
+        txt.write(f'{val}: {key}\n')
+    txt.close()
+    
+def labelme2yolo_obb(_input_dir: str, output_dir: str=None, copy_image=True, image_ext='bmp'):
     from visionsuite.utils.dataset.converters.labelme2dota import convert_labelme2dota
     from visionsuite.utils.dataset.converters.dota2yolo import convert_dota2yolo_obb
 
-    output_dir = input_dir + '_dota'
+    output_dir = _input_dir + '_dota'
 
-    convert_labelme2dota(input_dir, output_dir, copy_image=copy_image, image_ext=image_ext)
+    convert_labelme2dota(_input_dir, output_dir, copy_image=copy_image, image_ext=image_ext)
+    print("** FINISED to convert labelme2dota")
 
     input_dir = output_dir
-    output_dir = input_dir + '_yolo_obb'
+    output_dir = _input_dir + '_yolo_obb'
 
     convert_dota2yolo_obb(input_dir, output_dir, copy_image=copy_image, image_ext=image_ext)
+    print("** FINISED to convert dota2yolo_obb")

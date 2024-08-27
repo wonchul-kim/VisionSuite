@@ -1,10 +1,15 @@
 from pydantic import Field
+from enum import Enum
 from typing import Any, Literal
 
 from visionsuite.utils.helpers import string_to_list_of_type
 from visionsuite.utils.configs.base_config import BaseConfig
 
-
+class DeviceConfig(str, Enum):
+    gpu_0 = "0"
+    gpu_1 = "1"
+    gpu_2 = "2"
+    gpu_3 = "3"
 
 class TrainConfig(BaseConfig):
     # required
@@ -12,7 +17,7 @@ class TrainConfig(BaseConfig):
     epochs: int = Field(frozen=True)
     batch: int = Field(frozen=True)
     imgsz: int = Field(frozen=True)
-    device: str = Field('0', frozen=True)
+    device: DeviceConfig = Field('0', frozen=True)
     
     #
     conf: float = Field(0.25, frozen=True)

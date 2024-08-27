@@ -3,16 +3,19 @@ from visionsuite.cores.roboflow.configs.train_config import TrainConfig as YoloV
 
 class Agent:
     
+    @classmethod
+    def get_tasks(cls):
+        return ['classification', 'hbb detection', 'obb detection', 'instance segmentation']
     
     @classmethod
     def get_models_by_task(cls, task):
         if task == 'clssification':
             NotImplementedError 
-        elif task == 'detection':
+        elif task == 'hbb detection':
             return cls.get_hbb_det_models()
-        elif task == 'obbdetection':
+        elif task == 'obb detection':
             return cls.get_obb_det_models()
-        elif task == 'segmentation':
+        elif task == 'instance segmentation':
             return cls.get_seg_models()
         
             

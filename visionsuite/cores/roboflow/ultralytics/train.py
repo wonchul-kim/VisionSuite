@@ -28,7 +28,9 @@ def train(task: str=None, model_name: str=None, backbone: str=None,
         recipes['cfg'] = cfg
         recipes['params'] = params
     for key, val in recipes.items():
-        assert osp.exists(val), ValueError(f"ERROR: There is no such reicpe for {key} at {recipe_dir}")
+        if key == 'param':
+            key = 'train'
+        assert osp.exists(val), ValueError(f"ERROR: There is no such reicpe for {key} at {val}")
             
     cfg = get_cfg(recipes['cfg'])
     params = get_params(recipes['params'])

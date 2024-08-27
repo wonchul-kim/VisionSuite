@@ -31,6 +31,8 @@ class DatasetConverter:
         else:
             raise NotImplementedError(f"There is no such converter for {self.__task}")
         
+        print(f"SELECTED converter is {self._converter.__name__}")
+        
     def run(self, input_dir: str, copy_image: bool=True, image_ext: Union[list, str]='bmp', output_dir: str=None):
                       
         def _set_output_dir(input_dir, output_dir):
@@ -50,7 +52,7 @@ class DatasetConverter:
         self.copy_image = copy_image
         self.image_ext = image_ext
         
-        self._converter(input_dir, output_dir, copy_image, image_ext)
+        self._converter(input_dir=input_dir, output_dir=output_dir, copy_image=copy_image, image_ext=image_ext)
             
         
 if __name__ == '__main__':

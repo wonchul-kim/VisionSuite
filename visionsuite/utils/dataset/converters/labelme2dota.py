@@ -4,7 +4,7 @@ import os.path as osp
 from shutil import copyfile
 import json 
 from tqdm import tqdm
-from mlearning.datasets.converters.polygon2dota import polygon2dota_by_rotate
+from visionsuite.utils.dataset.converters.polygon2dota import polygon2dota_by_rotate
 
 def convert_labelme2dota(input_dir, output_dir, copy_image=True, image_ext='bmp'):
     if not osp.exists(output_dir):
