@@ -1,6 +1,6 @@
 
-from visionsuite.cores.roboflow.configs.train_config_yolov8 import TrainConfig as YoloV8TrainConfig
-from visionsuite.cores.roboflow.configs.train_config_yolov10 import TrainConfig as YoloV10TrainConfig
+from visionsuite.cores.roboflow.configs.train_config import TrainConfig as YoloV8TrainConfig
+from visionsuite.cores.roboflow.configs.train_config_rtdetr import TrainConfig as RtdetrTrainConfig
 
 class Agent:
     
@@ -25,7 +25,7 @@ class Agent:
     
     @classmethod
     def get_hbb_det_models(cls):
-        return ['yolov8']
+        return ['yolov8', 'yolov10', 'rtdetr']
     
     @classmethod
     def get_obb_det_models(cls):
@@ -40,7 +40,9 @@ class Agent:
         if model == 'yolov8':
             return {"TrainConfig": YoloV8TrainConfig.model_json_schema(mode='serialization')}
         elif model == 'yolov10':
-            return {"TrainConfig": YoloV10TrainConfig.model_json_schema(mode='serialization')}
+            return {"TrainConfig": YoloV8TrainConfig.model_json_schema(mode='serialization')}
+        elif model == 'rtdetr':
+            return {"TrainConfig": RtdetrTrainConfig.model_json_schema(mode='serialization')}
         else:
             return {'TrainConfig': {}}
     

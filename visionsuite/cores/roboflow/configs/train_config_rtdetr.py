@@ -13,7 +13,7 @@ class DeviceConfig(str, Enum):
 
 class TrainConfig(BaseConfig):
     # required
-    backbone: Literal['s', 'm', 'b', 'l', 'x'] = Field(frozen=True)
+    backbone: Literal['l', 'x'] = Field(frozen=True)
     epochs: int = Field(frozen=True)
     batch: int = Field(frozen=True)
     imgsz: int = Field(frozen=True)

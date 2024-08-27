@@ -2,11 +2,11 @@ import os.path as osp
 from typing import Union, Dict
     
 try:
-    from ultralytics import YOLO, settings
+    from ultralytics import YOLO, RTDETR, settings
 except (ImportError, AssertionError):
     import subprocess
     subprocess.run(["pip", "install", "ultralytics"])
-    from ultralytics import YOLO, settings
+    from ultralytics import YOLO, RTDETR, settings
     
 settings.update({'wandb': False})
 
@@ -51,8 +51,13 @@ def train(task: str=None, model_name: str=None, backbone: str=None,
     
     weights = get_weights(task, model_name, backbone)
     
-    model = YOLO(weights)
-    print(f"* Successfully LOADED model")
+    if 'yolo' in model_name:
+        model = YOLO(weights)
+    elif model_name == 'rtdetr':
+        model = RTDETR(weights)
+    else:
+        raise NotImplementedError(f'There is no such model supported: {model_name}')
+    print(f"* Successfully LOADED model: {model_name}")
     
     print(f">>> Start to train")
     model.train(data=recipes['data'], **cfg, **params)

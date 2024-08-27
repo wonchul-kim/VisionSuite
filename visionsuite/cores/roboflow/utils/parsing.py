@@ -52,11 +52,19 @@ def get_weights(task: str, model_name: str, backbone: str,
         else:
             NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
     elif model_name == 'yolov10':
-        if task == 'obb_detection':
+        if task == 'hbb_detection':
+            weights = f'{model_name}{backbone}.pt'
+        elif task == 'obb_detection':
             yolov10_url = yolov10_url.replace('yolov10s-obb.pt', f'yolov10{backbone}-obb.pt')
             weights = download_weights_from_url(yolov10_url, output_filename)
         else:
             NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
+    elif model_name == 'rtdetr':
+        if task == 'hbb_detection':
+            weights = f'{model_name}-{backbone}.pt'
+        else:
+            NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
+            
     assert weights is not None, RuntimeError(f"weights is None")
     print(f"* Successfully DEFINED weights: {weights}")
 
