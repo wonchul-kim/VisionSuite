@@ -18,7 +18,6 @@ class Agent:
         elif task == 'instance segmentation':
             return cls.get_seg_models()
         
-            
     @classmethod
     def get_cls_models(cls):
         return ['yolov8']
