@@ -45,7 +45,3 @@ class Agent:
             return {"TrainConfig": RtdetrTrainConfig.model_json_schema(mode='serialization')}
         else:
             return {'TrainConfig': {}}
-    
-    @staticmethod
-    def get_yolov8_backbones():
-        return ['s', 'm', 'l']
