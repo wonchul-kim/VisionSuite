@@ -5,6 +5,8 @@ from typing import Union, Dict
 from pathlib import Path 
 import warnings
 
+from visionsuite.utils.download import download_weights_from_url
+
 def get_cfg(cfg: Union[str, Dict]):
     
     if isinstance(cfg, str):
@@ -35,16 +37,26 @@ def get_params(params: Union[str, Dict]):
     return params
 
 
-def get_weights(task: str, model_name: str, backbone: str):
+def get_weights(task: str, model_name: str, backbone: str,
+                yolov10_url="https://huggingface.co/spaces/hamhanry/YOLOv10-OBB/blob/main/pretrained/yolov10s-obb.pt",
+                output_filename='/tmp/yolov10s-obb.pt'):
     weights = None
-    if task == 'hbb_detection' or task == 'det':
-        weights = f'{model_name}{backbone}.pt'
-    elif task == 'obb_detection':
-        weights = f'{model_name}{backbone}-obb.pt'
-    elif task == 'instance_segmentation':
-        weights = f'{model_name}{backbone}-seg.pt'
-    else:
-        NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
+    
+    if model_name == 'yolov8':
+        if task == 'hbb_detection' or task == 'det':
+            weights = f'{model_name}{backbone}.pt'
+        elif task == 'obb_detection':
+            weights = f'{model_name}{backbone}-obb.pt'
+        elif task == 'instance_segmentation':
+            weights = f'{model_name}{backbone}-seg.pt'
+        else:
+            NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
+    elif model_name == 'yolov10':
+        if task == 'obb_detection':
+            yolov10_url = yolov10_url.replace('yolov10s-obb.pt', f'yolov10{backbone}-obb.pt')
+            weights = download_weights_from_url(yolov10_url, output_filename)
+        else:
+            NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
     assert weights is not None, RuntimeError(f"weights is None")
     print(f"* Successfully DEFINED weights: {weights}")
 
