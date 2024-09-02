@@ -19,7 +19,7 @@ from mmrotate.apis import train_detector
 from mmrotate.datasets import build_dataset
 from mmrotate.models import build_detector
 from mmrotate.utils import collect_env, get_root_logger, setup_multi_processes
-import visionsuite.cores.spatial_transform_decoupling.mmrotate.datasets.custom_dota_dataset as custom_dota_dataset
+import visionsuite.cores.spatial_transform_decoupling.mmrotate_custom.datasets.custom_dota_dataset as custom_dota_dataset
 
 
 def parse_args():

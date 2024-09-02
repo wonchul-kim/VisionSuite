@@ -21,7 +21,7 @@ from mmrotate.models import build_detector
 from mmrotate.utils import collect_env, get_root_logger, setup_multi_processes
 
 # to build
-import visionsuite.cores.spatial_transform_decoupling.mmrotate
+import visionsuite.cores.spatial_transform_decoupling.mmrotate_custom
 
 
 def parse_args():
