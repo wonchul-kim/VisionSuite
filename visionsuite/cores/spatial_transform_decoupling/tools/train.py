@@ -19,12 +19,10 @@ from mmrotate.apis import train_detector
 from mmrotate.datasets import build_dataset
 from mmrotate.models import build_detector
 from mmrotate.utils import collect_env, get_root_logger, setup_multi_processes
-import visionsuite.cores.spatial_transform_decoupling.mmrotate.datasets.custom_dota_dataset as custom_dota_dataset
-
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('config', help='train config file path')
+    parser.add_argument('--config', default='/HDD/_projects/github/VisionSuite/visionsuite/cores/spatial_transform_decoupling/configs/rotated_imted/dota/vit/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v.py')
     parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
@@ -39,12 +37,14 @@ def parse_args():
     group_gpus = parser.add_mutually_exclusive_group()
     group_gpus.add_argument(
         '--gpus',
+        default=2,
         type=int,
         help='number of gpus to use '
         '(only applicable to non-distributed training)')
     group_gpus.add_argument(
         '--gpu-ids',
         type=int,
+        default=[0, 1],
         nargs='+',
         help='ids of gpus to use '
         '(only applicable to non-distributed training)')
