@@ -20,6 +20,10 @@ from mmrotate.datasets import build_dataset
 from mmrotate.models import build_detector
 from mmrotate.utils import collect_env, get_root_logger, setup_multi_processes
 
+# to build
+import visionsuite.cores.spatial_transform_decoupling.mmrotate
+
+
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
     parser.add_argument('--config', default='/HDD/_projects/github/VisionSuite/visionsuite/cores/spatial_transform_decoupling/configs/rotated_imted/dota/vit/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v.py')
