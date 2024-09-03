@@ -2,6 +2,16 @@
 
 This is just personal repository to easily use oepn source algorithms.
 
+----------------------------------------------------------------------------------------------
+## How to publish github-repository to PYPI
+
+```cmd
+git add .
+git commit -m 'publish v1.x.x'
+git tag v.1.x.x
+git push origin --tags
+```
+----------------------------------------------------------------------------------------------
 ## Cores
 
 ### Roboflow 
@@ -22,6 +32,8 @@ This is just personal repository to easily use oepn source algorithms.
 
 - 
 
+
+----------------------------------------------------------------------------------------------
 ## Utils
 
 ### Configs 
@@ -51,12 +63,4 @@ This is for UI by `pydantic`
 ### loggers
 
 
-
-## How to publish github-repository to PYPI
-
-```cmd
-git add .
-git commit -m 'publish v1.x.x'
-git tag v.1.x.x
-git push origin --tags
-```
+----------------------------------------------------------------------------------------------
