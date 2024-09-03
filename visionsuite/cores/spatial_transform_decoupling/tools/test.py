@@ -26,7 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='MMDet test (and eval) a model')
     parser.add_argument('--config', default='/HDD/etc/std/Spatial-Transform-Decoupling/src/configs/rotated_imted/dota/vit/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v.py')
-    parser.add_argument('--checkpoint', default='/HDD/etc/std/Spatial-Transform-Decoupling/work_dirs/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v/epoch_130.pth')
+    parser.add_argument('--checkpoint', default='/HDD/_projects/github/VisionSuite/work_dirs/rotated_imted_vb1m_oriented_rcnn_vit_base_1x_dota_ms_rr_le90_stdc_xyawh321v/epoch_290.pth')
     parser.add_argument(
         '--work-dir',
         help='the directory to save the file containing evaluation metrics')
@@ -57,7 +57,7 @@ def parse_args():
         ' "segm", "proposal" for COCO, and "mAP", "recall" for PASCAL VOC')
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
-        '--show-dir', default='/HDD/etc/std/Spatial-Transform-Decoupling/work_dirs/test_130')
+        '--show-dir', default='/HDD/etc/std/Spatial-Transform-Decoupling/work_dirs/test_290')
     parser.add_argument(
         '--show-score-thr',
         type=float,

@@ -65,7 +65,7 @@ def get_weights(task: str, model_name: str, backbone: str,
         else:
             NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
             
-    assert weights is not None, RuntimeError(f"weights is None")
+    assert weights is not None, RuntimeError(f"weights is wrong: {weights}")
     print(f"* Successfully DEFINED weights: {weights}")
 
     return weights

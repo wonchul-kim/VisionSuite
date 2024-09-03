@@ -77,7 +77,7 @@ if __name__ == '__main__':
     # cfg = '/HDD/datasets/projects/visionsuite/yolo/hbb_detection/split_dataset_yolo_hbb/cfg.yaml'
     # params = '/HDD/datasets/projects/visionsuite/yolo/hbb_detection/split_dataset_yolo_hbb/train.yaml'
     
-    recipe_dir = '/HDD/datasets/projects/visionsuite/yolo/hbb_detection/split_dataset_yolo_hbb'
+    recipe_dir = '/HDD/datasets/projects/rich/24.06.19/recipes/yolo_obb'
     data = None
     cfg = None
     params = None

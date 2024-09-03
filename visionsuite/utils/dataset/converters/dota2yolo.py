@@ -73,3 +73,9 @@ def convert_dota2yolo_obb(dota_root_path: str, save_dir: str,
         
     idx2class_txt.close()
     class2idx_txt.close()
+
+
+if __name__ == '__main__':
+    input_dir = '/HDD/datasets/projects/rich/24.06.19/split_dataset_box_dota'
+    output_dir = '/HDD/datasets/projects/rich/24.06.19/split_dataset_box_yolo_obb'
+    convert_dota2yolo_obb(input_dir, output_dir, True, 'bmp')
