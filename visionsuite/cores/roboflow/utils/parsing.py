@@ -38,7 +38,7 @@ def get_params(params: Union[str, Dict]):
 
 
 def get_weights(task: str, model_name: str, backbone: str,
-                yolov10_url="https://huggingface.co/spaces/hamhanry/YOLOv10-OBB/blob/main/pretrained/yolov10s-obb.pt",
+                yolov10_url="https://huggingface.co/spaces/hamhanry/YOLOv10-OBB/resolve/main/pretrained/yolov10s-obb.pt",
                 output_filename='/tmp/yolov10s-obb.pt'):
     weights = None
     
@@ -56,7 +56,11 @@ def get_weights(task: str, model_name: str, backbone: str,
             weights = f'{model_name}{backbone}.pt'
         elif task == 'obb_detection':
             yolov10_url = yolov10_url.replace('yolov10s-obb.pt', f'yolov10{backbone}-obb.pt')
-            weights = download_weights_from_url(yolov10_url, output_filename)
+            output_filename = output_filename.replace('yolov10s-obb.pt', f'yolov10{backbone}-obb.pt')
+            if download_weights_from_url(yolov10_url, output_filename):
+                weights = output_filename
+            else:
+                raise RecursionError(f"Cannot download weights from {yolov10_url}")
         else:
             NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
     elif model_name == 'rtdetr':
