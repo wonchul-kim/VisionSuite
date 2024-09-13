@@ -144,10 +144,10 @@ if __name__ == '__main__':
     
     # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
     
-    input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box'
-    output_dir = '/HDD/_projects/benchmark/obb_detection/rich/benchmark/dataset'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/dataset_name/datasets/split_dataset'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/dataset_name/outputs/dataset'
 
-    project_name = 'Rich-Box'
+    project_name = 'Sungwoo'
     title = "Dataset Analysis"
     subtitle = f"The dataset is {project_name}"
     

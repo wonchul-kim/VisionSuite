@@ -2,7 +2,7 @@ import os.path as osp
 import cv2 
 import numpy as np
 import warnings
-from mlearning.utils.metrics.iou import get_iou
+from visionsuite.utils.metrics.iou import get_iou
 from shapely.geometry import (GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon,
                               mapping)
 from shapely.ops import polygonize, unary_union
@@ -46,7 +46,9 @@ def get_key_by_value(dictionary, value):
             return key
     return None
 
-def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir=None, compare_mask=True, 
+def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, 
+            seg_type='instance', 
+            json_dir=None, compare_mask=True, 
             iou_threshold=0.2, font_scale=1, line_width=1, draw_rect=True):
    
     class2idx = {cls: idx for idx, cls in idx2class.items()}
@@ -95,7 +97,8 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir=None
                 if len(points) > 2:
                     cv2.fillConvexPoly(vis_gt, np.array(points, dtype=np.int32), 
                                 color=tuple(map(int, color_map[int(get_key_by_value(idx2class, label))])))
-                    cv2.putText(vis_gt, label, get_text_coords(points, width, height, offset_h=10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, tuple(map(int, color_map[-1])), 3)
+                    if font_scale:
+                        cv2.putText(vis_gt, label, get_text_coords(points, width, height, offset_h=10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, tuple(map(int, color_map[-1])), 3)
                     if compare_mask:
                         cv2.fillConvexPoly(compr_gt_mask[label], np.array(points, dtype=np.int32), 
                                 color=1)
@@ -111,32 +114,59 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir=None
         vis_gt = cv2.addWeighted(img, 0.4, vis_gt, 0.6, 0)
         vis_gt = cv2.vconcat([text_gt, vis_gt])
             
-            
-    for idx, cls in idx2class.items():
-        if class2idx[cls] in idx2masks:
-            pred = idx2masks[class2idx[cls]]
-            for mask, box, conf in zip(pred['polygon'], pred['box'], pred['confidence']):
-                points = np.array(mask, dtype=np.int32)
-                if points.size != 0:
-                    cv2.putText(vis_mask, f"{cls} {conf:.2f}", 
-                                get_text_coords(points, width, height, offset_h=10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
-                                tuple(map(int, color_map[int(idx)])), 3)
-                    cv2.fillConvexPoly(vis_mask, points, color=tuple(map(int, color_map[int(idx)])))
-                    # cv2.fillPoly(vis_mask, [points], color=tuple(map(int, color_map[int(idx)])))
-                    if compare_mask:
-                        # cv2.putText(compr_pred_mask[idx], f"{idx}", get_text_coords(points, width, height, offset_h=30), cv2.FONT_HERSHEY_SIMPLEX, font_scale, tuple(map(int, color_map[int(cls)])), 3)
-                        cv2.fillConvexPoly(compr_pred_mask[cls], points, color=1)
+    if seg_type == 'semantic':
+        for idx, cls in idx2class.items():
+            if class2idx[cls] in idx2masks:
+                pred = idx2masks[class2idx[cls]]
+                for mask in pred['polygon']:
+                    points = np.array(mask, dtype=np.int32)
+                    if points.size != 0:
+                        if font_scale:
+                            cv2.putText(vis_mask, f"{cls}", 
+                                        get_text_coords(points, width, height, offset_h=10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
+                                        tuple(map(int, color_map[int(idx)])), 3)
+                        cv2.fillConvexPoly(vis_mask, points, color=tuple(map(int, color_map[int(idx)])))
+                        # cv2.fillPoly(vis_mask, [points], color=tuple(map(int, color_map[int(idx)])))
+                        if compare_mask:
+                            # cv2.putText(compr_pred_mask[idx], f"{idx}", get_text_coords(points, width, height, offset_h=30), cv2.FONT_HERSHEY_SIMPLEX, font_scale, tuple(map(int, color_map[int(cls)])), 3)
+                            cv2.fillConvexPoly(compr_pred_mask[cls], points, color=1)
 
-                        if cls in points_dict['pred']:
-                            points_dict['pred'][cls].append(points.tolist())
-                        else:
-                            points_dict['pred'].update({cls: [points.tolist()]})
+                            if cls in points_dict['pred']:
+                                points_dict['pred'][cls].append(points.tolist())
+                            else:
+                                points_dict['pred'].update({cls: [points.tolist()]})
                 
-                if draw_rect and len(box) != 0:
-                    cv2.rectangle(vis_mask, (int(box[0][0]), int(box[0][1])), (int(box[1][0]), int(box[1][1])), 
-                                    tuple(map(int, color_map[int(idx)])), line_width + 1)
-                    cv2.putText(vis_mask, label, get_text_coords(box, width, height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
-                                tuple(map(int, color_map[int(idx)])), line_width)
+    elif seg_type == 'instance':
+        for idx, cls in idx2class.items():
+            if class2idx[cls] in idx2masks:
+                pred = idx2masks[class2idx[cls]]
+                for mask, box, conf in zip(pred['polygon'], pred['box'], pred['confidence']):
+                    points = np.array(mask, dtype=np.int32)
+                    if points.size != 0:
+                        if font_scale:
+                            cv2.putText(vis_mask, f"{cls} {conf:.2f}", 
+                                        get_text_coords(points, width, height, offset_h=10), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
+                                        tuple(map(int, color_map[int(idx)])), 3)
+                        cv2.fillConvexPoly(vis_mask, points, color=tuple(map(int, color_map[int(idx)])))
+                        # cv2.fillPoly(vis_mask, [points], color=tuple(map(int, color_map[int(idx)])))
+                        if compare_mask:
+                            # cv2.putText(compr_pred_mask[idx], f"{idx}", get_text_coords(points, width, height, offset_h=30), cv2.FONT_HERSHEY_SIMPLEX, font_scale, tuple(map(int, color_map[int(cls)])), 3)
+                            cv2.fillConvexPoly(compr_pred_mask[cls], points, color=1)
+
+                            if cls in points_dict['pred']:
+                                points_dict['pred'][cls].append(points.tolist())
+                            else:
+                                points_dict['pred'].update({cls: [points.tolist()]})
+                    
+                    if draw_rect and len(box) != 0:
+                        cv2.rectangle(vis_mask, (int(box[0][0]), int(box[0][1])), (int(box[1][0]), int(box[1][1])), 
+                                        tuple(map(int, color_map[int(idx)])), line_width + 1)
+                        if font_scale:
+                            cv2.putText(vis_mask, label, get_text_coords(box, width, height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
+                                    tuple(map(int, color_map[int(idx)])), line_width)
+    
+    else:
+        raise ValueError(f"There is no such seg-type: {seg_type}")
 
     vis_img = cv2.vconcat([text_ori, img])
 
@@ -157,6 +187,7 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir=None
         vis_res = cv2.hconcat([vis_img, vis_gt, vis_mask, vis_legend])
 
     cv2.imwrite(osp.join(output_dir, filename + '.png'), vis_res)
+        
     if compare_mask:
         for idx, (key, val) in enumerate(compr_gt_mask.items()):
             origin = 25, 25
@@ -186,7 +217,7 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir=None
                     for gt_point in gt_points:
                         for pred_point in pred_points:
                             try:
-                                iou = get_iou(gt_point, pred_point)
+                                iou = get_iou(gt_point, pred_point, filename=filename)
                                 if iou > iou_threshold:
                                     if gt_cls in ious:
                                         ious[gt_cls].append(iou)
@@ -197,7 +228,7 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir=None
                                 _gt_points = handle_self_intersection(gt_point)
                                 
                                 for _gt_point in _gt_points:
-                                    iou = get_iou(_gt_point, pred_point)
+                                    iou = get_iou(_gt_point, pred_point, filename=filename)
                                     if iou > iou_threshold:
                                         if gt_cls in ious:
                                             ious[gt_cls].append(iou)

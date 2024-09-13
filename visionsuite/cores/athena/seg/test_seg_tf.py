@@ -26,9 +26,9 @@ def get_mask_from_pred(pred, conf=0.5, contour_thres=50):
     return mask, points
 
 compare_mask = True
-weights = '/DeepLearning/etc/_athena_tests/benchmark/sungwoo/u_gap/outputs/SEGMENTATION/2024_07_03_07_57_21/train/weights/last_weights.h5'
+weights = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/outputs/w_patch_ratio/train/weights/last_weights.h5'
 model = TFModelV2(model_name='deeplabv3plus', backbone='efficientnetb3', backbone_weights='imagenet', 
-                  batch_size=1, width=768, height=512, channel=3, num_classes=4,
+                  batch_size=1, width=512, height=512, channel=3, num_classes=4,
                   weights=weights)
 classes = ['MARK', 'ROI', 'FILM']
 idx2class = {idx: cls for idx, cls in enumerate(classes)}
