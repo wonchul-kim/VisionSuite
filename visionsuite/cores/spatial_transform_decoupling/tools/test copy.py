@@ -4,27 +4,21 @@ import os
 import os.path as osp
 import time
 import warnings
-import numpy as np
-import imgviz
-import json
+
 import mmcv
-import pandas as pd
 import torch
 from mmcv import Config, DictAction
 from mmcv.cnn import fuse_conv_bn
 from mmcv.parallel import MMDataParallel, MMDistributedDataParallel
 from mmcv.runner import (get_dist_info, init_dist, load_checkpoint,
                          wrap_fp16_model)
-from mmdet.apis import multi_gpu_test#, single_gpu_test
+from mmdet.apis import multi_gpu_test, single_gpu_test
 from mmdet.datasets import build_dataloader, replace_ImageToTensor
 
 from mmrotate.datasets import build_dataset
 from mmrotate.models import build_detector
 from mmrotate.utils import compat_cfg, setup_multi_processes
 import visionsuite.cores.spatial_transform_decoupling.mmrotate_custom.datasets.custom_dota_dataset as custom_dota_dataset
-from visionsuite.utils.visualizers.vis_obb import vis_obb
-from visionsuite.utils.helpers import JsonEncoder
-
 
 
 def parse_args():
@@ -230,113 +224,40 @@ def main():
     else:
         model.CLASSES = dataset.CLASSES
 
-    model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+    if not distributed:
+        model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+        outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
+                                  args.show_score_thr)
+    else:
+        model = MMDistributedDataParallel(
+            model.cuda(),
+            device_ids=[torch.cuda.current_device()],
+            broadcast_buffers=False)
+        outputs = multi_gpu_test(model, data_loader, args.tmpdir,
+                                 args.gpu_collect)
 
-    class2idx = {'BOX': 0}
-    idx2class = {0: 'BOX'}
-    output_dir = '/HDD/_projects/benchmark/obb_detection/rich/tests/std_hivit'
-    json_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-    iou_threshold = 0.6
-    
-    if not osp.exists(output_dir):
-        os.mkdir(output_dir)
-    compare_gt = True
-    color_map = imgviz.label_colormap()[1:len(idx2class) + 1 + 1]
-
-    model.eval()
-    dataset = data_loader.dataset
-    idx2xyxys = {}
-    compare = {}
-    results = {}
-    for i, data in enumerate(data_loader):
-        
-        img_metas = data['img_metas'][0].data[0]
-        with torch.no_grad():
-            result = model(return_loss=False, rescale=True, **data)
-            
-        for idx, res in enumerate(result):
-            labels = [
-                np.full(bbox[0].shape[0], i, dtype=int)
-                for i, bbox in enumerate([res])
-            ]
-            labels = np.concatenate(labels)
-            bboxes = np.vstack(res)
-            
-            _idx2xyxys = {}
-            for i, (label, bbox) in enumerate(zip(labels, bboxes)):
-                
-                xc, yc, w, h, ag = bbox[:5]
-                wx, wy = w / 2 * np.cos(ag), w / 2 * np.sin(ag)
-                hx, hy = -h / 2 * np.sin(ag), h / 2 * np.cos(ag)
-                p1 = [xc - wx - hx, yc - wy - hy]
-                p2 = [xc + wx - hx, yc + wy - hy]
-                p3 = [xc + wx + hx, yc + wy + hy]
-                p4 = [xc - wx + hx, yc - wy + hy]
-                poly = [p1, p2, p3, p4]
-                
-                if label not in _idx2xyxys:
-                    _idx2xyxys[int(label)] = {'polygon': [poly], 'confidence': [bbox[-1]]}
-                else:
-                    _idx2xyxys[int(label)]['polygon'].append(poly)
-                    _idx2xyxys[int(label)]['confidence'].append(bbox[-1])
-                    
-            
-        img_file = img_metas[idx]['filename']
-        filename = osp.split(osp.splitext(img_file)[0])[-1]
-        results.update({filename: {'idx2xyxys': _idx2xyxys, 'idx2class': idx2class, 'img_file': img_file}})
-            
-        _compare = vis_obb(img_file, _idx2xyxys, idx2class, output_dir, color_map, json_dir, 
-                           compare_gt=compare_gt, iou_threshold=iou_threshold)
-        _compare.update({"img_file": img_file})
-        compare.update({filename: _compare})
-
-
-    with open(osp.join(output_dir, 'preds.json'), 'w', encoding='utf-8') as json_file:
-        json.dump(results, json_file, ensure_ascii=False, indent=4, cls=JsonEncoder)
-
-    if compare_gt:
-        with open(osp.join(output_dir, 'diff.json'), 'w', encoding='utf-8') as json_file:
-            json.dump(compare, json_file, ensure_ascii=False, indent=4)
-        
-        df_compare = pd.DataFrame(compare)
-        df_compare_pixel = df_compare.loc['diff_iou'].T
-        df_compare_pixel.fillna(0, inplace=True)
-        df_compare_pixel.to_csv(osp.join(output_dir, 'diff_iou.csv'))
-
-    # if not distributed:
-    #     model = MMDataParallel(model, device_ids=cfg.gpu_ids)
-    #     outputs = single_gpu_test(model, data_loader, args.show, args.show_dir,
-    #                               args.show_score_thr)
-    # else:
-    #     model = MMDistributedDataParallel(
-    #         model.cuda(),
-    #         device_ids=[torch.cuda.current_device()],
-    #         broadcast_buffers=False)
-    #     outputs = multi_gpu_test(model, data_loader, args.tmpdir,
-    #                              args.gpu_collect)
-
-    # rank, _ = get_dist_info()
-    # if rank == 0:
-    #     if args.out:
-    #         print(f'\nwriting results to {args.out}')
-    #         mmcv.dump(outputs, args.out)
-    #     kwargs = {} if args.eval_options is None else args.eval_options
-    #     if args.format_only:
-    #         dataset.format_results(outputs, **kwargs)
-    #     if args.eval:
-    #         eval_kwargs = cfg.get('evaluation', {}).copy()
-    #         # hard-code way to remove EvalHook args
-    #         for key in [
-    #                 'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best',
-    #                 'rule', 'dynamic_intervals'
-    #         ]:
-    #             eval_kwargs.pop(key, None)
-    #         eval_kwargs.update(dict(metric=args.eval, **kwargs))
-    #         metric = dataset.evaluate(outputs, **eval_kwargs)
-    #         print(metric)
-    #         metric_dict = dict(config=args.config, metric=metric)
-    #         if args.work_dir is not None and rank == 0:
-    #             mmcv.dump(metric_dict, json_file)
+    rank, _ = get_dist_info()
+    if rank == 0:
+        if args.out:
+            print(f'\nwriting results to {args.out}')
+            mmcv.dump(outputs, args.out)
+        kwargs = {} if args.eval_options is None else args.eval_options
+        if args.format_only:
+            dataset.format_results(outputs, **kwargs)
+        if args.eval:
+            eval_kwargs = cfg.get('evaluation', {}).copy()
+            # hard-code way to remove EvalHook args
+            for key in [
+                    'interval', 'tmpdir', 'start', 'gpu_collect', 'save_best',
+                    'rule', 'dynamic_intervals'
+            ]:
+                eval_kwargs.pop(key, None)
+            eval_kwargs.update(dict(metric=args.eval, **kwargs))
+            metric = dataset.evaluate(outputs, **eval_kwargs)
+            print(metric)
+            metric_dict = dict(config=args.config, metric=metric)
+            if args.work_dir is not None and rank == 0:
+                mmcv.dump(metric_dict, json_file)
 
 
 if __name__ == '__main__':
