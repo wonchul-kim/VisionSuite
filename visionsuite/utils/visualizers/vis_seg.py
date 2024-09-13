@@ -46,7 +46,7 @@ def get_key_by_value(dictionary, value):
             return key
     return None
 
-def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, 
+def vis_seg(img_file, idx2xyxys, idx2class, output_dir, color_map, 
             seg_type='instance', 
             json_dir=None, compare_mask=True, 
             iou_threshold=0.2, font_scale=1, line_width=1, draw_rect=True):
@@ -116,8 +116,8 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map,
             
     if seg_type == 'semantic':
         for idx, cls in idx2class.items():
-            if class2idx[cls] in idx2masks:
-                pred = idx2masks[class2idx[cls]]
+            if class2idx[cls] in idx2xyxys:
+                pred = idx2xyxys[class2idx[cls]]
                 for mask in pred['polygon']:
                     points = np.array(mask, dtype=np.int32)
                     if points.size != 0:
@@ -138,8 +138,8 @@ def vis_seg(img_file, idx2masks, idx2class, output_dir, color_map,
                 
     elif seg_type == 'instance':
         for idx, cls in idx2class.items():
-            if class2idx[cls] in idx2masks:
-                pred = idx2masks[class2idx[cls]]
+            if class2idx[cls] in idx2xyxys:
+                pred = idx2xyxys[class2idx[cls]]
                 for mask, box, conf in zip(pred['polygon'], pred['box'], pred['confidence']):
                     points = np.array(mask, dtype=np.int32)
                     if points.size != 0:

@@ -15,10 +15,25 @@ def preds2metrics(preds_json, class2idx):
                         class2idx[ann['idx2class'][_class]] = len(class2idx)
                     detections.append([filename, int(class2idx[ann['idx2class'][_class]]), float(conf), (box[0][0], box[0][1], box[1][0], box[1][1])])
             elif 'polygon' in val:
-                for box, conf in zip(val['polygon'], val['confidence']):
-                    if ann['idx2class'][_class] not in class2idx:
-                        class2idx[ann['idx2class'][_class]] = len(class2idx)
-                    detections.append([filename, int(class2idx[ann['idx2class'][_class]]), float(conf), tuple([_point for __point in box for _point in __point])])
+                if 'confidence' in val:
+                    for box, conf in zip(val['polygon'], val['confidence']):
+                        if ann['idx2class'][_class] not in class2idx:
+                            class2idx[ann['idx2class'][_class]] = len(class2idx)
+                        detections.append([filename, int(class2idx[ann['idx2class'][_class]]), float(conf), tuple([_point for __point in box for _point in __point])])
+                else:
+                    for polygons in zip(val['polygon']):
+                        if ann['idx2class'][_class] not in class2idx:
+                            class2idx[ann['idx2class'][_class]] = len(class2idx)
+                            
+                        # dets = []
+                        # for polygon in polygons:
+                        #     for points in polygon:
+                        #         dets.append(points[0])
+                        #         dets.append(points[1])
+                                
+                        detections.append([filename, int(class2idx[ann['idx2class'][_class]]), None, tuple(coord for polygon in polygons for points in polygon for coord in points)])
+
+
                     
     return detections, class2idx
         

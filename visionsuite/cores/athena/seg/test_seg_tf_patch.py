@@ -59,7 +59,7 @@ for img_file in img_files:
     img_h, img_w, img_c = img.shape
 
     num_patches = 0
-    idx2masks = {}
+    idx2xyxys = {}
     for y0 in range(0, img_h, dy):
         for x0 in range(0, img_w, dx):
             num_patches += 1
@@ -85,32 +85,32 @@ for img_file in img_files:
                         _point[0] += xmin
                         _point[1] += ymin
                 
-                    if idx not in idx2masks:
-                        idx2masks[idx] = {'polygon': []}
+                    if idx not in idx2xyxys:
+                        idx2xyxys[idx] = {'polygon': []}
                     
-                    idx2masks[idx]['polygon'].append(_points)
+                    idx2xyxys[idx]['polygon'].append(_points)
                 
             # if _classes is not None:
-            #     new_idx2masks = {}
+            #     new_idx2xyxys = {}
             #     for idx, _cls in enumerate(_classes):
             #         for jdx, cls in enumerate(classes):
             #             if cls == _cls:
-            #                 new_idx2masks[idx] = idx2masks[jdx]
+            #                 new_idx2xyxys[idx] = idx2xyxys[jdx]
                 
-            #     idx2masks = new_idx2masks
+            #     idx2xyxys = new_idx2xyxys
             #     idx2class = _idx2class    
     
     color_map = imgviz.label_colormap()[1:len(idx2class) + 1]
-    results.update({filename: {'idx2masks': idx2masks, 'idx2class': idx2class, 'img_file': img_file}})
+    results.update({filename: {'idx2xyxys': idx2xyxys, 'idx2class': idx2class, 'img_file': img_file}})
     
     if compare_mask:
-        _compare = vis_seg(img_file, idx2masks, idx2class, output_dir, color_map=color_map, json_dir=json_dir, 
+        _compare = vis_seg(img_file, idx2xyxys, idx2class, output_dir, color_map=color_map, json_dir=json_dir, 
                             seg_type='semantic', font_scale=font_scale,
                             compare_mask=compare_mask)
         _compare.update({"img_file": img_file})
         compare.update({filename: _compare})
     else:
-        vis_seg(img_file, idx2masks, idx2class, output_dir, color_map, json_dir, compare_mask=compare_mask)
+        vis_seg(img_file, idx2xyxys, idx2class, output_dir, color_map, json_dir, compare_mask=compare_mask)
     
 with open(osp.join(output_dir, 'preds.json'), 'w', encoding='utf-8') as json_file:
     json.dump(results, json_file, ensure_ascii=False, indent=4)

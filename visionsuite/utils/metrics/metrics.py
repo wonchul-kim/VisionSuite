@@ -102,7 +102,12 @@ def get_polygon_iou(point1, point2):
     # 교집합 영역 계산
     intersection_area = poly1.intersection(poly2).area
     
-    # 합집합 영역 계산
+    if not poly1.is_valid:
+        poly1 = poly1.buffer(0)
+        
+    if not poly2.is_valid:
+        poly2 = poly2.buffer(0)
+    
     union_area = poly1.union(poly2).area
     
     # IoU 계산
@@ -213,7 +218,7 @@ def update_ious_by_image(results_by_image):
     if len(results_by_image) != 0:
         for image_name, val in results_by_image.items():
             for _class, results in val.items():
-                results.update({'miou': np.mean(results['iou'])})
+                results.update({'miou': np.mean(results['iou']) if len(results['iou']) != 0 else 0})
                     
     return results_by_image    
 
@@ -263,7 +268,9 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
         
         num_gt = len(gts) # len(tp) + len(tn)
         
-        dets = sorted(dets, key=lambda conf: conf[2], reverse=True) # descending by confidence
+        # dets = sorted(dets, key=lambda conf: conf[2], reverse=True) # descending by confidence
+        if all(conf[2] is not None for conf in dets):  
+            dets = sorted(dets, key=lambda conf: conf[2], reverse=True) 
 
         tp, fp = np.zeros(len(dets)), np.zeros(len(dets))
         gt_box_detected_map = Counter(c[0] for c in gts) # number of gt-boxes by image
@@ -365,7 +372,7 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
             gt = [gt for gt in gts if gt[0] == image_name]
 
             if _class not in results:
-                results.update({_class: {'tp': 0, 'fp': 0, 'fn': len(gt), 'tn': 0, 'total_gt': len(gt)}})
+                results.update({_class: {'tp': 0, 'fp': 0, 'fn': len(gt), 'tn': 0, 'total_gt': len(gt), 'iou': [], 'coord_diff': []}})
         
 
     results_by_image = update_ious_by_image(results_by_image)
