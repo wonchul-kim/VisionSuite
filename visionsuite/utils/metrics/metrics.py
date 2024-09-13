@@ -153,7 +153,7 @@ def update_ap_by_image(results_by_image):
                 results.update({'fpr': fpr, 'fnr': fnr})
                 
                 if _class not in overall_by_class:
-                    overall_by_class[_class] = {'fpr': [], 'fnr': [], 'tp': [], 'fp': [], 'fn': [], 'tn': [], 'total_gt': []}
+                    overall_by_class[_class] = {'fpr': [], 'fnr': [], 'tp': [], 'fp': [], 'fn': [], 'tn': [], 'total_gt': [], 'miou': []}
                     
                 overall_by_class[_class]['fpr'].append(fpr)
                 overall_by_class[_class]['fnr'].append(fnr)
@@ -162,6 +162,7 @@ def update_ap_by_image(results_by_image):
                 overall_by_class[_class]['fn'].append(results['fn'])
                 overall_by_class[_class]['tn'].append(results['tn'])
                 overall_by_class[_class]['total_gt'].append(results['total_gt'])
+                overall_by_class[_class]['miou'].append(results['miou'])
                 
         for key, val in overall_by_class.items():
             overall_by_class[key]['fpr'] = np.mean(overall_by_class[key]['fpr'])
@@ -171,6 +172,7 @@ def update_ap_by_image(results_by_image):
             overall_by_class[key]['fn'] = np.sum(overall_by_class[key]['fn'])
             overall_by_class[key]['tn'] = np.sum(overall_by_class[key]['tn'])
             overall_by_class[key]['total_gt'] = np.sum(overall_by_class[key]['total_gt'])
+            overall_by_class[key]['miou'] = np.mean(overall_by_class[key]['miou'])
                 
     results_by_image['overall'] = overall_by_class
     
@@ -325,8 +327,9 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
     results_by_image = update_ious_by_image(results_by_image)
     results_by_image = update_ap_by_image(results_by_image)
     results_by_class.append({'map': mAP(results_by_class)})
+    
         
     
         
-    return {'by_class': results_by_class, 'by_image': results_by_image}
+    return {'by_class': results_by_class, 'by_image': dict(sorted(results_by_image.items()))}
 

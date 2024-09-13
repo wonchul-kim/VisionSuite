@@ -4,13 +4,25 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf
 import os.path as osp
 
-output_dir = '/HDD/_projects/benchmark/obb_detection/rich/tests/rtmdet_large'
+######################## RTMDet #####################################################################
+model_name = 'rtmdet'
+backbone = 'large'
+
+# ######################## yolov8-obb #####################################################################
+# model_name = 'yolov8'
+# backbone = 'l'
+
+# ######################## yolov10-obb #####################################################################
+# model_name = 'yolov10'
+# backbone = 'l'
+
+output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
 
 input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
 print(class2idx)
 
-preds_json = '/HDD/_projects/benchmark/obb_detection/rich/tests/rtmdet_large/preds.json'
+preds_json = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 
@@ -37,3 +49,4 @@ print('* by class: ', pf['by_class'])
 
 save_pf_by_image_to_excel(pf_by_image, osp.join(output_dir, 'pf_by_image.xlsx'), idx2class)
 save_df_by_class_to_pdf(pf_by_class, osp.join(output_dir, 'pf_by_class.pdf'), idx2class)
+
