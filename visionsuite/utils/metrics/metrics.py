@@ -177,6 +177,15 @@ def update_ap_by_image(results_by_image):
     return results_by_image
     _
 
+def update_ious_by_image(results_by_image):
+    
+    if len(results_by_image) != 0:
+        for image_name, val in results_by_image.items():
+            for _class, results in val.items():
+                results.update({'miou': np.mean(results['iou'])})
+                    
+    return results_by_image    
+    
 def calculateAveragePrecision(rec, prec):
     
     mrec = [0] + [e for e in rec] + [1]
@@ -227,11 +236,11 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
             gt = [gt for gt in gts if gt[0] == det[0]]
             
             if det[0] not in results_by_image:
-                results_by_image[det[0]] = {_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt)}}
+                results_by_image[det[0]] = {_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': []}}
             
             else: 
                 if _class not in results_by_image[det[0]]:
-                    results_by_image[det[0]].update({_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt)}})
+                    results_by_image[det[0]].update({_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': []}})
 
             max_iou, iou = 0, 0
             for gt_index, _gt in enumerate(gt):
@@ -244,6 +253,8 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                     max_iou = iou 
                     max_gt_index = gt_index
                     
+                    
+                # FIXME: move into the max_iou >= iou_threshold phrase???
                 if iou >= iou_threshold:
                     results_by_image[det[0]][_class]['tp'] += 1
                 
@@ -258,6 +269,8 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                     * fp:
                         - otherwise
                 '''
+                results_by_image[det[0]][_class]['iou'].append(max_iou)
+                
                 if gt_box_detected_map[det[0]][max_gt_index] == 0:
                     tp[det_index] = 1
                     gt_box_detected_map[det[0]][max_gt_index] = 1
@@ -309,9 +322,11 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                 results.update({_class: {'tp': 0, 'fp': 0, 'fn': len(gt), 'tn': 0, 'total_gt': len(gt)}})
         
 
+    results_by_image = update_ious_by_image(results_by_image)
     results_by_image = update_ap_by_image(results_by_image)
     results_by_class.append({'map': mAP(results_by_class)})
         
+    
         
     return {'by_class': results_by_class, 'by_image': results_by_image}
 

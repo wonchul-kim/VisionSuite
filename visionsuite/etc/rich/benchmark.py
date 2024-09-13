@@ -4,7 +4,7 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf
 import os.path as osp
 
-output_dir = '/HDD/_projects/benchmark/obb_detection/rich/tests'
+output_dir = '/HDD/_projects/benchmark/obb_detection/rich/tests/rtmdet_large'
 
 input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
