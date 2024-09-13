@@ -34,6 +34,32 @@ def get_overlap_area(box_1, box_2):
     
     return overlap_area
 
+def get_coord_diff(box_1, box_2):
+    import numpy as np
+    from scipy.spatial import distance
+
+    box_1 = [box_1[i:i + 2] for i in range(0, len(box_1), 2)]
+    box_2 = [box_2[i:i + 2] for i in range(0, len(box_2), 2)]
+
+    polygon1 = np.array(box_1)
+    polygon2 = np.array(box_2)
+
+    def average_difference(poly1, poly2):
+        total_diff = 0
+        matched_poly2 = []
+
+        for p1 in poly1:
+            distances = distance.cdist([p1], poly2, 'euclidean')
+            nearest_idx = np.argmin(distances)
+            matched_poly2.append(poly2[nearest_idx])
+            total_diff += distances[0, nearest_idx]
+
+        average_diff = total_diff / len(poly1)  # 평균 차이 계산
+        return average_diff
+
+    return average_difference(polygon1, polygon2)
+
+
 def get_iou(box_1, box_2, shape_type, return_dict=False):
     
     if shape_type == 'rectangle':
@@ -153,7 +179,8 @@ def update_ap_by_image(results_by_image):
                 results.update({'fpr': fpr, 'fnr': fnr})
                 
                 if _class not in overall_by_class:
-                    overall_by_class[_class] = {'fpr': [], 'fnr': [], 'tp': [], 'fp': [], 'fn': [], 'tn': [], 'total_gt': [], 'miou': []}
+                    overall_by_class[_class] = {'fpr': [], 'fnr': [], 'tp': [], 'fp': [], 'fn': [], 'tn': [], 'total_gt': [], 
+                                                'miou': [], 'mean_coord_diff': []}
                     
                 overall_by_class[_class]['fpr'].append(fpr)
                 overall_by_class[_class]['fnr'].append(fnr)
@@ -163,6 +190,7 @@ def update_ap_by_image(results_by_image):
                 overall_by_class[_class]['tn'].append(results['tn'])
                 overall_by_class[_class]['total_gt'].append(results['total_gt'])
                 overall_by_class[_class]['miou'].append(results['miou'])
+                overall_by_class[_class]['mean_coord_diff'].append(results['mean_coord_diff'])
                 
         for key, val in overall_by_class.items():
             overall_by_class[key]['fpr'] = np.mean(overall_by_class[key]['fpr'])
@@ -173,6 +201,7 @@ def update_ap_by_image(results_by_image):
             overall_by_class[key]['tn'] = np.sum(overall_by_class[key]['tn'])
             overall_by_class[key]['total_gt'] = np.sum(overall_by_class[key]['total_gt'])
             overall_by_class[key]['miou'] = np.mean(overall_by_class[key]['miou'])
+            overall_by_class[key]['mean_coord_diff'] = np.mean(overall_by_class[key]['mean_coord_diff'])
                 
     results_by_image['overall'] = overall_by_class
     
@@ -187,6 +216,15 @@ def update_ious_by_image(results_by_image):
                 results.update({'miou': np.mean(results['iou'])})
                     
     return results_by_image    
+
+def update_coord_diff_by_image(results_by_image):
+    
+    if len(results_by_image) != 0:
+        for image_name, val in results_by_image.items():
+            for _class, results in val.items():
+                results.update({'mean_coord_diff': np.mean(results['coord_diff'])})
+                    
+    return results_by_image  
     
 def calculateAveragePrecision(rec, prec):
     
@@ -238,13 +276,14 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
             gt = [gt for gt in gts if gt[0] == det[0]]
             
             if det[0] not in results_by_image:
-                results_by_image[det[0]] = {_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': []}}
+                results_by_image[det[0]] = {_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': [], 'coord_diff': []}}
             
             else: 
                 if _class not in results_by_image[det[0]]:
-                    results_by_image[det[0]].update({_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': []}})
+                    results_by_image[det[0]].update({_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': [], 'coord_diff': []}})
 
             max_iou, iou = 0, 0
+            max_gt_coord, max_pred_coord = None, None
             for gt_index, _gt in enumerate(gt):
                 '''
                     Within the same image, compare all gt-boxes for each det-box and then, calculate iou.
@@ -254,7 +293,7 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                 if iou > max_iou:
                     max_iou = iou 
                     max_gt_index = gt_index
-                    
+                    max_gt_coord, max_pred_coord = det[3], _gt[3]
                     
                 # FIXME: move into the max_iou >= iou_threshold phrase???
                 if iou >= iou_threshold:
@@ -271,7 +310,12 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                     * fp:
                         - otherwise
                 '''
+                # iou
                 results_by_image[det[0]][_class]['iou'].append(max_iou)
+                
+                # coord-diff
+                if max_gt_coord is not None and  max_pred_coord is not None:
+                    results_by_image[det[0]][_class]['coord_diff'].append(get_coord_diff(max_gt_coord, max_pred_coord))
                 
                 if gt_box_detected_map[det[0]][max_gt_index] == 0:
                     tp[det_index] = 1
@@ -325,6 +369,7 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
         
 
     results_by_image = update_ious_by_image(results_by_image)
+    results_by_image = update_coord_diff_by_image(results_by_image)
     results_by_image = update_ap_by_image(results_by_image)
     results_by_class.append({'map': mAP(results_by_class)})
     

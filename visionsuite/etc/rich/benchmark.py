@@ -4,17 +4,21 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf
 import os.path as osp
 
-######################## RTMDet #####################################################################
-model_name = 'rtmdet'
-backbone = 'large'
+# ######################## STD #####################################################################
+# model_name = 'std'
+# backbone = 'hivit'
+
+# ######################## RTMDet #####################################################################
+# model_name = 'rtmdet'
+# backbone = 'large'
 
 # ######################## yolov8-obb #####################################################################
 # model_name = 'yolov8'
 # backbone = 'l'
 
-# ######################## yolov10-obb #####################################################################
-# model_name = 'yolov10'
-# backbone = 'l'
+######################## yolov10-obb #####################################################################
+model_name = 'yolov10'
+backbone = 'l'
 
 output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
 
