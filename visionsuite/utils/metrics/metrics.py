@@ -99,14 +99,15 @@ def get_polygon_iou(point1, point2):
     poly1 = Polygon(ond_dim_points_to_polygon(point1))
     poly2 = Polygon(ond_dim_points_to_polygon(point2))
     
-    # 교집합 영역 계산
-    intersection_area = poly1.intersection(poly2).area
-    
     if not poly1.is_valid:
         poly1 = poly1.buffer(0)
         
     if not poly2.is_valid:
         poly2 = poly2.buffer(0)
+        
+    # 교집합 영역 계산
+    intersection_area = poly1.intersection(poly2).area
+    
     
     union_area = poly1.union(poly2).area
     

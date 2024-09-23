@@ -4,13 +4,12 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf
 import os.path as osp
 
-######################## STD #####################################################################
-model_name = 'wo_patch_ratio'
 
-# ######################## RTMDet #####################################################################
-# model_name = 'rtmdet'
-# backbone = 'large'
-
+# model_name = 'wo_patch_ratio'
+# model_name = 'w_patch_ratio_0.2_1_1_300'
+# model_name = 'w_patch_ratio_0.2_1_1_600'
+# model_name = 'w_patch_ratio_0.4_1_1_300'
+model_name = 'w_patch_ratio_0.4_1_1_600'
 
 output_dir = f'/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/tests/{model_name}'
 

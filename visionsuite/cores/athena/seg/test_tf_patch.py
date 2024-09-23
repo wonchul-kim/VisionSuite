@@ -32,7 +32,7 @@ dx = int((1. - patch_overlap_ratio) * patch_width)
 dy = int((1. - patch_overlap_ratio) * patch_height)
 
 compare_mask = True
-weights = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/outputs/wo_patch_ratio/train/weights/last_weights.h5'
+weights = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/outputs/outputs/SEGMENTATION/w_patch_ratio_0.4_1_1_300/train/weights/last_weights.h5'
 model = TFModelv2(model_name='deeplabv3plus', backbone='efficientnetb0', backbone_weights='imagenet', 
                   batch_size=1, width=patch_width, height=patch_height, channel=3, num_classes=4,
                   weights=weights)
@@ -43,7 +43,7 @@ _classes = ['SCRATCH', 'TEAR', 'STABBED']
 _idx2class = {idx: cls for idx, cls in enumerate(_classes)}
 input_dir = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/datasets/split_dataset/val'
 json_dir = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/datasets/split_dataset/val'
-output_dir = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/tests/wo_patch_ratio'
+output_dir = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/tests/w_patch_ratio_0.4_1_1_300'
 font_scale = 0
 
 if not osp.exists(output_dir):
