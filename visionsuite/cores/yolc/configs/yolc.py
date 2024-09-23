@@ -107,8 +107,9 @@ data = dict(
     val=dict(
         type=dataset_type,
         classes=classes,
-        ann_file='data/Visdrone2019/VisDrone2019-DET_val_coco.json',
-        img_prefix='data/Visdrone2019/VisDrone2019-DET-val/images',
+        # ann_file=data_root + 'VisDrone2019-DET-val/annotations',
+        ann_file=data_root + 'VisDrone2019-DET_val_coco_1crop.json',
+        img_prefix=data_root + 'VisDrone2019-DET-val/images',
         pipeline=[
             dict(type='LoadImageFromFile', to_float32=True),
             dict(
@@ -145,8 +146,9 @@ data = dict(
     test=dict(
         type=dataset_type,
         classes=classes,
-        ann_file='data/Visdrone2019/VisDrone2019-DET_val_coco.json',
-        img_prefix='data/Visdrone2019/VisDrone2019-DET-val/images',
+        # ann_file=data_root + 'VisDrone2019-DET-val/annotations',
+        ann_file=data_root + 'VisDrone2019-DET_val_coco_1crop.json',
+        img_prefix=data_root + 'VisDrone2019-DET-val/images',
         pipeline=[
             dict(type='LoadImageFromFile', to_float32=True),
             dict(

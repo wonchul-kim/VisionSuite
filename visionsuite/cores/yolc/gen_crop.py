@@ -35,12 +35,12 @@ def gen_heatmap(gt_bbox, gt_labels, img_shape):
 
     return center_heatmap_target
 
-def convert_to_cocodetection(dir, output_dir):
-    train_dir = os.path.join(dir, "VisDrone2019-DET-train")
+def convert_to_cocodetection(dir, output_dir, mode='train'):
+    train_dir = os.path.join(dir, f"VisDrone2019-DET-{mode}")
     train_annotations = os.path.join(train_dir, "annotations")
     train_images = os.path.join(train_dir, "images")
 
-    out_dir = os.path.join(dir, "VisDrone2019-DET-train-crop")
+    out_dir = os.path.join(dir, f"VisDrone2019-DET-{mode}-crop")
 
     if not os.path.exists(out_dir + "/images"):
         os.makedirs(out_dir + "/images")
@@ -59,11 +59,11 @@ def convert_to_cocodetection(dir, output_dir):
                   {"id": 9, "name": "bus"},
                   {"id": 10, "name": "motor"}
                   ]
-    for mode in ["train"]:
+    for mode in [f"{mode}"]:
         images = []
         annotations = []
         print(f"start loading {mode} data...")
-        if mode == "train":
+        if mode in ["train", 'val']:
             set = os.listdir(train_annotations)
             annotations_path = train_annotations
             images_path = train_images
@@ -224,4 +224,4 @@ def findincluster(cur_anns, boxes_scaled):
  
 if __name__ == '__main__':
     path = "/HDD/datasets/public/visiondrone"
-    convert_to_cocodetection(path, path)
+    convert_to_cocodetection(path, path, 'val')
