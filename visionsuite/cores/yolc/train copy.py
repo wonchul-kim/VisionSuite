@@ -26,8 +26,8 @@ from VisDrone_Dataset import VisDroneDataset
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a detector')
-    parser.add_argument('--config', default='/HDD/github/VisionSuite/visionsuite/cores/yolc/configs/yolc.py')
-    parser.add_argument('--work-dir', default='/HDD/etc')
+    parser.add_argument('--config', default='/HDD/_projects/github/VisionSuite/visionsuite/cores/yolc/configs/yolc.py')
+    parser.add_argument('--work-dir', default='/HDD/etc/yolc')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
     parser.add_argument(
