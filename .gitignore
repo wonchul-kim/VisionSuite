@@ -4,6 +4,7 @@ logs
 # mm archives
 work_dirs
 work_dir
+output_dir
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

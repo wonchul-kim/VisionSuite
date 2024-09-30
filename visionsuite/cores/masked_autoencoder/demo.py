@@ -87,7 +87,7 @@ plt.rcParams['figure.figsize'] = [5, 5]
 
 # This is an MAE model trained with pixels as targets for visualization (ViT-Large, training mask ratio=0.75)
 url = 'https://dl.fbaipublicfiles.com/mae/visualize/mae_visualize_vit_large.pth'
-output_filename = '/HDD/etc/mae_visualize_vit_large.pth'
+output_filename = '/HDD/weights/mae/mae_visualize_vit_large_75.pth'
 download_weights_from_url(url, output_filename)
 
 chkpt_dir = output_filename
@@ -101,7 +101,7 @@ run_one_image(img, model_mae, f'/HDD/etc/result.png')
 
 
 url = 'https://dl.fbaipublicfiles.com/mae/visualize/mae_visualize_vit_large_ganloss.pth'
-output_filename = '/HDD/etc/mae_visualize_vit_large_ganloss.pth'
+output_filename = '/HDD/weights/mae/mae_visualize_vit_large_ganloss.pth'
 download_weights_from_url(url, output_filename)
 
 chkpt_dir = output_filename
