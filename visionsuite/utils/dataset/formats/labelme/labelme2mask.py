@@ -6,10 +6,10 @@ import cv2
 
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
-input_dir = '/HDD/datasets/projects/22.03.22_flange_s/data'
-output_dir = '/HDD/datasets/projects/22.03.22_flange_s/mask'
-modes = ['./']
-class2label = {'flange_s': 1}
+input_dir = '/HDD/datasets/projects/sungwoo_edge/split_dataset_patch'
+output_dir = '/HDD/datasets/projects/sungwoo_edge/split_dataset_mask'
+modes = ['train', 'val']
+class2label = {'stabbed': 1}
 
 if not osp.exists(output_dir):
     os.mkdir(output_dir)
