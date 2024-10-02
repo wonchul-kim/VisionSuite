@@ -3,6 +3,7 @@ import os.path as osp
 import glob 
 import json 
 import cv2
+from tqdm import tqdm
 
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
@@ -20,7 +21,7 @@ for mode in modes:
         os.mkdir(_output_dir)
     json_files = glob.glob(osp.join(input_dir, mode, '*.json'))
     
-    for json_file in json_files:
+    for json_file in tqdm(json_files, desc=mode):
         filename = osp.split(osp.splitext(json_file)[0])[-1]
         with open(json_file, 'r') as jf:
             anns = json.load(jf)
