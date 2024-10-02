@@ -1,4 +1,5 @@
-from visionsuite.cores.unets.keras_unet_collection.models import unet_3plus_2d
+# from keras_unet_collection.models import unet_3plus_2d
+from keras_unet_collection.models import unet_3plus_2d
 
 input_size = (512, 512, 3)
 n_labels = 4
@@ -25,7 +26,7 @@ name='unet3plus'
                   
 model = unet_3plus_2d(input_size, n_labels, filter_num_down)
 
-from visionsuite.cores.unets.keras_unet_collection import losses
+from keras_unet_collection import losses
 
 def hybrid_loss(y_true, y_pred):
 
@@ -39,8 +40,23 @@ def hybrid_loss(y_true, y_pred):
 
 from glob import glob
 import numpy as np
+import os
+os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"  # 이 코드는 TensorFlow가 GPU를 사용하지 않도록 강제합니다.
+
+import tensorflow as tf 
+print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        # 메모리 증가 허용
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        logical_gpus = tf.config.list_logical_devices('GPU')
+        print(f"{len(gpus)} Physical GPUs, {len(logical_gpus)} Logical GPUs")
+    except RuntimeError as e:
+        print(e)
 from tensorflow import keras
-import visionsuite.cores.unets.keras_unet_collection.utils as utils
+import keras_unet_collection.utils as utils
 
 def input_data_process(input_array):
     '''converting pixel vales to [0, 1]'''
@@ -50,8 +66,8 @@ def target_data_process(target_array):
     '''Converting tri-mask of {1, 2, 3} to three categories.'''
     return keras.utils.to_categorical(target_array-1)
 
-input_dir = '/HDD/datasets/projects/22.03.22_flange_s/data'
-mask_input_dir = '/HDD/datasets/projects/22.03.22_flange_s/mask'
+input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
+mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks'
 
 sample_names = np.array(sorted(glob(input_dir + '/*.bmp')))
 label_names = np.array(sorted(glob(mask_input_dir + '/*.bmp')))
@@ -63,17 +79,15 @@ L_train = int(0.8*L); L_valid = int(0.1*L); L_test = L - L_train - L_valid
 ind_train = ind_all[:L_train]; ind_valid = ind_all[L_train:L_train+L_valid]; ind_test = ind_all[L_train+L_valid:]
 print("Training:validation:testing = {}:{}:{}".format(L_train, L_valid, L_test))
 
-valid_input = input_data_process(utils.image_to_array(sample_names[ind_test], size=512, channel=3))
-valid_target = target_data_process(utils.image_to_array(label_names[ind_test], size=512, channel=1))
-# valid_input = input_data_process(utils.image_to_array(sample_names[ind_valid], size=512, channel=3))
-# valid_target = target_data_process(utils.image_to_array(label_names[ind_valid], size=512, channel=1))
+valid_input = input_data_process(utils.image_to_array(sample_names[ind_valid], size=512, channel=3))
+valid_target = target_data_process(utils.image_to_array(label_names[ind_valid], size=512, channel=1))
 
 test_input = input_data_process(utils.image_to_array(sample_names[ind_test], size=512, channel=3))
 test_target = target_data_process(utils.image_to_array(label_names[ind_test], size=512, channel=1))
 
 N_epoch = 10 # number of epoches
 N_batch = 100 # number of batches per epoch
-N_sample = 32 # number of samples per batch
+N_sample = 2 # number of samples per batch
 
 tol = 0 # current early stopping patience
 max_tol = 3 # the max-allowed early stopping patience
@@ -92,6 +106,9 @@ for epoch in range(N_epoch):
         y_pred = temp_out[-1]
         record = np.mean(hybrid_loss(valid_target, y_pred))
         print('\tInitial loss = {}'.format(record))
+    
+    if epoch%30 == 0:
+        model.save(f'/HDD/unet3p_{epoch}.h5')
     
     # loop over batches
     for step in range(N_batch):

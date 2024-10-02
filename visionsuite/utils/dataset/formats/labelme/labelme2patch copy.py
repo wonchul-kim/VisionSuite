@@ -135,9 +135,9 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                             json.dump(_labelme, jf)
 
 
-input_dir = '/HDD/datasets/projects/sungwoo_edge/split_dataset'
-output_dir = '/HDD/datasets/projects/sungwoo_edge/split_dataset_patch'
-modes = ['train', 'val']
+input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/data'
+output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
+modes = ['./']
 
 
 patch_overlap_ratio = 0.2
