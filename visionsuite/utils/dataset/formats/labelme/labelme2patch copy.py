@@ -6,17 +6,13 @@ import os
 from tqdm import tqdm 
 import numpy as np
 from copy import deepcopy
-from shapely import Polygon
+from shapely import Polygon, MultiPolygon
 
 from visionsuite.utils.dataset.formats.labelme.utils import add_labelme_element, init_labelme_json 
 
 def intersected_polygon(window, points):
-    window = [[0, 0], [100, 100]]  # [xmin, ymin], [xmax, ymax]
     xmin, ymin = window[0]
     xmax, ymax = window[1]
-
-    # 다각형을 나타내는 Points 정의
-    points = [[10, 30], [20, 33], [123, 123], [232, 33]]
 
     # 사각형 Window를 Polygon으로 정의
     window_polygon = Polygon([(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)])
@@ -25,10 +21,18 @@ def intersected_polygon(window, points):
     points_polygon = Polygon(points)
 
     # 교차 다각형 구하기 (intersection)
-    intersection = window_polygon.intersection(points_polygon)
+    if not window_polygon.is_valid:
+        window_polygon = window_polygon.buffer(0)
+    if not points_polygon.is_valid:
+        points_polygon = points_polygon.buffer(0)
+    geoms = window_polygon.intersection(points_polygon)
     
-    if not intersection.is_empty:
-        return [[val1, val2] for val1, val2 in list(intersection.exterior.coords)]
+    if not geoms.is_empty:
+        if geoms.geom_type == 'Polygon':
+            return [[val1, val2] for val1, val2 in list(geoms.exterior.coords)]
+        elif geoms.geom_type == 'Multipolygon':
+            raise NotImplementedError
+            return [list(x.exterior.coords) for x in geoms.geoms]
     else:
         return None
 
@@ -129,8 +133,7 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                 patch = (patch * 255).astype(np.uint8)
                         else:
                             patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
-                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), 
-                                    cv2.cvtColor(patch, cv2.COLOR_RGB2BGR))
+                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), patch)
                         with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
                             json.dump(_labelme, jf)
 
