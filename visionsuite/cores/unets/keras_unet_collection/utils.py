@@ -23,6 +23,11 @@ def dummy_loader(model_path):
     W = backbone.get_weights()
     return W
 
+
+def one_hot_encoding(pix, num_classes):
+
+    return np.eyes(num_classes)[pix]
+
 def image_to_array(filenames, size, channel):
     '''
     Converting RGB images to numpy arrays.

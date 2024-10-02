@@ -1,8 +1,8 @@
 # from keras_unet_collection.models import unet_3plus_2d
 from keras_unet_collection.models import unet_3plus_2d
 from tqdm import tqdm
-input_size = (512, 512, 3)
-n_labels = 4
+input_size = (128, 128, 3)
+n_labels = 3
 filter_num_down = [32, 64, 128, 256, 512]
 # filter_num_skip = [32, 32, 32, 32]
 # filter_num_aggregate = 160
@@ -29,6 +29,9 @@ model = unet_3plus_2d(input_size, n_labels, filter_num_down)
 from keras_unet_collection import losses
 
 def hybrid_loss(y_true, y_pred):
+    print('y_true: ', y_true.shape)
+    print('y_pred: ', y_pred.shape)
+
     loss_focal = losses.focal_tversky(y_true, y_pred, alpha=0.5, gamma=4/3)
     loss_iou = losses.iou_seg(y_true, y_pred)
     
@@ -61,28 +64,26 @@ def input_data_process(input_array):
     '''converting pixel vales to [0, 1]'''
     return input_array/255.
 
-def target_data_process(target, num_classes):
-    # '''Converting tri-mask of {1, 2, 3} to three categories.'''
-    # return keras.utils.to_categorical(target_array)
+def target_data_process(target_array):
+    '''Converting tri-mask of {1, 2, 3} to three categories.'''
+    return keras.utils.to_categorical(target_array-1)
 
-    # (bs, h, w, 1) -> (bs, h, w), squeeze를 통해 채널 차원 제거
-    target = np.squeeze(target, axis=-1)
-    
-    # (bs, h, w) -> (bs, h, w, num_classes)으로 one-hot 인코딩
-    target_one_hot = keras.utils.to_categorical(target, num_classes=num_classes)
-    
-    return target_one_hot
+# input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
+# mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks'
 
-input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
-mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks'
+# sample_names = np.array(sorted(glob(input_dir + '/*.bmp')))
+# label_names = np.array(sorted(glob(mask_input_dir + '/*.bmp')))
 
-sample_names = np.array(sorted(glob(input_dir + '/*.bmp')))
-label_names = np.array(sorted(glob(mask_input_dir + '/*.bmp')))
+input_dir = '/HDD/datasets/public/Oxford_IIIT/images'
+mask_input_dir = '/HDD/datasets/public/Oxford_IIIT/annotations/trimaps'
+
+sample_names = np.array(sorted(glob(input_dir + '/*.jpg')))
+label_names = np.array(sorted(glob(mask_input_dir + '/*.png')))
 
 L = len(sample_names)
 ind_all = utils.shuffle_ind(L)
 
-L_train = int(0.8*L)
+L_train = int(0.1*L)
 L_valid = int(0.1*L)
 L_test = int(0.1*L)
 ind_train = ind_all[:L_train]
@@ -90,13 +91,14 @@ ind_valid = ind_all[L_train:L_train+L_valid]
 ind_test = ind_all[L_train+L_valid:]
 print("Training:validation:testing = {}:{}:{}".format(L_train, L_valid, L_test))
 
-valid_input = input_data_process(utils.image_to_array(sample_names[ind_valid], size=512, channel=3))
-valid_target = target_data_process(utils.image_to_array(label_names[ind_valid], size=512, channel=1), n_labels)
+valid_input = input_data_process(utils.image_to_array(sample_names[ind_valid], size=128, channel=3))
+valid_target = target_data_process(utils.image_to_array(label_names[ind_valid], size=128, channel=1))
 
-# test_input = input_data_process(utils.image_to_array(sample_names[ind_test], size=512, channel=3))
-# test_target = target_data_process(utils.image_to_array(label_names[ind_test], size=512, channel=1))
+# test_input = input_data_process(utils.image_to_array(sample_names[ind_test], size=128, channel=3))
+# test_target = target_data_process(utils.image_to_array(label_names[ind_test], size=128, channel=1))
 
-N_epoch = 30 # number of epoches
+N_epoch = 10 # number of epoches
+N_batch = 100 # number of batches per epoch
 N_sample = 2 # number of samples per batch
 
 tol = 0 # current early stopping patience
@@ -110,41 +112,41 @@ model.compile(loss=[hybrid_loss, hybrid_loss, hybrid_loss, hybrid_loss, hybrid_l
 # loop over epoches
 for epoch in range(N_epoch):
     
-    if epoch != 0 and epoch%30 == 0:
+    # # initial loss record
+    # if epoch == 0:
+    #     temp_out = model.predict([valid_input])
+    #     y_pred = temp_out[-1]
+    #     record = np.mean(hybrid_loss(valid_target, y_pred))
+    #     print('\tInitial loss = {}'.format(record))
+    
+    if epoch%30 == 0:
         model.save(f'/HDD/unet3p_{epoch}.h5')
     
-    train_loss = []
-    for step in range(int(L_train/N_sample)):
-        print(f"\r train {str(epoch)} ({step}/{int(L_train/N_sample)}) > {str(train_loss[-1]) if len(train_loss) != 0 else ''}", end="")
+    # loop over batches
+    for step in tqdm(range(N_batch), desc=epoch):
+        # selecting smaples for the current batch
         ind_train_shuffle = utils.shuffle_ind(L_train)[:N_sample]
         
+        # batch data formation
         ## augmentation is not applied
         train_input = input_data_process(
-            utils.image_to_array(sample_names[ind_train][ind_train_shuffle], size=512, channel=3))
+            utils.image_to_array(sample_names[ind_train][ind_train_shuffle], size=128, channel=3))
         train_target = target_data_process(
-            utils.image_to_array(label_names[ind_train][ind_train_shuffle], size=512, channel=1), n_labels)
+            utils.image_to_array(label_names[ind_train][ind_train_shuffle], size=128, channel=1))
         
         # train on batch
-        train_loss.append(model.train_on_batch([train_input,], 
-                                         [train_target, train_target, train_target, train_target, train_target,]))
-        if np.isnan(train_loss[-1]):
+        loss_ = model.train_on_batch([train_input,], 
+                                         [train_target, train_target, train_target, train_target, train_target,])
+        if np.isnan(loss_):
             print("Training blow-up")
-            raise Exception
 
-    print('train loss: ', np.mean(train_loss))
-       
-    # epoch-end validation
-    if epoch != 0 and epoch%10 == 0:
-        val_loss = []
-        for step in range(int(L_valid/N_sample)):
-            print(f"\r val {str(epoch)} ({step}/{int(L_train/N_sample)}) > {str(train_loss[-1]) if len(train_loss) != 0 else ''}", end="")
-            y_pred = model.predict([valid_input[N_sample*step:N_sample*(step + 1)]])
-            val_loss.append(np.mean(hybrid_loss(valid_target[N_sample*step:N_sample*(step + 1)], y_pred)))
-            
-        val_loss = np.mean(val_loss)
-        print('val loss: ', val_loss)
-        model.save(f'/HDD/unet3p_{epoch}.h5')
-            
+        # ** training loss is not stored ** #
+        
+    # # epoch-end validation
+    # temp_out = model.predict([valid_input])
+    # y_pred = temp_out[-1]
+    # record_temp = np.mean(hybrid_loss(valid_target, y_pred))
+    # # ** validation loss is not stored ** #
     
     # # if loss is reduced
     # if record - record_temp > min_del:
