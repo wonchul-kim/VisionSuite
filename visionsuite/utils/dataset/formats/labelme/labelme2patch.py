@@ -136,32 +136,32 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                     intersected_point[1] -= ymin
                                 _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
                             
-                        if included:
-                            if norm_val is not None:
-                                if norm_val['type'] == 'min_max':
-                                    patch = min_max_normalize(deepcopy(img[ymin:ymax, xmin:xmax, :]), norm_val['min_val'], norm_val['max_val'])
-                                    patch = (patch * 255).astype(np.uint8)
-                            else:
-                                patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
-                            cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), patch)
-                            with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
-                                json.dump(_labelme, jf)
-                                
-                            if vis:
-                                import imgviz
-                                
-                                mask = get_mask_from_labelme(osp.join(_output_dir, filename + f'_{num_patches}.json'),
-                                                            patch_width, patch_height, class2label, format='opencv')
-                                
-                                vis_img = np.zeros((patch_height, patch_width*2, 3))
-                                vis_img[:, :patch_width, :] = patch
-                                color_map = imgviz.label_colormap(50)
-                                mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
-                                vis_img[:, patch_width:, :] = mask 
-                                
-                                cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.bmp'), vis_img)
-                                        
-                            num_patches += 1
+                    if included:
+                        if norm_val is not None:
+                            if norm_val['type'] == 'min_max':
+                                patch = min_max_normalize(deepcopy(img[ymin:ymax, xmin:xmax, :]), norm_val['min_val'], norm_val['max_val'])
+                                patch = (patch * 255).astype(np.uint8)
+                        else:
+                            patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
+                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), patch)
+                        with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
+                            json.dump(_labelme, jf)
+                            
+                        if vis:
+                            import imgviz
+                            
+                            mask = get_mask_from_labelme(osp.join(_output_dir, filename + f'_{num_patches}.json'),
+                                                        patch_width, patch_height, class2label, format='opencv')
+                            
+                            vis_img = np.zeros((patch_height, patch_width*2, 3))
+                            vis_img[:, :patch_width, :] = patch
+                            color_map = imgviz.label_colormap(50)
+                            mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
+                            vis_img[:, patch_width:, :] = mask 
+                            
+                            cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.bmp'), vis_img)
+                                    
+                        num_patches += 1
 
 
 if __name__ == '__main__':
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     patch_overlap_ratio = 0.2
     patch_width = 512
     patch_height = 512
-    vis = False
+    vis = True
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None
