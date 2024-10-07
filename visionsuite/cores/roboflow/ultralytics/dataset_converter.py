@@ -56,12 +56,12 @@ class DatasetConverter:
             
         
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/visionsuite/yolo/hbb_detection/split_dataset'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset'
 
     copy_image = True
-    image_ext = 'png'
+    image_ext = 'bmp'
        
-    converter = DatasetConverter('hbb_detection')
+    converter = DatasetConverter('obb_detection')
     converter.run(input_dir, copy_image=copy_image, image_ext=image_ext)
     
             
