@@ -6,8 +6,36 @@ import os
 from tqdm import tqdm 
 import numpy as np
 from copy import deepcopy
+from shapely import Polygon, MultiPolygon
 
-from visionsuite.utils.dataset.formats.labelme.utils import add_labelme_element, init_labelme_json 
+from visionsuite.utils.dataset.formats.labelme.utils import add_labelme_element, init_labelme_json, get_mask_from_labelme
+
+def intersected_polygon(window, points):
+    xmin, ymin = window[0]
+    xmax, ymax = window[1]
+
+    # 사각형 Window를 Polygon으로 정의
+    window_polygon = Polygon([(xmin, ymin), (xmax, ymin), (xmax, ymax), (xmin, ymax)])
+
+    # Points를 Polygon으로 정의
+    points_polygon = Polygon(points)
+
+    # 교차 다각형 구하기 (intersection)
+    if not window_polygon.is_valid:
+        window_polygon = window_polygon.buffer(0)
+    if not points_polygon.is_valid:
+        points_polygon = points_polygon.buffer(0)
+    geoms = window_polygon.intersection(points_polygon)
+    
+    if not geoms.is_empty:
+        if geoms.geom_type == 'Polygon':
+            return [[val1, val2] for val1, val2 in list(geoms.exterior.coords)]
+        elif geoms.geom_type == 'Multipolygon':
+            raise NotImplementedError
+            return [list(x.exterior.coords) for x in geoms.geoms]
+    else:
+        return None
+
 
 def intersection(boxA, boxB):
     # Box coordinates
@@ -37,14 +65,19 @@ def min_max_normalize(image_array, min_val, max_val):
 
 def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, 
                     image_ext='bmp', patch_overlap_ratio = 0.2,
-                    norm_val=None):
+                    norm_val=None, vis=False):
 
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
-    
+        
+    if vis:
+        vis_dir = osp.join(output_dir, 'vis')
+        if not osp.exists(vis_dir):
+            os.mkdir(vis_dir)
+            
     dx = int((1. - patch_overlap_ratio) * patch_width)
     dy = int((1. - patch_overlap_ratio) * patch_height)
-
+    class2label = {}
     for mode in modes:
         _output_dir = osp.join(output_dir, mode)
         if not osp.exists(_output_dir):
@@ -63,7 +96,6 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
             num_patches = 0
             for y0 in range(0, img_h, dy):
                 for x0 in range(0, img_w, dx):
-                    num_patches += 1
                     if y0 + patch_height > img_h:
                         y = img_h - patch_height
                     else:
@@ -78,48 +110,79 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                     xmin, xmax, ymin, ymax = x, x + patch_width, y, y + patch_height
                     window = [[xmin, ymin], [xmax, ymax]]
 
-                    included = False
                     for ann in anns:
+                        included = False
+                        label = ann['label'].lower()
+                        if label not in class2label:
+                            class2label[label] = len(class2label) + 1
                         points = ann['points']
-                        intersected_box = intersection(window, points)
-                        
-                        if intersected_box:
-                            included = True 
+                        shape_type = ann['shape_type']
+                        if shape_type == 'rectangle':
+                            intersected_points = intersection(window, points)
                             
-                            for intersected_point in intersected_box:
-                                intersected_point[0] -= xmin
-                                intersected_point[1] -= ymin
-                            _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_box)
+                            if intersected_points:
+                                included = True 
+                                
+                                for intersected_point in intersected_points:
+                                    intersected_point[0] -= xmin
+                                    intersected_point[1] -= ymin
+                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
+                        elif shape_type == 'polygon':
+                            intersected_points = intersected_polygon(window, points)
+                            if intersected_points:
+                                included = True 
+                                for intersected_point in intersected_points:
+                                    intersected_point[0] -= xmin
+                                    intersected_point[1] -= ymin
+                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
                             
-                    if included:
-                        if norm_val is not None:
-                            if norm_val['type'] == 'min_max':
-                                patch = min_max_normalize(deepcopy(img[ymin:ymax, xmin:xmax, :]), norm_val['min_val'], norm_val['max_val'])
-                                patch = (patch * 255).astype(np.uint8)
-                        else:
-                            patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
-                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), 
-                                    patch)
-                        with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
-                            json.dump(_labelme, jf)
+                        if included:
+                            if norm_val is not None:
+                                if norm_val['type'] == 'min_max':
+                                    patch = min_max_normalize(deepcopy(img[ymin:ymax, xmin:xmax, :]), norm_val['min_val'], norm_val['max_val'])
+                                    patch = (patch * 255).astype(np.uint8)
+                            else:
+                                patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
+                            cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), patch)
+                            with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
+                                json.dump(_labelme, jf)
+                                
+                            if vis:
+                                import imgviz
+                                
+                                mask = get_mask_from_labelme(osp.join(_output_dir, filename + f'_{num_patches}.json'),
+                                                            patch_width, patch_height, class2label, format='opencv')
+                                
+                                vis_img = np.zeros((patch_height, patch_width*2, 3))
+                                vis_img[:, :patch_width, :] = patch
+                                color_map = imgviz.label_colormap(50)
+                                mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
+                                vis_img[:, patch_width:, :] = mask 
+                                
+                                cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.bmp'), vis_img)
+                                        
+                            num_patches += 1
 
 
-input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/data'
-output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
-modes = ['./']
+if __name__ == '__main__':
+        
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/data'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
+    modes = ['./']
 
 
-patch_overlap_ratio = 0.2
-patch_width = 512
-patch_height = 512
+    patch_overlap_ratio = 0.2
+    patch_width = 512
+    patch_height = 512
+    vis = False
 
-# norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
-norm_val = None
-    
-labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
-                norm_val=norm_val)
+    # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
+    norm_val = None
+        
+    labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
+                    norm_val=norm_val, vis=vis)
+                            
                         
-                    
                     
                 
 
