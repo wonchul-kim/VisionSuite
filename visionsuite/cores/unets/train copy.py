@@ -16,8 +16,7 @@ output_activation='Sigmoid',
 batch_norm=False
 pool=True
 unpool=True
-deep_supervision=True
-loss_weights = [0.25, 0.25, 0.25, 0.25, 1.0]
+deep_supervision=False
 
 backbone=None
 weights='imagenet'
@@ -25,12 +24,7 @@ freeze_backbone=True
 freeze_batch_norm=True
 name='unet3plus'
                   
-model = unet_3plus_2d(input_size, n_labels, filter_num_down, 
-                      filter_num_skip=filter_num_skip, filter_num_aggregate=filter_num_aggregate, 
-                  stack_num_down=stack_num_down, stack_num_up=stack_num_up, activation=activation,
-                  batch_norm=batch_norm, pool=pool, unpool=unpool, deep_supervision=deep_supervision, 
-                  backbone=backbone, weights=weights, freeze_backbone=freeze_backbone, freeze_batch_norm=freeze_batch_norm, 
-                  name='unet3plus')
+model = unet_3plus_2d(input_size, n_labels, filter_num_down)
 
 from keras_unet_collection import losses
 
@@ -81,12 +75,6 @@ def target_data_process(target, num_classes):
 
 input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
 mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks'
-output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p'
-
-import os.path as osp
-
-if not osp.exists(output_dir):
-    os.mkdir(output_dir)
 
 sample_names = np.array(sorted(glob(input_dir + '/*.bmp')))
 label_names = np.array(sorted(glob(mask_input_dir + '/*.bmp')))
@@ -115,87 +103,63 @@ tol = 0 # current early stopping patience
 max_tol = 3 # the max-allowed early stopping patience
 min_del = 0 # the lowest acceptable loss value reduction 
 
-vis_val = True
-cnt = 0
+model.compile(loss=[hybrid_loss, hybrid_loss, hybrid_loss, hybrid_loss, hybrid_loss],
+                  loss_weights=[0.25, 0.25, 0.25, 0.25, 1.0],
+                  optimizer=keras.optimizers.Adam(learning_rate=1e-4))
 
-# 옵티마이저 정의
-optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
-
-# 손실 함수 정의 (여기서는 hybrid_loss를 사용한다고 가정)
-def compute_loss(y_true, y_pred):
-    # 필요한 손실 계산 수행
-    return hybrid_loss(y_true, y_pred)
-
-# 훈련 루프
+# loop over epoches
 for epoch in range(N_epoch):
     
-    if epoch != 0 and epoch % 9 == 0:
-        model.save(osp.join(output_dir, f'/unet3p_{epoch}.h5'))
-
+    if epoch != 0 and epoch%30 == 0:
+        model.save(f'/HDD/unet3p_{epoch}.h5')
+    
     train_loss = []
     for step in range(int(L_train/N_sample)):
         print(f"\r train {str(epoch)} ({step}/{int(L_train/N_sample)}) > {str(train_loss[-1]) if len(train_loss) != 0 else ''}", end="")
-        
-        # 데이터 준비
         ind_train_shuffle = utils.shuffle_ind(L_train)[:N_sample]
+        
+        ## augmentation is not applied
         train_input = input_data_process(
             utils.image_to_array(sample_names[ind_train][ind_train_shuffle], size=512, channel=3))
         train_target = target_data_process(
             utils.image_to_array(label_names[ind_train][ind_train_shuffle], size=512, channel=1), n_labels)
         
-        with tf.GradientTape() as tape:
-            y_pred = model([train_input], training=True)
-            if deep_supervision:
-                loss = sum([compute_loss(train_target, y_pred[i]) * loss_weight 
-                        for i, loss_weight in enumerate(loss_weights)])
-            else:
-                loss = compute_loss(train_target, y_pred)
-
-        grads = tape.gradient(loss, model.trainable_variables)
-        optimizer.apply_gradients(zip(grads, model.trainable_variables))
-        train_loss.append(loss.numpy())
-        
+        # train on batch
+        train_loss.append(model.train_on_batch([train_input,], 
+                                         [train_target, train_target, train_target, train_target, train_target,]))
         if np.isnan(train_loss[-1]):
             print("Training blow-up")
             raise Exception
 
     print('train loss: ', np.mean(train_loss))
-
-    if epoch != 0 and epoch % 3 == 0:
+       
+    # epoch-end validation
+    if epoch != 0 and epoch%10 == 0:
         val_loss = []
         for step in range(int(L_valid/N_sample)):
             print(f"\r val {str(epoch)} ({step}/{int(L_train/N_sample)}) > {str(train_loss[-1]) if len(train_loss) != 0 else ''}", end="")
-
-            valid_batch = valid_input[N_sample*step:N_sample*(step + 1)]
-            y_pred = model([valid_batch], training=False)
-            if vis_val:
-                import numpy as np
-                import imgviz 
-                import cv2
-                
-                vis_dir = osp.join(output_dir, 'vis')
-                if not osp.exists(vis_dir):
-                    os.mkdir(vis_dir)
-                
-                for batch_idx in range(len(valid_batch)):
-                    
-                    vis_img = np.zeros((512, 512*2, 3))
-                    vis_img[:, :512, :] = valid_input[N_sample*step:N_sample*(step + 1)][batch_idx]
-                    color_map = imgviz.label_colormap(50)
-                    mask = np.argmax(y_pred[-1][batch_idx], axis=-1).astype(np.uint8)
-                    mask = color_map[mask].astype(np.uint8)
-                    vis_img[:, 512:, :] = mask 
-                    
-                    cv2.imwrite(osp.join(vis_dir, f'{epoch}_{cnt}.bmp'), vis_img)
-                    cnt += 1
-                    
-            if deep_supervision:
-                loss = sum([compute_loss(valid_target, y_pred[i]) * loss_weight 
-                            for i, loss_weight in enumerate([0.25, 0.25, 0.25, 0.25, 1.0])])
-            else:
-                loss = compute_loss(valid_target, y_pred)
-            val_loss.append(loss.numpy())
-
+            y_pred = model.predict([valid_input[N_sample*step:N_sample*(step + 1)]])
+            val_loss.append(np.mean(hybrid_loss(valid_target[N_sample*step:N_sample*(step + 1)], y_pred)))
+            
         val_loss = np.mean(val_loss)
         print('val loss: ', val_loss)
-        model.save(osp.join(output_dir, f'unet3p_{epoch}__.h5'))
+        model.save(f'/HDD/unet3p_{epoch}.h5')
+            
+    
+    # # if loss is reduced
+    # if record - record_temp > min_del:
+    #     print('Validation performance is improved from {} to {}'.format(record, record_temp))
+    #     record = record_temp; # update the loss record
+    #     tol = 0; # refresh early stopping patience
+    #     # ** model checkpoint is not stored ** #
+
+    # # if loss not reduced
+    # else:
+    #     print('Validation performance {} is NOT improved'.format(record_temp))
+    #     tol += 1
+    #     if tol >= max_tol:
+    #         print('Early stopping')
+    #         break;
+    #     else:
+    #         # Pass to the next epoch
+    #         continue;

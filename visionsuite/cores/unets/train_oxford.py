@@ -111,14 +111,6 @@ model.compile(loss=[hybrid_loss, hybrid_loss, hybrid_loss, hybrid_loss, hybrid_l
 
 # loop over epoches
 for epoch in range(N_epoch):
-    
-    # # initial loss record
-    # if epoch == 0:
-    #     temp_out = model.predict([valid_input])
-    #     y_pred = temp_out[-1]
-    #     record = np.mean(hybrid_loss(valid_target, y_pred))
-    #     print('\tInitial loss = {}'.format(record))
-    
     if epoch%30 == 0:
         model.save(f'/HDD/unet3p_{epoch}.h5')
     
@@ -127,41 +119,12 @@ for epoch in range(N_epoch):
         # selecting smaples for the current batch
         ind_train_shuffle = utils.shuffle_ind(L_train)[:N_sample]
         
-        # batch data formation
-        ## augmentation is not applied
         train_input = input_data_process(
             utils.image_to_array(sample_names[ind_train][ind_train_shuffle], size=128, channel=3))
         train_target = target_data_process(
             utils.image_to_array(label_names[ind_train][ind_train_shuffle], size=128, channel=1))
         
-        # train on batch
         loss_ = model.train_on_batch([train_input,], 
                                          [train_target, train_target, train_target, train_target, train_target,])
         if np.isnan(loss_):
             print("Training blow-up")
-
-        # ** training loss is not stored ** #
-        
-    # # epoch-end validation
-    # temp_out = model.predict([valid_input])
-    # y_pred = temp_out[-1]
-    # record_temp = np.mean(hybrid_loss(valid_target, y_pred))
-    # # ** validation loss is not stored ** #
-    
-    # # if loss is reduced
-    # if record - record_temp > min_del:
-    #     print('Validation performance is improved from {} to {}'.format(record, record_temp))
-    #     record = record_temp; # update the loss record
-    #     tol = 0; # refresh early stopping patience
-    #     # ** model checkpoint is not stored ** #
-
-    # # if loss not reduced
-    # else:
-    #     print('Validation performance {} is NOT improved'.format(record_temp))
-    #     tol += 1
-    #     if tol >= max_tol:
-    #         print('Early stopping')
-    #         break;
-    #     else:
-    #         # Pass to the next epoch
-    #         continue;
