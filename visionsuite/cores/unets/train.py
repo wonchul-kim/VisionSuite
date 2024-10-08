@@ -182,7 +182,7 @@ for epoch in range(N_epoch):
                 y_pred = model([train_input], training=True)
                 if deep_supervision:
                     loss = sum([compute_loss(train_target, y_pred[i]) * loss_weight 
-                            for i, loss_weight in enumerate(loss_weights)])/len(loss_weights)
+                            for i, loss_weight in enumerate(loss_weights)])
                 else:
                     loss = compute_loss(train_target, y_pred)
                     
