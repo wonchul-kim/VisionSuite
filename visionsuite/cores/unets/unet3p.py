@@ -13,7 +13,7 @@ filter_num_aggregate = 160
 
 stack_num_down = 2
 stack_num_up = 1
-n_labels = 4
+n_labels = 3
 
 # `unet_3plus_2d_base` accepts an input tensor 
 # and produces output tensors from different upsampling levels

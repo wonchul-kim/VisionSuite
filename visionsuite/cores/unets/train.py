@@ -1,6 +1,8 @@
 # from keras_unet_collection.models import unet_3plus_2d
 from keras_unet_collection.models import unet_3plus_2d
 from tqdm import tqdm
+import os.path as osp
+
 input_size = (512, 512, 3)
 filter_num_down = [32, 64, 128, 256, 512]
 # filter_num_skip = [32, 32, 32, 32]
@@ -24,7 +26,7 @@ freeze_backbone=True
 freeze_batch_norm=True
 name='unet3plus'
 
-use_tf_api = True
+use_tf_api = False
                   
 
 from keras_unet_collection import losses
@@ -68,7 +70,7 @@ def target_data_process(target, num_classes=None, oxford=False):
     else:
         return keras.utils.to_categorical(target-1, num_classes=num_classes)
 
-oxford = False
+oxford = True
 if not oxford:
     input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
     mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks'
@@ -83,12 +85,14 @@ if not oxford:
     sample_names = np.array(sorted(glob(input_dir + '/*.bmp')))
     label_names = np.array(sorted(glob(mask_input_dir + '/*.bmp')))
 else:
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p'
+    output_dir = f'/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/oxford_{use_tf_api}'
 
     sample_names = np.array(sorted(glob('/HDD/datasets/public/Oxford_IIIT/images/*.jpg')))
     label_names = np.array(sorted(glob('/HDD/datasets/public/Oxford_IIIT/annotations/trimaps/*.png')))
     n_labels = 3
 
+if not osp.exists(output_dir):
+    os.mkdir(output_dir)
 
 # model = unet_3plus_2d(input_size, n_labels, filter_num_down, 
 #                       filter_num_skip=filter_num_skip, filter_num_aggregate=filter_num_aggregate, 
@@ -103,12 +107,18 @@ model = unet3plus
 L = len(sample_names)
 ind_all = utils.shuffle_ind(L)
 
-L_train = int(0.8*L)
-L_valid = int(0.1*L)
-L_test = int(0.1*L)
+L_train = int(0.2*L)
+L_valid = int(0.02*L)
+L_test = int(0.02*L)
 ind_train = ind_all[:L_train]
 ind_valid = ind_all[L_train:L_train+L_valid]
 ind_test = ind_all[L_train+L_valid:]
+# L_train = int(1*L)
+# L_valid = int(0.1*L)
+# L_test = int(0.1*L)
+# ind_train = ind_all[:L_train]
+# ind_valid = ind_all[L_train - L_valid:L_train]
+# ind_test = ind_all[L_train -L_valid:]
 print("Training:validation:testing = {}:{}:{}".format(L_train, L_valid, L_test))
 
 valid_input = input_data_process(utils.image_to_array(sample_names[ind_valid], size=512, channel=3))
@@ -156,17 +166,28 @@ for epoch in range(N_epoch):
                                          [train_target, train_target, train_target, train_target, train_target,])
             train_loss.append(loss)
         else:
+            # with tf.GradientTape() as tape:
+            #     y_pred = model([train_input], training=True)
+            #     if deep_supervision:
+                    
+            #         for pred in y_pred:
+            #             train_loss.append(compute_loss(train_target, pred).numpy())
+            #         weighted_loss = [train_loss[jdx] * loss_weight 
+            #                 for jdx, loss_weight in enumerate(loss_weights)]
+            #         loss = tf.math.reduce_mean(weighted_loss)
+            #     else:
+            #         loss = compute_loss(train_target, y_pred)
+                    
             with tf.GradientTape() as tape:
                 y_pred = model([train_input], training=True)
                 if deep_supervision:
                     loss = sum([compute_loss(train_target, y_pred[i]) * loss_weight 
-                            for i, loss_weight in enumerate(loss_weights)])
+                            for i, loss_weight in enumerate(loss_weights)])/len(loss_weights)
                 else:
                     loss = compute_loss(train_target, y_pred)
-
+                    
             grads = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
-            train_loss.append(loss.numpy())
         
     print('train loss: ', np.mean(train_loss))
 
@@ -193,7 +214,6 @@ for epoch in range(N_epoch):
                 val_loss.append(loss.numpy())
 
             if vis_val:
-                import os.path as osp
                 import numpy as np
                 import imgviz 
                 import cv2
