@@ -12,21 +12,21 @@ import os.path as osp
 # model_name = 'rtmdet'
 # backbone = 'large'
 
-# ######################## yolov8-obb #####################################################################
-# model_name = 'yolov8'
-# backbone = 'l'
-
-######################## yolov10-obb #####################################################################
-model_name = 'yolov10'
+######################## yolov8-obb #####################################################################
+model_name = 'yolov8'
 backbone = 'l'
 
-output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
+# ######################## yolov10-obb #####################################################################
+# model_name = 'yolov10'
+# backbone = 'l'
 
-input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
+output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}'
+
+input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
 print(class2idx)
 
-preds_json = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}/preds.json'
+preds_json = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 

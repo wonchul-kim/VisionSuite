@@ -2,6 +2,7 @@
 from keras_unet_collection.models import unet_3plus_2d
 from tqdm import tqdm
 import os.path as osp
+import random
 
 input_size = (512, 512, 3)
 filter_num_down = [32, 64, 128, 256, 512]
@@ -18,7 +19,6 @@ batch_norm=False
 pool=True
 unpool=True
 deep_supervision=True
-loss_weights = [0.25, 0.25, 0.25, 0.25, 1.0]
 
 backbone=None
 weights='imagenet'
@@ -26,7 +26,7 @@ freeze_backbone=True
 freeze_batch_norm=True
 name='unet3plus'
 
-use_tf_api = False
+use_tf_api = True
                   
 
 from keras_unet_collection import losses
@@ -70,12 +70,12 @@ def target_data_process(target, num_classes=None, oxford=False):
     else:
         return keras.utils.to_categorical(target-1, num_classes=num_classes)
 
-oxford = True
+oxford = False
 if not oxford:
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
-    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p'
-    n_labels = 4
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch_tear'
+    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_scratch_tear'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_scratch_tear'
+    n_labels = 3
 
     import os.path as osp
 
@@ -107,24 +107,26 @@ model = unet3plus
 L = len(sample_names)
 ind_all = utils.shuffle_ind(L)
 
-L_train = int(0.2*L)
-L_valid = int(0.02*L)
-L_test = int(0.02*L)
-ind_train = ind_all[:L_train]
-ind_valid = ind_all[L_train:L_train+L_valid]
-ind_test = ind_all[L_train+L_valid:]
-# L_train = int(1*L)
-# L_valid = int(0.1*L)
-# L_test = int(0.1*L)
-# ind_train = ind_all[:L_train]
-# ind_valid = ind_all[L_train - L_valid:L_train]
-# ind_test = ind_all[L_train -L_valid:]
+if oxford:
+    L_train = int(0.2*L)
+    L_valid = int(0.02*L)
+    L_test = int(0.02*L)
+    ind_train = ind_all[:L_train]
+    ind_valid = ind_all[L_train:L_train+L_valid]
+    ind_test = ind_all[L_train+L_valid:]
+else:
+    L_train = int(1*L)
+    L_valid = int(0.1*L)
+    L_test = int(0.1*L)
+    ind_train = ind_all[:L_train]
+    ind_valid = ind_all[L_train - L_valid:]
+    ind_test = ind_all[L_train -L_valid:]
 print("Training:validation:testing = {}:{}:{}".format(L_train, L_valid, L_test))
 
 valid_input = input_data_process(utils.image_to_array(sample_names[ind_valid], size=512, channel=3))
 valid_target = target_data_process(utils.image_to_array(label_names[ind_valid], size=512, channel=1), n_labels, oxford)
 
-N_epoch = 100 # number of epoches
+N_epoch = 300 # number of epoches
 N_sample = 2 # number of samples per batch
 
 tol = 0 # current early stopping patience
@@ -135,7 +137,8 @@ vis_val = True
 cnt = 0
 
 # 옵티마이저 정의
-optimizer = tf.keras.optimizers.Adam(learning_rate=1e-3)
+optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+loss_weights=[.25, .25, 0.25, 0.25, 1]
 
 # 손실 함수 정의 (여기서는 hybrid_loss를 사용한다고 가정)
 def compute_loss(y_true, y_pred):
@@ -144,27 +147,44 @@ def compute_loss(y_true, y_pred):
 
 if use_tf_api:
     model.compile(loss=[hybrid_loss, hybrid_loss, hybrid_loss, hybrid_loss, hybrid_loss],
-                  loss_weights=[0.25, 0.25, 0.25, 0.25, 1.0],
+                  loss_weights=loss_weights,
                   optimizer=optimizer)
+
+
 
 # 훈련 루프
 for epoch in range(N_epoch):
     
+    train_indexes = list(range(L_train))
+    random.shuffle(train_indexes)
+    check_train_indexes = np.zeros(len(train_indexes))
     train_loss = []
     for step in range(int(L_train/N_sample)):
         print(f"\r train {str(epoch)} ({step}/{int(L_train/N_sample)}) > {str(train_loss[-1]) if len(train_loss) != 0 else ''}", end="")
         
         # 데이터 준비
-        ind_train_shuffle = utils.shuffle_ind(L_train)[:N_sample]
+        train_index = train_indexes[step*N_sample:(step + 1)*N_sample]
+        check_train_indexes[train_index] = 1
         train_input = input_data_process(
-            utils.image_to_array(sample_names[ind_train][ind_train_shuffle], size=512, channel=3))
+            utils.image_to_array(sample_names[ind_train][train_index], size=512, channel=3))
         train_target = target_data_process(
-                utils.image_to_array(label_names[ind_train][ind_train_shuffle], size=512, channel=1), n_labels, oxford)
+                utils.image_to_array(label_names[ind_train][train_index], size=512, channel=1), n_labels, oxford)
         
         if use_tf_api:
             loss = model.train_on_batch([train_input,], 
                                          [train_target, train_target, train_target, train_target, train_target,])
             train_loss.append(loss)
+            # preds = model.predict([train_input])
+            # pred = np.argmax(preds[0], axis=-1)
+            # print('0 ', np.unique(pred))
+            # pred = np.argmax(preds[1], axis=-1)
+            # print('1 ', np.unique(pred))
+            # pred = np.argmax(preds[2], axis=-1)
+            # print('2 ', np.unique(pred))
+            # pred = np.argmax(preds[3], axis=-1)
+            # print('3 ', np.unique(pred))
+            # pred = np.argmax(preds[4], axis=-1)
+            # print('4 ', np.unique(pred))
         else:
             # with tf.GradientTape() as tape:
             #     y_pred = model([train_input], training=True)
@@ -189,6 +209,7 @@ for epoch in range(N_epoch):
             grads = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(grads, model.trainable_variables))
         
+    assert sum(check_train_indexes) == len(train_indexes)
     print('train loss: ', np.mean(train_loss))
 
     if epoch % 3 == 0:
@@ -234,7 +255,16 @@ for epoch in range(N_epoch):
                     gt = color_map[gt].astype(np.uint8)
                     vis_img[:, 512:512*2, :] = gt 
                     
+                    # mask = np.argmax(y_pred[0][batch_idx], axis=-1).astype(np.uint8)
+                    # print(np.unique(mask))
+                    # mask = np.argmax(y_pred[1][batch_idx], axis=-1).astype(np.uint8)
+                    # print(np.unique(mask))
+                    # mask = np.argmax(y_pred[2][batch_idx], axis=-1).astype(np.uint8)
+                    # print(np.unique(mask))
+                    # mask = np.argmax(y_pred[3][batch_idx], axis=-1).astype(np.uint8)
+                    # print(np.unique(mask))
                     mask = np.argmax(y_pred[-1][batch_idx], axis=-1).astype(np.uint8)
+                    # print(np.unique(mask))
                     mask = color_map[mask].astype(np.uint8)
                     vis_img[:, 512*2:, :] = mask 
                     

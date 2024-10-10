@@ -82,6 +82,6 @@ def convert_dota2yolo_obb(dota_root_path: str, save_dir: str,
 
 
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/public/dota/ship/v1_ship_'
-    output_dir = '/HDD/datasets/public/dota/ship/v1_ship_yolo'
+    input_dir = '/HDD/datasets/public/dota/ship/v2_ship'
+    output_dir = '/HDD/datasets/public/dota/ship/v2_ship_yolo'
     convert_dota2yolo_obb(input_dir, output_dir, True, 'png')

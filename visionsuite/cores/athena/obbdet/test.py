@@ -19,7 +19,7 @@ compare_mask = True
 ml_framework = 'pytorch'
 model_name='rtmdet'
 backbone = 'large'
-weights = '/HDD/_projects/benchmark/obb_detection/rich/outputs/rtmdet/outputs/OBBDETECTION/2024_09_03_18_17_32/train/weights/last.pt'
+weights = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/outputs/OBBDETECTION/2024_10_07_18_29_58/train/weights/last.pt'
 ckpt = torch.load(weights, map_location='cpu')
 model = ckpt['model']
 # model = de_parallel(model)
@@ -41,9 +41,9 @@ classes = ['BOX']
 idx2class = {idx: cls for idx, cls in enumerate(classes)}
 _classes = ['BOX']
 _idx2class = {idx: cls for idx, cls in enumerate(_classes)}
-input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-json_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
+input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
+json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
+output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}'
 
 if not osp.exists(output_dir):
     os.makedirs(output_dir)

@@ -65,7 +65,7 @@ def min_max_normalize(image_array, min_val, max_val):
 
 def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, 
                     image_ext='bmp', patch_overlap_ratio = 0.2,
-                    norm_val=None, vis=False):
+                    norm_val=None, vis=False, include_positive=True, classes_to_include=None):
 
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
@@ -113,10 +113,15 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                     for ann in anns:
                         included = False
                         label = ann['label'].lower()
+                        if classes_to_include:
+                            if label not in classes_to_include:
+                                continue
+                        
                         if label not in class2label:
                             class2label[label] = len(class2label) + 1
                         points = ann['points']
                         shape_type = ann['shape_type']
+                        
                         if shape_type == 'rectangle':
                             intersected_points = intersection(window, points)
                             
@@ -128,6 +133,8 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                     intersected_point[1] -= ymin
                                 _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
                         elif shape_type == 'polygon':
+                            if include_positive and len(points) <= 2:
+                                continue
                             intersected_points = intersected_polygon(window, points)
                             if intersected_points:
                                 included = True 
@@ -167,20 +174,22 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 if __name__ == '__main__':
         
     input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/data'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch_tear'
     modes = ['./']
+    classes_to_include = ['scratch', 'tear']
 
 
     patch_overlap_ratio = 0.2
     patch_width = 512
     patch_height = 512
     vis = True
+    include_positive = False
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None
         
     labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
-                    norm_val=norm_val, vis=vis)
+                    norm_val=norm_val, vis=vis, include_positive=include_positive, classes_to_include=classes_to_include)
                             
                         
                     

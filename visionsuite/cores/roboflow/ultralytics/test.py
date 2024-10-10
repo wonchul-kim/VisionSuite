@@ -5,20 +5,20 @@ from src.test_obb import test_obb
 
 if __name__ == '__main__':
     
-    model_name = 'yolov10'
+    model_name = 'yolov8'
     backbone = 'l'
-    weights_file = f"/HDD/_projects/benchmark/obb_detection/rich/outputs/{model_name}_obb/train/weights/best.pt"
+    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/yolov8-obb/weights/best.pt"
 
-    input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-    json_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-    output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
+    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
+    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}'
     
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
     
     compare_gt = True
-    iou_threshold = 0.7
-    conf_threshold = 0.25
+    iou_threshold = 0.25
+    conf_threshold = 0.6
     line_width = 3
     font_scale = 2
     imgsz = 768
