@@ -63,6 +63,15 @@ def get_weights(task: str, model_name: str, backbone: str,
                 raise RecursionError(f"Cannot download weights from {yolov10_url}")
         else:
             NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
+    elif model_name == 'yolov11':
+        if task == 'hbb_detection' or task == 'det':
+            weights = f'yolo11{backbone}.pt'
+        elif task == 'obb_detection':
+            weights = f'yolo11{backbone}-obb.pt'
+        elif task == 'instance_segmentation':
+            weights = f'yolo11{backbone}-seg.pt'
+        else:
+            NotImplementedError(f"There is no such weights for {model_name} and {backbone}")
     elif model_name == 'rtdetr':
         if task == 'hbb_detection':
             weights = f'{model_name}-{backbone}.pt'

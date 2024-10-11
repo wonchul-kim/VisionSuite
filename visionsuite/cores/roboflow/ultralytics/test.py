@@ -7,7 +7,7 @@ if __name__ == '__main__':
     
     model_name = 'yolov8'
     backbone = 'l'
-    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/yolov8-obb/weights/best.pt"
+    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/train/weights/best.pt"
 
     input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
     json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
@@ -17,7 +17,7 @@ if __name__ == '__main__':
         os.mkdir(output_dir)
     
     compare_gt = True
-    iou_threshold = 0.25
+    iou_threshold = 0.5
     conf_threshold = 0.6
     line_width = 3
     font_scale = 2
