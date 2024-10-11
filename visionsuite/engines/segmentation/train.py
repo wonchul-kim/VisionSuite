@@ -39,7 +39,7 @@ def get_dataset(args, is_train):
 
 def get_transform(is_train, args):
     if is_train:
-        return presets.SegmentationPresetTrain(base_size=520, crop_size=480, backend=args.backend, use_v2=args.use_v2)
+        return presets.SegmentationPresetTrain(base_size=512, crop_size=480, backend=args.backend, use_v2=args.use_v2)
     elif args.weights and args.test_only:
         weights = torchvision.models.get_weight(args.weights)
         trans = weights.transforms()
@@ -52,7 +52,7 @@ def get_transform(is_train, args):
 
         return preprocessing
     else:
-        return presets.SegmentationPresetEval(base_size=520, backend=args.backend, use_v2=args.use_v2)
+        return presets.SegmentationPresetEval(base_size=512, backend=args.backend, use_v2=args.use_v2)
 
 
 def criterion(inputs, target):
@@ -79,7 +79,8 @@ def evaluate(model, data_loader, device, num_classes):
         for image, target, filename in metric_logger.log_every(data_loader, 100, header):
             image, target = image.to(device), target.to(device)
             output = model(image)
-            output = output["out"]
+            if not isinstance(output, torch.Tensor):
+                output = output["out"]
 
             confmat.update(target.flatten(), output.argmax(1).flatten())
             # FIXME need to take into account that the datasets
@@ -149,7 +150,7 @@ def main(args):
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
         
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/unet3p'
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
         
@@ -331,7 +332,7 @@ def get_args_parser(add_help=True):
     parser.add_argument("--dataset", default="mask", type=str, help="dataset name")
     parser.add_argument("--model", default="fcn_resnet101", type=str, help="model name")
     parser.add_argument("--aux-loss", action="store_true", help="auxiliary loss")
-    parser.add_argument("--device", default="cuda:1", type=str, help="device (Use cuda or cpu Default: cuda)")
+    parser.add_argument("--device", default="cuda:0", type=str, help="device (Use cuda or cpu Default: cuda)")
     parser.add_argument(
         "-b", "--batch-size", default=1, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )

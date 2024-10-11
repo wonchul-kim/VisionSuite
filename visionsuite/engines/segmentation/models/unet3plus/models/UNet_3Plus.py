@@ -9,14 +9,14 @@ from .init_weights import init_weights
 '''
 class UNet_3Plus(nn.Module):
 
-    def __init__(self, in_channels=3, n_classes=1, feature_scale=4, is_deconv=True, is_batchnorm=True):
+    def __init__(self, in_channels=3, n_classes=1, filters=[64, 128, 256, 512, 1024], feature_scale=4, is_deconv=True, is_batchnorm=True):
         super(UNet_3Plus, self).__init__()
         self.is_deconv = is_deconv
         self.in_channels = in_channels
         self.is_batchnorm = is_batchnorm
         self.feature_scale = feature_scale
 
-        filters = [64, 128, 256, 512, 1024]
+        
 
         ## -------------Encoder--------------
         self.conv1 = unetConv2(self.in_channels, filters[0], self.is_batchnorm)
