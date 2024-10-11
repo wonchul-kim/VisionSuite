@@ -40,7 +40,7 @@ print(class2idx)
 # detections = _detections
 # ground_truths = _ground_truths
 
-iou_threshold = 0.1
+iou_threshold = 0.5
 classes = class2idx.values()
 idx2class = {idx: _class for _class, idx in class2idx.items()}
 

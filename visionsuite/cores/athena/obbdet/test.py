@@ -19,7 +19,7 @@ compare_mask = True
 ml_framework = 'pytorch'
 model_name='rtmdet'
 backbone = 'large'
-weights = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/outputs/OBBDETECTION/2024_10_07_18_29_58/train/weights/last.pt'
+weights = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/outputs/OBBDETECTION/2024_10_07_18_29_58/train/weights/epoch_415.pt'
 ckpt = torch.load(weights, map_location='cpu')
 model = ckpt['model']
 # model = de_parallel(model)

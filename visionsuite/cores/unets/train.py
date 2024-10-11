@@ -33,8 +33,8 @@ use_tf_api = True
 from keras_unet_collection import losses
 
 def hybrid_loss(y_true, y_pred):
-    # loss_focal = losses.focal_tversky(y_true, y_pred, alpha=0.5, gamma=4/3)
-    loss_focal = losses.dice(y_true, y_pred, alpha=0.5, )
+    loss_focal = losses.focal_tversky(y_true, y_pred, alpha=0.5, gamma=4/3)
+    # loss_focal = losses.dice(y_true, y_pred, alpha=0.5, )
     loss_iou = losses.iou_seg(y_true, y_pred)
     
     # (x) 
@@ -45,7 +45,7 @@ def hybrid_loss(y_true, y_pred):
 from glob import glob
 import numpy as np
 import os
-os.environ["CUDA_VISIBLE_DEVICES"] = "0,1"  
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"  
 
 import tensorflow as tf 
 print("Num GPUs Available: ", len(tf.config.list_physical_devices('GPU')))
@@ -74,10 +74,10 @@ def target_data_process(target, num_classes=None, oxford=False):
 
 oxford = False
 if not oxford:
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_tear_stabbed'
-    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_tear_stabbed'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_tear_stabbed_'
-    n_labels = 3
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch'
+    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_scratch'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_scratch_'
+    n_labels = 2
 
     import os.path as osp
 

@@ -57,8 +57,11 @@ def get_transform(is_train, args):
 
 def criterion(inputs, target):
     losses = {}
-    for name, x in inputs.items():
-        losses[name] = nn.functional.cross_entropy(x, target, ignore_index=255)
+    if isinstance(inputs, torch.Tensor):
+        losses['out'] = nn.functional.cross_entropy(inputs, target, ignore_index=255)
+    else:
+        for name, x in inputs.items():
+            losses[name] = nn.functional.cross_entropy(x, target, ignore_index=255)
 
     if len(losses) == 1:
         return losses["out"]
@@ -110,7 +113,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, devi
     for image, target, filename in metric_logger.log_every(data_loader, print_freq, header):
         image, target = image.to(device), target.to(device)
         with torch.cuda.amp.autocast(enabled=scaler is not None):
-            output = model(image)
+            output = model(image) # 'out': (bs num_classes(including bg) h w)
             loss = criterion(output, target)
 
         optimizer.zero_grad()
@@ -194,13 +197,31 @@ def main(args):
         dataset_test, batch_size=1, sampler=test_sampler, num_workers=args.workers, collate_fn=utils.collate_fn
     )
 
-    model = torchvision.models.get_model(
-        args.model,
-        weights=args.weights,
-        weights_backbone=args.weights_backbone,
-        num_classes=num_classes,
-        aux_loss=args.aux_loss,
-    )
+    #### model -----------------------------------------------------------------------------
+    # model = torchvision.models.get_model(
+    #     args.model,
+    #     weights=args.weights,
+    #     weights_backbone=args.weights_backbone,
+    #     num_classes=num_classes,
+    #     aux_loss=args.aux_loss,
+    # )
+    # model_without_ddp = model
+    # if args.distributed:
+    #     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
+    #     model_without_ddp = model.module
+
+    # params_to_optimize = [
+    #     {"params": [p for p in model_without_ddp.backbone.parameters() if p.requires_grad]},
+    #     {"params": [p for p in model_without_ddp.classifier.parameters() if p.requires_grad]},
+    # ]
+    # if args.aux_loss:
+    #     params = [p for p in model_without_ddp.aux_classifier.parameters() if p.requires_grad]
+    #     params_to_optimize.append({"params": params, "lr": args.lr * 10})
+        
+        
+    from models.unet3plus.models.UNet_3Plus import UNet_3Plus
+    model = UNet_3Plus(n_classes=num_classes)
+    
     model.to(device)
     if args.distributed:
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
@@ -211,12 +232,11 @@ def main(args):
         model_without_ddp = model.module
 
     params_to_optimize = [
-        {"params": [p for p in model_without_ddp.backbone.parameters() if p.requires_grad]},
-        {"params": [p for p in model_without_ddp.classifier.parameters() if p.requires_grad]},
+        {"params": [p for p in model_without_ddp.parameters() if p.requires_grad]},
     ]
-    if args.aux_loss:
-        params = [p for p in model_without_ddp.aux_classifier.parameters() if p.requires_grad]
-        params_to_optimize.append({"params": params, "lr": args.lr * 10})
+    
+    #### ================================================================================
+        
     optimizer = torch.optim.SGD(params_to_optimize, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
 
     scaler = torch.cuda.amp.GradScaler() if args.amp else None
@@ -313,7 +333,7 @@ def get_args_parser(add_help=True):
     parser.add_argument("--aux-loss", action="store_true", help="auxiliary loss")
     parser.add_argument("--device", default="cuda:1", type=str, help="device (Use cuda or cpu Default: cuda)")
     parser.add_argument(
-        "-b", "--batch-size", default=2, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
+        "-b", "--batch-size", default=1, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
     parser.add_argument("--epochs", default=30, type=int, metavar="N", help="number of total epochs to run")
 
