@@ -3,6 +3,7 @@ from keras_unet_collection.models import unet_3plus_2d
 from tqdm import tqdm
 import os.path as osp
 import random
+import matplotlib.pyplot as plt
 
 input_size = (512, 512, 3)
 filter_num_down = [32, 64, 128, 256, 512]
@@ -32,7 +33,8 @@ use_tf_api = True
 from keras_unet_collection import losses
 
 def hybrid_loss(y_true, y_pred):
-    loss_focal = losses.focal_tversky(y_true, y_pred, alpha=0.5, gamma=4/3)
+    # loss_focal = losses.focal_tversky(y_true, y_pred, alpha=0.5, gamma=4/3)
+    loss_focal = losses.dice(y_true, y_pred, alpha=0.5, )
     loss_iou = losses.iou_seg(y_true, y_pred)
     
     # (x) 
@@ -72,10 +74,10 @@ def target_data_process(target, num_classes=None, oxford=False):
 
 oxford = False
 if not oxford:
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch'
-    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_scratch'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_scratch'
-    n_labels = 2
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_tear_stabbed'
+    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_tear_stabbed'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_tear_stabbed_'
+    n_labels = 3
 
     import os.path as osp
 
@@ -137,7 +139,7 @@ vis_val = True
 cnt = 0
 
 # 옵티마이저 정의
-optimizer = tf.keras.optimizers.Adam(learning_rate=1e-4)
+optimizer = tf.keras.optimizers.Adam(learning_rate=1e-5)
 loss_weights=[.25, .25, 0.25, 0.25, 1]
 
 # 손실 함수 정의 (여기서는 hybrid_loss를 사용한다고 가정)
@@ -153,6 +155,7 @@ if use_tf_api:
 
 
 # 훈련 루프
+total_train_losses, total_val_losses = [], []
 for epoch in range(N_epoch):
     
     train_indexes = list(range(L_train))
@@ -211,6 +214,7 @@ for epoch in range(N_epoch):
         
     assert sum(check_train_indexes) == len(train_indexes)
     print('train loss: ', np.mean(train_loss))
+    total_train_losses.append(np.mean(train_loss))
 
     if epoch % 3 == 0:
     # if True:
@@ -222,7 +226,7 @@ for epoch in range(N_epoch):
             target_batch = valid_target[N_sample*step:N_sample*(step + 1)]
             
             if use_tf_api:
-                y_pred = model.predict([valid_batch])
+                y_pred = model.predict([valid_batch], verbose=False)
                 if deep_supervision:
                     val_loss.append(np.mean(hybrid_loss(target_batch, y_pred[-1])))
             else:
@@ -273,4 +277,27 @@ for epoch in range(N_epoch):
 
         val_loss = np.mean(val_loss)
         print('val loss: ', val_loss)
+        total_val_losses.append(val_loss)
         model.save(osp.join(output_dir, f'unet3p_{epoch}__.h5'))
+
+
+    f = open(osp.join(output_dir, 'train_loss.txt'), 'w')
+    for _train_loss in total_train_losses:
+        f.write(str(_train_loss))
+        f.write('\n')
+        
+    f = open(osp.join(output_dir, 'val_loss.txt'), 'w')
+    for _val_loss in total_val_losses:
+        f.write(str(_val_loss))
+        f.write('\n')
+        
+    fig = plt.figure()
+    plt.plot(total_train_losses)
+    plt.savefig(osp.join(output_dir, 'train_loss.jpg'))
+    plt.close()
+    fig = plt.figure()
+    plt.plot(total_val_losses)
+    plt.savefig(osp.join(output_dir, 'val_loss.jpg'))
+    plt.close()
+        
+        

@@ -97,7 +97,7 @@ def crps2d_np(y_true, y_pred, factor=0.05):
 # ========================= #
 # Dice loss and variants
 
-def dice_coef(y_true, y_pred, const=K.epsilon()):
+def dice_coef(y_true, y_pred, alpha=0., const=K.epsilon()):
     '''
     Sørensen–Dice coefficient for 2-d samples.
     
@@ -118,11 +118,15 @@ def dice_coef(y_true, y_pred, const=K.epsilon()):
     false_pos = tf.reduce_sum((1-y_true_pos) * y_pred_pos)
     
     # 2TP/(2TP+FP+FN) == 2TP/()
-    coef_val = (2.0 * true_pos + const)/(2.0 * true_pos + false_pos + false_neg)
+    if alpha == 0:
+        coef_val = (2.0 * true_pos + const)/(2.0 * true_pos + false_pos + false_neg)
+    else:
+        coef_val = (2.0*true_pos + const)/(2.0*true_pos + alpha*false_neg + (1-alpha)*false_pos + const)
+
     
     return coef_val
 
-def dice(y_true, y_pred, const=K.epsilon()):
+def dice(y_true, y_pred, alpha=0., const=K.epsilon()):
     '''
     Sørensen–Dice Loss.
     
@@ -141,7 +145,7 @@ def dice(y_true, y_pred, const=K.epsilon()):
     y_pred = tf.squeeze(y_pred)
     y_true = tf.squeeze(y_true)
     
-    loss_val = 1 - dice_coef(y_true, y_pred, const=const)
+    loss_val = 1 - dice_coef(y_true, y_pred, alpha=alpha, const=const)
     
     return loss_val
 

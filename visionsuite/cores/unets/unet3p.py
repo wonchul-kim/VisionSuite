@@ -13,7 +13,7 @@ filter_num_aggregate = 160
 
 stack_num_down = 2
 stack_num_up = 1
-n_labels = 2
+n_labels = 3
 weights = 'imagenet'
 backbone = 'EfficientNetB0'
 
