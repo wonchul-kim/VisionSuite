@@ -294,11 +294,11 @@ def main(args):
         confmat = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
         
         from vis.vis_val import save_validation
-        vis_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3/vis'
+        vis_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/unet3p/vis'
         if not osp.exists(vis_dir):
             os.mkdir(vis_dir)
             
-        vis_dir = f'/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3/vis/{epoch}'
+        vis_dir = f'/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/unet3p/vis/{epoch}'
         if not osp.exists(vis_dir):
             os.mkdir(vis_dir)
         
