@@ -53,12 +53,14 @@ def labelme2mask(input_dir, output_dir, modes, class2label, width=None, height=N
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch_tear'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_scratch_tear'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_tear_stabbed'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_tear_stabbed'
     modes = ['./']
     # class2label = {'tear': 1}
-    class2label = {'scratch': 1, 'tear': 2}
+    # class2label = {'scratch': 1}
+    # class2label = {'scratch': 1, 'tear': 2}
     # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
+    class2label = {'tear': 1, 'stabbed': 2}
     width, height = 512, 512
     vis = True
 

@@ -72,10 +72,10 @@ def target_data_process(target, num_classes=None, oxford=False):
 
 oxford = False
 if not oxford:
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch_tear'
-    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_scratch_tear'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_scratch_tear'
-    n_labels = 3
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch'
+    mask_input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_scratch'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/unet3p_scratch'
+    n_labels = 2
 
     import os.path as osp
 

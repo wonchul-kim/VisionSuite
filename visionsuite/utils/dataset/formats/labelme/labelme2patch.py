@@ -174,9 +174,9 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 if __name__ == '__main__':
         
     input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/data'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_scratch_tear'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_tear_stabbed'
     modes = ['./']
-    classes_to_include = ['scratch', 'tear']
+    classes_to_include = ['tear', 'stabbed']
 
 
     patch_overlap_ratio = 0.2

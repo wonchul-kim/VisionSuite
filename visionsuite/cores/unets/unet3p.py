@@ -13,7 +13,9 @@ filter_num_aggregate = 160
 
 stack_num_down = 2
 stack_num_up = 1
-n_labels = 3
+n_labels = 2
+weights = 'imagenet'
+backbone = 'EfficientNetB0'
 
 # `unet_3plus_2d_base` accepts an input tensor 
 # and produces output tensors from different upsampling levels
@@ -23,7 +25,7 @@ input_tensor = keras.layers.Input((512, 512, 3))
 X_decoder = base.unet_3plus_2d_base(
     input_tensor, filter_num_down, filter_num_skip, filter_num_aggregate, 
     stack_num_down=stack_num_down, stack_num_up=stack_num_up, activation=activation, 
-    batch_norm=True, pool=True, unpool=True, backbone=None, name=name)
+    batch_norm=True, pool=True, unpool=True, backbone=backbone, weights=weights, name=name)
 
 
 
