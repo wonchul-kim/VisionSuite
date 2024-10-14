@@ -7,18 +7,18 @@ if __name__ == '__main__':
     
     model_name = 'yolov8'
     backbone = 'l'
-    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/train/weights/best.pt"
+    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/train2/weights/best.pt"
 
-    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
-    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
-    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_doosan/val'
+    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_doosan/val'
+    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/doosan_yolo/{model_name}_{backbone}'
     
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
     
     compare_gt = True
-    iou_threshold = 0.5
-    conf_threshold = 0.6
+    iou_threshold = 0.9
+    conf_threshold = 0.3
     line_width = 3
     font_scale = 2
     imgsz = 768

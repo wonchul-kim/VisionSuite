@@ -13,20 +13,20 @@ import os.path as osp
 # backbone = 'large'
 
 ######################## yolov8-obb #####################################################################
-model_name = 'yolov8'
+model_name = 'yolov11'
 backbone = 'l'
 
 # ######################## yolov10-obb #####################################################################
 # model_name = 'yolov10'
 # backbone = 'l'
 
-output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}'
+output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich/{model_name}_{backbone}'
 
 input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
 print(class2idx)
 
-preds_json = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/{model_name}_{backbone}/preds.json'
+preds_json = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich/{model_name}_{backbone}/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 

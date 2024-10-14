@@ -28,7 +28,7 @@ def get_dataset(args, is_train):
         "voc": (args.data_path, voc, 21),
         "voc_aug": (args.data_path, sbd, 21),
         "coco": (args.data_path, get_coco, 21),
-        "mask": (args.data_path, get_mask, 2),
+        "mask": (args.data_path, get_mask, 3),
     }
     p, ds_fn, num_classes = paths[args.dataset]
 
@@ -146,15 +146,6 @@ def denormalize(x, mean=MEAN, std=STD):
 def main(args):
     import os.path as osp 
     
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs'
-    if not osp.exists(output_dir):
-        os.mkdir(output_dir)
-        
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/unet3p'
-    if not osp.exists(output_dir):
-        os.mkdir(output_dir)
-        
-    
     if args.backend.lower() != "pil" and not args.use_v2:
         # TODO: Support tensor backend in V1?
         raise ValueError("Use --use-v2 if you want to use the tv_tensor or tensor backend.")
@@ -199,46 +190,51 @@ def main(args):
     )
 
     #### model -----------------------------------------------------------------------------
-    # model = torchvision.models.get_model(
-    #     args.model,
-    #     weights=args.weights,
-    #     weights_backbone=args.weights_backbone,
-    #     num_classes=num_classes,
-    #     aux_loss=args.aux_loss,
-    # )
+    model = torchvision.models.get_model(
+        args.model,
+        weights=args.weights,
+        weights_backbone=args.weights_backbone,
+        num_classes=num_classes,
+        aux_loss=args.aux_loss,
+    )
+    model_without_ddp = model
+    if args.distributed:
+        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
+        model_without_ddp = model.module
+    model_without_ddp.to(device)
+    params_to_optimize = [
+        {"params": [p for p in model_without_ddp.backbone.parameters() if p.requires_grad]},
+        {"params": [p for p in model_without_ddp.classifier.parameters() if p.requires_grad]},
+    ]
+    if args.aux_loss:
+        params = [p for p in model_without_ddp.aux_classifier.parameters() if p.requires_grad]
+        params_to_optimize.append({"params": params, "lr": args.lr * 10})
+        
+        
+    # from models.unet3plus.models.UNet_3Plus import UNet_3Plus
+    # model = UNet_3Plus(n_classes=num_classes)
+    
+    # model.to(device)
+    # if args.distributed:
+    #     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
+
     # model_without_ddp = model
     # if args.distributed:
     #     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
     #     model_without_ddp = model.module
 
     # params_to_optimize = [
-    #     {"params": [p for p in model_without_ddp.backbone.parameters() if p.requires_grad]},
-    #     {"params": [p for p in model_without_ddp.classifier.parameters() if p.requires_grad]},
+    #     {"params": [p for p in model_without_ddp.parameters() if p.requires_grad]},
     # ]
-    # if args.aux_loss:
-    #     params = [p for p in model_without_ddp.aux_classifier.parameters() if p.requires_grad]
-    #     params_to_optimize.append({"params": params, "lr": args.lr * 10})
-        
-        
-    from models.unet3plus.models.UNet_3Plus import UNet_3Plus
-    model = UNet_3Plus(n_classes=num_classes)
-    
-    model.to(device)
-    if args.distributed:
-        model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-
-    model_without_ddp = model
-    if args.distributed:
-        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-        model_without_ddp = model.module
-
-    params_to_optimize = [
-        {"params": [p for p in model_without_ddp.parameters() if p.requires_grad]},
-    ]
     
     #### ================================================================================
-        
-    optimizer = torch.optim.SGD(params_to_optimize, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    
+    if args.optimizer == 'Adam':
+        optimizer = torch.optim.Adam(params_to_optimize, lr=args.lr)
+    elif args.optimizer == 'SGD':
+        optimizer = torch.optim.Adam(params_to_optimize, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+    else:
+        raise NotImplementedError(f"There is no such optimizer: {args.optimizer}")
 
     scaler = torch.cuda.amp.GradScaler() if args.amp else None
 
@@ -294,13 +290,9 @@ def main(args):
         confmat = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
         
         from vis.vis_val import save_validation
-        vis_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/unet3p/vis'
+        vis_dir = osp.join(args.output_dir, f'vis/{epoch}')
         if not osp.exists(vis_dir):
-            os.mkdir(vis_dir)
-            
-        vis_dir = f'/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/unet3p/vis/{epoch}'
-        if not osp.exists(vis_dir):
-            os.mkdir(vis_dir)
+            os.makedirs(vis_dir)
         
         save_validation(model, device, dataset_test, 4, epoch, vis_dir, denormalize)
         print(confmat)
@@ -326,17 +318,23 @@ def get_args_parser(add_help=True):
 
     parser = argparse.ArgumentParser(description="PyTorch Segmentation Training", add_help=add_help)
 
+    parser.add_argument("--optimizer", default="Adam", type=str)
+
+
+
+
+    parser.add_argument("--output-dir", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_tear_stabbed", type=str)
     # parser.add_argument("--data-path", default="/HDD/datasets/public/coco", type=str, help="dataset path")
     # parser.add_argument("--dataset", default="coco", type=str, help="dataset name")
-    parser.add_argument("--data-path", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/scratch", type=str, help="dataset path")
+    parser.add_argument("--data-path", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/tear_stabbed", type=str, help="dataset path")
     parser.add_argument("--dataset", default="mask", type=str, help="dataset name")
-    parser.add_argument("--model", default="fcn_resnet101", type=str, help="model name")
+    parser.add_argument("--model", default="fcn_resnet50", type=str, help="model name")
     parser.add_argument("--aux-loss", action="store_true", help="auxiliary loss")
     parser.add_argument("--device", default="cuda:0", type=str, help="device (Use cuda or cpu Default: cuda)")
     parser.add_argument(
         "-b", "--batch-size", default=1, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
-    parser.add_argument("--epochs", default=30, type=int, metavar="N", help="number of total epochs to run")
+    parser.add_argument("--epochs", default=100, type=int, metavar="N", help="number of total epochs to run")
 
     parser.add_argument(
         "-j", "--workers", default=16, type=int, metavar="N", help="number of data loading workers (default: 16)"
@@ -356,7 +354,6 @@ def get_args_parser(add_help=True):
     parser.add_argument("--lr-warmup-method", default="linear", type=str, help="the warmup method (default: linear)")
     parser.add_argument("--lr-warmup-decay", default=0.01, type=float, help="the decay for lr")
     parser.add_argument("--print-freq", default=10, type=int, help="print frequency")
-    parser.add_argument("--output-dir", default=".", type=str, help="path to save outputs")
     parser.add_argument("--resume", default="", type=str, help="path of checkpoint")
     parser.add_argument("--start-epoch", default=0, type=int, metavar="N", help="start epoch")
     parser.add_argument(

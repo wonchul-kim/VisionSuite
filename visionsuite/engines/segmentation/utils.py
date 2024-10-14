@@ -203,7 +203,13 @@ def cat_list(images, fill_value=0):
 
 
 def collate_fn(batch):
-    images, targets, filenames = list(zip(*batch))
+    if len(*batch) == 2:
+        images, targets = list(zip(*batch))
+    elif len(*batch) == 3:
+        images, targets, filenames = list(zip(*batch))
+    else:
+        raise RuntimeError(f"You need to add output arguments at dataset. There are {len(*batch)} outputs")
+
     batched_imgs = cat_list(images, fill_value=0)
     batched_targets = cat_list(targets, fill_value=255)
     return batched_imgs, batched_targets, filenames

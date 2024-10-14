@@ -206,7 +206,9 @@ def update_ap_by_image(results_by_image):
             overall_by_class[key]['fn'] = np.sum(overall_by_class[key]['fn'])
             overall_by_class[key]['tn'] = np.sum(overall_by_class[key]['tn'])
             overall_by_class[key]['total_gt'] = np.sum(overall_by_class[key]['total_gt'])
+            overall_by_class[key]['stdiou'] = np.std(overall_by_class[key]['miou'])
             overall_by_class[key]['miou'] = np.mean(overall_by_class[key]['miou'])
+            overall_by_class[key]['std_coord_diff'] = np.std(overall_by_class[key]['mean_coord_diff'])
             overall_by_class[key]['mean_coord_diff'] = np.mean(overall_by_class[key]['mean_coord_diff'])
                 
     results_by_image['overall'] = overall_by_class
