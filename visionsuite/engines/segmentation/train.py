@@ -13,7 +13,7 @@ from mask_dataset import get_mask
 from torch import nn
 from torch.optim.lr_scheduler import PolynomialLR
 from torchvision.transforms import functional as F, InterpolationMode
-
+from datetime import datetime
 
 def get_dataset(args, is_train):
     def sbd(*args, **kwargs):
@@ -103,7 +103,7 @@ def evaluate(model, data_loader, device, num_classes):
             "Setting the world size to 1 is always a safe bet."
         )
 
-    return confmat
+    return confmat, metric_logger
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, print_freq, scaler=None):
@@ -129,6 +129,8 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, devi
         lr_scheduler.step()
 
         metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
+        
+    return metric_logger
 
 import numpy as np
 
@@ -152,6 +154,15 @@ def main(args):
     if args.use_v2 and args.dataset != "coco":
         raise ValueError("v2 is only support supported for coco dataset for now.")
 
+    args.device_ids = list(map(int, args.device_ids.split(",")))
+
+    now = datetime.now()
+    hour = now.hour
+    minute = now.minute
+    second = now.second
+    
+    args.output_dir += f'_{args.model}_{hour}_{minute}_{second}'
+    
     if args.output_dir:
         utils.mkdir(args.output_dir)
 
@@ -197,11 +208,18 @@ def main(args):
         num_classes=num_classes,
         aux_loss=args.aux_loss,
     )
-    model_without_ddp = model
+    model.to(device)
     if args.distributed:
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
         model_without_ddp = model.module
-    model_without_ddp.to(device)
+    else:
+        if torch.cuda.device_count() > 1 and len(args.device_ids) > 1:
+            model = nn.DataParallel(model, device_ids=args.device_ids, 
+                                    output_device=args.device_ids[0])
+            model_without_ddp = model.module
+        else:
+            model_without_ddp = model
+        
     params_to_optimize = [
         {"params": [p for p in model_without_ddp.backbone.parameters() if p.requires_grad]},
         {"params": [p for p in model_without_ddp.classifier.parameters() if p.requires_grad]},
@@ -232,7 +250,7 @@ def main(args):
     if args.optimizer == 'Adam':
         optimizer = torch.optim.Adam(params_to_optimize, lr=args.lr)
     elif args.optimizer == 'SGD':
-        optimizer = torch.optim.Adam(params_to_optimize, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
+        optimizer = torch.optim.SGD(params_to_optimize, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
     else:
         raise NotImplementedError(f"There is no such optimizer: {args.optimizer}")
 
@@ -283,11 +301,16 @@ def main(args):
         return
 
     start_time = time.time()
+    lrs, losses, acces, ious = [], [], {}, {}
+    import matplotlib.pyplot as plt 
+    import seaborn as sns
+    sns.set_style('darkgrid')
+
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, args.print_freq, scaler)
-        confmat = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
+        train_metric_logger = train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, args.print_freq, scaler)
+        confmat, val_metric_logger = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
         
         from vis.vis_val import save_validation
         vis_dir = osp.join(args.output_dir, f'vis/{epoch}')
@@ -296,6 +319,19 @@ def main(args):
         
         save_validation(model, device, dataset_test, 4, epoch, vis_dir, denormalize)
         print(confmat)
+        
+        lrs.append(train_metric_logger.meters['lr'].value)
+        losses.append(train_metric_logger.meters['loss'].avg)
+        for key, val in confmat.values.items():
+            if 'acc' in key:
+                if key not in acces:
+                    acces[key] = []
+                acces[key].append(val)
+            if 'iou' in key:
+                if key not in ious:
+                    ious[key] = []
+                ious[key].append(val)
+
         checkpoint = {
             "model": model_without_ddp.state_dict(),
             "optimizer": optimizer.state_dict(),
@@ -308,6 +344,30 @@ def main(args):
         utils.save_on_master(checkpoint, os.path.join(args.output_dir, f"model_{epoch}.pth"))
         utils.save_on_master(checkpoint, os.path.join(args.output_dir, "checkpoint.pth"))
 
+        logs_dir = osp.join(args.output_dir, 'logs')
+        if not osp.exists(logs_dir):
+            os.makedirs(logs_dir)
+        fig = plt.figure()
+        plt.plot(lrs)
+        fig.savefig(osp.join(logs_dir, 'lrs.jpg'))
+        plt.close()
+        fig = plt.figure()
+        plt.plot(losses)
+        fig.savefig(osp.join(logs_dir, 'losses.jpg'))
+        plt.close()
+        fig = plt.figure()
+        for key, val in acces.items():
+            plt.plot(val, label=key)
+        plt.legend()
+        fig.savefig(osp.join(logs_dir, 'acces.jpg'))
+        plt.close()
+        fig = plt.figure()
+        for key, val in ious.items():
+            plt.plot(val, label=key)
+        plt.legend()
+        fig.savefig(osp.join(logs_dir, 'ious.jpg'))
+        plt.close()
+
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     print(f"Training time {total_time_str}")
@@ -318,21 +378,19 @@ def get_args_parser(add_help=True):
 
     parser = argparse.ArgumentParser(description="PyTorch Segmentation Training", add_help=add_help)
 
-    parser.add_argument("--optimizer", default="Adam", type=str)
-
-
-
-
+    parser.add_argument("--optimizer", default="SGD", type=str)
     parser.add_argument("--output-dir", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_tear_stabbed", type=str)
     # parser.add_argument("--data-path", default="/HDD/datasets/public/coco", type=str, help="dataset path")
     # parser.add_argument("--dataset", default="coco", type=str, help="dataset name")
     parser.add_argument("--data-path", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/tear_stabbed", type=str, help="dataset path")
     parser.add_argument("--dataset", default="mask", type=str, help="dataset name")
-    parser.add_argument("--model", default="fcn_resnet50", type=str, help="model name")
+    parser.add_argument("--model", default="deeplabv3_resnet50", type=str, help="model name")
     parser.add_argument("--aux-loss", action="store_true", help="auxiliary loss")
-    parser.add_argument("--device", default="cuda:0", type=str, help="device (Use cuda or cpu Default: cuda)")
+    parser.add_argument("--device-ids", default="0,1", type=str, help="device (Use cuda or cpu Default: cuda)")
+
+    parser.add_argument("--device", default="cuda", type=str, help="device (Use cuda or cpu Default: cuda)")
     parser.add_argument(
-        "-b", "--batch-size", default=1, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
+        "-b", "--batch-size", default=4, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
     parser.add_argument("--epochs", default=100, type=int, metavar="N", help="number of total epochs to run")
 
@@ -370,7 +428,7 @@ def get_args_parser(add_help=True):
     parser.add_argument("--dist-url", default="env://", type=str, help="url used to set up distributed training")
 
     parser.add_argument("--weights", default=None, type=str, help="the weights enum name to load")
-    parser.add_argument("--weights-backbone", default=None, type=str, help="the backbone weights enum name to load")
+    parser.add_argument("--weights-backbone", default='ResNet50_Weights.IMAGENET1K_V1', type=str, help="the backbone weights enum name to load")
 
     # Mixed precision training parameters
     parser.add_argument("--amp", action="store_true", help="Use torch.cuda.amp for mixed precision training")

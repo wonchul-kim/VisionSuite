@@ -67,6 +67,7 @@ class ConfusionMatrix:
     def __init__(self, num_classes):
         self.num_classes = num_classes
         self.mat = None
+        self.values = {}
 
     def update(self, a, b):
         n = self.num_classes
@@ -85,7 +86,17 @@ class ConfusionMatrix:
         acc_global = torch.diag(h).sum() / h.sum()
         acc = torch.diag(h) / h.sum(1)
         iu = torch.diag(h) / (h.sum(1) + h.sum(0) - torch.diag(h))
+        
+        self.update_values(acc_global, acc, iu)
+        
         return acc_global, acc, iu
+
+    def update_values(self, acc_global, acc, iu):
+        self.values.update({"acc_global": acc_global.item()*100})
+        self.values.update({ f"{idx}_acc": _acc for idx, _acc in enumerate((acc * 100).tolist())})
+        self.values.update({ f"{idx}_iou": _iou for idx, _iou in enumerate((iu * 100).tolist())})
+        self.values.update({"mean IoU": iu.mean().item() * 100})
+
 
     def reduce_from_all_processes(self):
         self.mat = reduce_across_processes(self.mat).to(torch.int64)
@@ -203,13 +214,14 @@ def cat_list(images, fill_value=0):
 
 
 def collate_fn(batch):
-    if len(*batch) == 2:
-        images, targets = list(zip(*batch))
-    elif len(*batch) == 3:
-        images, targets, filenames = list(zip(*batch))
-    else:
-        raise RuntimeError(f"You need to add output arguments at dataset. There are {len(*batch)} outputs")
-
+    # if len(*batch) == 2:
+    #     images, targets = list(zip(*batch))
+    # elif len(*batch) == 3:
+    #     images, targets, filenames = list(zip(*batch))
+    # else:
+    #     raise RuntimeError(f"You need to add output arguments at dataset. There are {len(*batch)} outputs")
+    images, targets, filenames = list(zip(*batch))
+    
     batched_imgs = cat_list(images, fill_value=0)
     batched_targets = cat_list(targets, fill_value=255)
     return batched_imgs, batched_targets, filenames
@@ -270,6 +282,7 @@ def save_on_master(*args, **kwargs):
 
 def init_distributed_mode(args):
     if "RANK" in os.environ and "WORLD_SIZE" in os.environ:
+        print(">>> case 1")
         args.rank = int(os.environ["RANK"])
         args.world_size = int(os.environ["WORLD_SIZE"])
         args.gpu = int(os.environ["LOCAL_RANK"])
@@ -277,6 +290,7 @@ def init_distributed_mode(args):
     #     args.rank = int(os.environ["SLURM_PROCID"])
     #     args.gpu = args.rank % torch.cuda.device_count()
     elif hasattr(args, "rank"):
+        print(">>> case 2")
         pass
     else:
         print("Not using distributed mode")
