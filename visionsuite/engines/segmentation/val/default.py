@@ -1,8 +1,8 @@
 import torch
 import warnings
-import visionsuite.engines.utils.torch_utils as torch_utils
 from visionsuite.engines.segmentation.metrics.confusion_matrix import ConfusionMatrix
 from visionsuite.engines.utils.metric_logger import MetricLogger
+from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 
 def evaluate(model, data_loader, device, num_classes):
     model.eval()
@@ -24,7 +24,7 @@ def evaluate(model, data_loader, device, num_classes):
 
         confmat.reduce_from_all_processes()
 
-    num_processed_samples = torch_utils.reduce_across_processes(num_processed_samples)
+    num_processed_samples = reduce_across_processes(num_processed_samples)
     if (
         hasattr(data_loader.dataset, "__len__")
         and len(data_loader.dataset) != num_processed_samples

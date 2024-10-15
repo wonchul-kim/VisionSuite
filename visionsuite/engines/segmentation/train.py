@@ -14,7 +14,7 @@ from visionsuite.engines.segmentation.datasets.default import get_dataset
 from visionsuite.engines.segmentation.dataloaders.default import get_dataloader
 from visionsuite.engines.segmentation.losses.default import criterion
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
-from visionsuite.engines.utils.torch_utils.utils import set_torch_deterministic, get_device
+from visionsuite.engines.utils.torch_utils.utils import set_torch_deterministic, get_device, save_on_master
 from visionsuite.engines.utils.helpers import mkdir
 
 import numpy as np
@@ -92,72 +92,6 @@ def main(args):
     import matplotlib.pyplot as plt 
     import seaborn as sns
     sns.set_style('darkgrid')
-
-    for epoch in range(args.start_epoch, args.epochs):
-        if args.distributed:
-            train_sampler.set_epoch(epoch)
-        train_metric_logger = train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, args.print_freq, scaler)
-        confmat, val_metric_logger = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
-        
-        from vis.vis_val import save_validation
-        vis_dir = osp.join(args.output_dir, f'vis/{epoch}')
-        if not osp.exists(vis_dir):
-            os.makedirs(vis_dir)
-        
-        save_validation(model, device, dataset_test, 4, epoch, vis_dir, denormalize)
-        print(confmat)
-        
-        lrs.append(train_metric_logger.meters['lr'].value)
-        losses.append(train_metric_logger.meters['loss'].avg)
-        for key, val in confmat.values.items():
-            if 'acc' in key:
-                if key not in acces:
-                    acces[key] = []
-                acces[key].append(val)
-            if 'iou' in key:
-                if key not in ious:
-                    ious[key] = []
-                ious[key].append(val)
-
-        checkpoint = {
-            "model": model_without_ddp.state_dict(),
-            "optimizer": optimizer.state_dict(),
-            "lr_scheduler": lr_scheduler.state_dict(),
-            "epoch": epoch,
-            "args": args,
-        }
-        if args.amp:
-            checkpoint["scaler"] = scaler.state_dict()
-        torch_utils.save_on_master(checkpoint, os.path.join(args.output_dir, f"model_{epoch}.pth"))
-        torch_utils.save_on_master(checkpoint, os.path.join(args.output_dir, "checkpoint.pth"))
-
-        logs_dir = osp.join(args.output_dir, 'logs')
-        if not osp.exists(logs_dir):
-            os.makedirs(logs_dir)
-        fig = plt.figure()
-        plt.plot(lrs)
-        fig.savefig(osp.join(logs_dir, 'lrs.jpg'))
-        plt.close()
-        fig = plt.figure()
-        plt.plot(losses)
-        fig.savefig(osp.join(logs_dir, 'losses.jpg'))
-        plt.close()
-        fig = plt.figure()
-        for key, val in acces.items():
-            plt.plot(val, label=key)
-        plt.legend()
-        fig.savefig(osp.join(logs_dir, 'acces.jpg'))
-        plt.close()
-        fig = plt.figure()
-        for key, val in ious.items():
-            plt.plot(val, label=key)
-        plt.legend()
-        fig.savefig(osp.join(logs_dir, 'ious.jpg'))
-        plt.close()
-
-    total_time = time.time() - start_time
-    total_time_str = str(datetime.timedelta(seconds=int(total_time)))
-    print(f"Training time {total_time_str}")
 
 
 def get_args_parser(add_help=True):
