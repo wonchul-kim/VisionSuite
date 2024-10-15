@@ -4,8 +4,8 @@ from .dist import is_main_process
 def get_device(device):
     return torch.device(device)
 
-def set_torch_deterministic(use_deterministic):
-    if use_deterministic:
+def set_torch_deterministic(use_deterministic_algorithms):
+    if use_deterministic_algorithms:
         torch.backends.cudnn.benchmark = False
         torch.use_deterministic_algorithms(True)
     else:
@@ -38,3 +38,14 @@ def save_on_master(*args, **kwargs):
     if is_main_process():
         torch.save(*args, **kwargs)
 
+def parse_device_ids(device_ids):
+    if isinstance(device_ids, str):
+        return [int(id.strip()) for id in device_ids.split(',')]
+    elif isinstance(device_ids, (int, float)):
+        return [int(device_ids)]
+    elif isinstance(device_ids, list):
+        return list(map(int, device_ids))
+    else:
+        NotImplementedError(f"Not consider this case: {type(device_ids)} for {device_ids}")
+
+        

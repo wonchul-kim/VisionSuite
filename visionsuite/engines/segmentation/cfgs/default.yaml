@@ -1,0 +1,33 @@
+optimizer: SGD
+output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed
+data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/scratch_tear_stabbed
+dataset: mask
+model: deeplabv3_resnet50
+aux_loss: False
+device_ids: 0
+device: cuda
+batch_size: 2
+epochs: 150
+workers: 16
+lr: 0.01
+momentum: 0.9
+weight_decay: 0.0001
+lr_warmup_epochs: 0
+lr_warmup_method: linear
+lr_warmup_decay: 0.01
+print_freq: 10
+ckpt: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed_deeplabv3_resnet50_20_22_21/model_99.pth
+resume: True
+start_epoch: 0
+test_only: False
+use_deterministic_algorithms: False
+
+# distributed training parameters
+world_size: 1
+dist_url: env://
+
+weights: null
+weights_backbone: ResNet50_Weights.IMAGENET1K_V1
+amp: False
+backend: PIL
+use_v2: False

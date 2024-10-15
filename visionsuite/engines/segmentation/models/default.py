@@ -30,11 +30,6 @@ def get_model(args, num_classes, device):
                 aux_loss=args.aux_loss,
         )
         
-        if osp.exists(args.weights_file):
-            state_dict = torch.load(args.weights_file)
-        model.load_state_dict(state_dict['model'])
-        
-        
         model.to(device)
         if args.distributed:
             model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
