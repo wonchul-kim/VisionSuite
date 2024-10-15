@@ -1,136 +1,21 @@
 import datetime
 import os
 import time
-import warnings
 
-import presets
 import torch
 import torch.utils.data
-import torchvision
 import utils
-from coco_utils import get_coco
-from mask_dataset import get_mask
-from torch import nn
-from torch.optim.lr_scheduler import PolynomialLR
-from torchvision.transforms import functional as F, InterpolationMode
 from datetime import datetime
-
-def get_dataset(args, is_train):
-    def sbd(*args, **kwargs):
-        kwargs.pop("use_v2")
-        return torchvision.datasets.SBDataset(*args, mode="segmentation", **kwargs)
-
-    def voc(*args, **kwargs):
-        kwargs.pop("use_v2")
-        return torchvision.datasets.VOCSegmentation(*args, **kwargs)
-
-    paths = {
-        "voc": (args.data_path, voc, 21),
-        "voc_aug": (args.data_path, sbd, 21),
-        "coco": (args.data_path, get_coco, 21),
-        "mask": (args.data_path, get_mask, 3),
-    }
-    p, ds_fn, num_classes = paths[args.dataset]
-
-    image_set = "train" if is_train else "val"
-    ds = ds_fn(p, image_set=image_set, transforms=get_transform(is_train, args), use_v2=args.use_v2)
-    return ds, num_classes
+from visionsuite.engines.segmentation.train.default import train_one_epoch
+from visionsuite.engines.segmentation.val.default import evaluate
+from visionsuite.engines.segmentation.optimizers.default import get_optimizer
+from visionsuite.engines.segmentation.schedulers.default import get_scheduler
+from visionsuite.engines.segmentation.models.default import get_model
+from visionsuite.engines.segmentation.datasets.default import get_dataset
+from visionsuite.engines.segmentation.dataloaders.default import get_dataloader
+from visionsuite.engines.segmentation.losses.default import criterion
 
 
-def get_transform(is_train, args):
-    if is_train:
-        return presets.SegmentationPresetTrain(base_size=512, crop_size=480, backend=args.backend, use_v2=args.use_v2)
-    elif args.weights and args.test_only:
-        weights = torchvision.models.get_weight(args.weights)
-        trans = weights.transforms()
-
-        def preprocessing(img, target):
-            img = trans(img)
-            size = F.get_dimensions(img)[1:]
-            target = F.resize(target, size, interpolation=InterpolationMode.NEAREST)
-            return img, F.pil_to_tensor(target)
-
-        return preprocessing
-    else:
-        return presets.SegmentationPresetEval(base_size=512, backend=args.backend, use_v2=args.use_v2)
-
-
-def criterion(inputs, target):
-    losses = {}
-    if isinstance(inputs, torch.Tensor):
-        losses['out'] = nn.functional.cross_entropy(inputs, target, ignore_index=255)
-    else:
-        for name, x in inputs.items():
-            losses[name] = nn.functional.cross_entropy(x, target, ignore_index=255)
-
-    if len(losses) == 1:
-        return losses["out"]
-
-    return losses["out"] + 0.5 * losses["aux"]
-
-
-def evaluate(model, data_loader, device, num_classes):
-    model.eval()
-    confmat = utils.ConfusionMatrix(num_classes)
-    metric_logger = utils.MetricLogger(delimiter="  ")
-    header = "Test:"
-    num_processed_samples = 0
-    with torch.inference_mode():
-        for image, target, filename in metric_logger.log_every(data_loader, 100, header):
-            image, target = image.to(device), target.to(device)
-            output = model(image)
-            if not isinstance(output, torch.Tensor):
-                output = output["out"]
-
-            confmat.update(target.flatten(), output.argmax(1).flatten())
-            # FIXME need to take into account that the datasets
-            # could have been padded in distributed setup
-            num_processed_samples += image.shape[0]
-
-        confmat.reduce_from_all_processes()
-
-    num_processed_samples = utils.reduce_across_processes(num_processed_samples)
-    if (
-        hasattr(data_loader.dataset, "__len__")
-        and len(data_loader.dataset) != num_processed_samples
-        and torch.distributed.get_rank() == 0
-    ):
-        # See FIXME above
-        warnings.warn(
-            f"It looks like the dataset has {len(data_loader.dataset)} samples, but {num_processed_samples} "
-            "samples were used for the validation, which might bias the results. "
-            "Try adjusting the batch size and / or the world size. "
-            "Setting the world size to 1 is always a safe bet."
-        )
-
-    return confmat, metric_logger
-
-
-def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, print_freq, scaler=None):
-    model.train()
-    metric_logger = utils.MetricLogger(delimiter="  ")
-    metric_logger.add_meter("lr", utils.SmoothedValue(window_size=1, fmt="{value}"))
-    header = f"Epoch: [{epoch}]"
-    for image, target, filename in metric_logger.log_every(data_loader, print_freq, header):
-        image, target = image.to(device), target.to(device)
-        with torch.cuda.amp.autocast(enabled=scaler is not None):
-            output = model(image) # 'out': (bs num_classes(including bg) h w)
-            loss = criterion(output, target)
-
-        optimizer.zero_grad()
-        if scaler is not None:
-            scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
-        else:
-            loss.backward()
-            optimizer.step()
-
-        lr_scheduler.step()
-
-        metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
-        
-    return metric_logger
 
 import numpy as np
 
@@ -180,107 +65,16 @@ def main(args):
     dataset, num_classes = get_dataset(args, is_train=True)
     dataset_test, _ = get_dataset(args, is_train=False)
 
-    if args.distributed:
-        train_sampler = torch.utils.data.distributed.DistributedSampler(dataset)
-        test_sampler = torch.utils.data.distributed.DistributedSampler(dataset_test, shuffle=False)
-    else:
-        train_sampler = torch.utils.data.RandomSampler(dataset)
-        test_sampler = torch.utils.data.SequentialSampler(dataset_test)
+    data_loader, data_loader_test, train_sampler, test_sampler = get_dataloader(args, dataset, dataset_test)
 
-    data_loader = torch.utils.data.DataLoader(
-        dataset,
-        batch_size=args.batch_size,
-        sampler=train_sampler,
-        num_workers=args.workers,
-        collate_fn=utils.collate_fn,
-        drop_last=True,
-    )
-
-    data_loader_test = torch.utils.data.DataLoader(
-        dataset_test, batch_size=1, sampler=test_sampler, num_workers=args.workers, collate_fn=utils.collate_fn
-    )
-
-    #### model -----------------------------------------------------------------------------
-    model = torchvision.models.get_model(
-        args.model,
-        weights=args.weights,
-        weights_backbone=args.weights_backbone,
-        num_classes=num_classes,
-        aux_loss=args.aux_loss,
-    )
-    model.to(device)
-    if args.distributed:
-        model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-        model_without_ddp = model.module
-    else:
-        if torch.cuda.device_count() > 1 and len(args.device_ids) > 1:
-            model = nn.DataParallel(model, device_ids=args.device_ids, 
-                                    output_device=args.device_ids[0])
-            model_without_ddp = model.module
-        else:
-            model_without_ddp = model
-        
-    params_to_optimize = [
-        {"params": [p for p in model_without_ddp.backbone.parameters() if p.requires_grad]},
-        {"params": [p for p in model_without_ddp.classifier.parameters() if p.requires_grad]},
-    ]
-    if args.aux_loss:
-        params = [p for p in model_without_ddp.aux_classifier.parameters() if p.requires_grad]
-        params_to_optimize.append({"params": params, "lr": args.lr * 10})
-        
-        
-    # from models.unet3plus.models.UNet_3Plus import UNet_3Plus
-    # model = UNet_3Plus(n_classes=num_classes)
+    model, model_without_ddp, params_to_optimize = get_model(args, num_classes, device)
     
-    # model.to(device)
-    # if args.distributed:
-    #     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
-
-    # model_without_ddp = model
-    # if args.distributed:
-    #     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.gpu])
-    #     model_without_ddp = model.module
-
-    # params_to_optimize = [
-    #     {"params": [p for p in model_without_ddp.parameters() if p.requires_grad]},
-    # ]
+    optimizer = get_optimizer(args, params_to_optimize)
     
-    #### ================================================================================
-    
-    if args.optimizer == 'Adam':
-        optimizer = torch.optim.Adam(params_to_optimize, lr=args.lr)
-    elif args.optimizer == 'SGD':
-        optimizer = torch.optim.SGD(params_to_optimize, lr=args.lr, momentum=args.momentum, weight_decay=args.weight_decay)
-    else:
-        raise NotImplementedError(f"There is no such optimizer: {args.optimizer}")
-
     scaler = torch.cuda.amp.GradScaler() if args.amp else None
 
     iters_per_epoch = len(data_loader)
-    main_lr_scheduler = PolynomialLR(
-        optimizer, total_iters=iters_per_epoch * (args.epochs - args.lr_warmup_epochs), power=0.9
-    )
-
-    if args.lr_warmup_epochs > 0:
-        warmup_iters = iters_per_epoch * args.lr_warmup_epochs
-        args.lr_warmup_method = args.lr_warmup_method.lower()
-        if args.lr_warmup_method == "linear":
-            warmup_lr_scheduler = torch.optim.lr_scheduler.LinearLR(
-                optimizer, start_factor=args.lr_warmup_decay, total_iters=warmup_iters
-            )
-        elif args.lr_warmup_method == "constant":
-            warmup_lr_scheduler = torch.optim.lr_scheduler.ConstantLR(
-                optimizer, factor=args.lr_warmup_decay, total_iters=warmup_iters
-            )
-        else:
-            raise RuntimeError(
-                f"Invalid warmup lr method '{args.lr_warmup_method}'. Only linear and constant are supported."
-            )
-        lr_scheduler = torch.optim.lr_scheduler.SequentialLR(
-            optimizer, schedulers=[warmup_lr_scheduler, main_lr_scheduler], milestones=[warmup_iters]
-        )
-    else:
-        lr_scheduler = main_lr_scheduler
+    lr_scheduler = get_scheduler(args, optimizer, iters_per_epoch)
 
     if args.resume:
         checkpoint = torch.load(args.resume, map_location="cpu", weights_only=True)
@@ -379,18 +173,20 @@ def get_args_parser(add_help=True):
     parser = argparse.ArgumentParser(description="PyTorch Segmentation Training", add_help=add_help)
 
     parser.add_argument("--optimizer", default="SGD", type=str)
-    parser.add_argument("--output-dir", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_tear_stabbed", type=str)
+    parser.add_argument("--output-dir", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed", type=str)
+    parser.add_argument("--weights-file", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed_deeplabv3_resnet50_20_22_21/model_99.pth", type=str)
     # parser.add_argument("--data-path", default="/HDD/datasets/public/coco", type=str, help="dataset path")
+
     # parser.add_argument("--dataset", default="coco", type=str, help="dataset name")
-    parser.add_argument("--data-path", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/tear_stabbed", type=str, help="dataset path")
+    parser.add_argument("--data-path", default="/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/scratch_tear_stabbed", type=str, help="dataset path")
     parser.add_argument("--dataset", default="mask", type=str, help="dataset name")
     parser.add_argument("--model", default="deeplabv3_resnet50", type=str, help="model name")
     parser.add_argument("--aux-loss", action="store_true", help="auxiliary loss")
-    parser.add_argument("--device-ids", default="0,1", type=str, help="device (Use cuda or cpu Default: cuda)")
+    parser.add_argument("--device-ids", default="0", type=str, help="device (Use cuda or cpu Default: cuda)")
 
     parser.add_argument("--device", default="cuda", type=str, help="device (Use cuda or cpu Default: cuda)")
     parser.add_argument(
-        "-b", "--batch-size", default=4, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
+        "-b", "--batch-size", default=2, type=int, help="images per gpu, the total batch size is $NGPU x batch_size"
     )
     parser.add_argument("--epochs", default=100, type=int, metavar="N", help="number of total epochs to run")
 
