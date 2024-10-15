@@ -3,8 +3,7 @@ import os
 import time
 
 import torch
-import torch.utils.data
-import utils
+import visionsuite.engines.utils.torch_utils as torch_utils
 from datetime import datetime
 from visionsuite.engines.segmentation.train.default import train_one_epoch
 from visionsuite.engines.segmentation.val.default import evaluate
@@ -14,8 +13,9 @@ from visionsuite.engines.segmentation.models.default import get_model
 from visionsuite.engines.segmentation.datasets.default import get_dataset
 from visionsuite.engines.segmentation.dataloaders.default import get_dataloader
 from visionsuite.engines.segmentation.losses.default import criterion
-
-
+from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
+from visionsuite.engines.utils.torch_utils.utils import set_torch_deterministic, get_device
+from visionsuite.engines.utils.helpers import mkdir
 
 import numpy as np
 
@@ -49,18 +49,11 @@ def main(args):
     args.output_dir += f'_{args.model}_{hour}_{minute}_{second}'
     
     if args.output_dir:
-        utils.mkdir(args.output_dir)
+        mkdir(args.output_dir)
 
-    utils.init_distributed_mode(args)
-    print(args)
-
-    device = torch.device(args.device)
-
-    if args.use_deterministic_algorithms:
-        torch.backends.cudnn.benchmark = False
-        torch.use_deterministic_algorithms(True)
-    else:
-        torch.backends.cudnn.benchmark = True
+    init_distributed_mode(args)
+    device = get_device(args.device)
+    set_torch_deterministic(args.use_deterministic_algorithms)
 
     dataset, num_classes = get_dataset(args, is_train=True)
     dataset_test, _ = get_dataset(args, is_train=False)
@@ -135,8 +128,8 @@ def main(args):
         }
         if args.amp:
             checkpoint["scaler"] = scaler.state_dict()
-        utils.save_on_master(checkpoint, os.path.join(args.output_dir, f"model_{epoch}.pth"))
-        utils.save_on_master(checkpoint, os.path.join(args.output_dir, "checkpoint.pth"))
+        torch_utils.save_on_master(checkpoint, os.path.join(args.output_dir, f"model_{epoch}.pth"))
+        torch_utils.save_on_master(checkpoint, os.path.join(args.output_dir, "checkpoint.pth"))
 
         logs_dir = osp.join(args.output_dir, 'logs')
         if not osp.exists(logs_dir):
