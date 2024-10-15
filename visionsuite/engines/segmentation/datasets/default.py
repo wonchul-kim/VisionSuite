@@ -1,4 +1,4 @@
-from coco_utils import get_coco
+from visionsuite.engines.segmentation.datasets.coco_utils import get_coco
 from visionsuite.engines.segmentation.datasets.mask_dataset import get_mask
 import torchvision
 
@@ -25,7 +25,7 @@ def get_dataset(args, is_train):
     return ds, num_classes
 
 from torchvision.transforms import functional as F, InterpolationMode
-import visionsuite.engines.segmentation.presets as presets
+import visionsuite.engines.utils.torch_utils.presets as presets
 
 def get_transform(is_train, args):
     if is_train:

@@ -65,16 +65,8 @@ def main(args):
     lr_scheduler = get_scheduler(args, optimizer, iters_per_epoch)
 
     args.start_epoch = set_resume(args.resume, args.ckpt, model_without_ddp, 
-                                  optimizer, lr_scheduler, scaler, args.amp, test_only=args.test_only)
+                                  optimizer, lr_scheduler, scaler, args.amp)
     
-    if args.test_only:
-        # We disable the cudnn benchmarking because it can noticeably affect the accuracy
-        torch.backends.cudnn.benchmark = False
-        torch.backends.cudnn.deterministic = True
-        confmat = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
-        print(confmat)
-        return
-
     monitor = Monitor()
     monitor.set(output_dir=args.output_dir, fn='monitor')
     for epoch in range(args.start_epoch, args.epochs):
@@ -98,6 +90,7 @@ def main(args):
                 monitor.log({key: val})
             if 'iou' in key:
                 monitor.log({key: val})
+        monitor.save()
 
         checkpoint = {
             "model": model_without_ddp.state_dict(),

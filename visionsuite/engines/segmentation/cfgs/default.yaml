@@ -3,7 +3,7 @@ output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/tor
 data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/scratch_tear_stabbed
 dataset: mask
 model: deeplabv3_resnet50
-aux_loss: False
+aux_loss: True
 device_ids: 0
 device: cuda
 batch_size: 2
@@ -16,10 +16,11 @@ lr_warmup_epochs: 0
 lr_warmup_method: linear
 lr_warmup_decay: 0.01
 print_freq: 10
-ckpt: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed_deeplabv3_resnet50_20_22_21/model_99.pth
-resume: True
+# ckpt: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed_deeplabv3_resnet50_20_22_21/model_99.pth
+# resume: True
+ckpt: null
+resume: False
 start_epoch: 0
-test_only: False
 use_deterministic_algorithms: False
 
 # distributed training parameters

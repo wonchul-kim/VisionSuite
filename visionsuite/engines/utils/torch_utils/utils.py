@@ -11,6 +11,10 @@ def set_torch_deterministic(use_deterministic_algorithms):
     else:
         torch.backends.cudnn.benchmark = True
 
+def set_test_setting():
+    torch.backends.cudnn.benchmark = False
+    torch.backends.cudnn.deterministic = True
+
 def cat_list(images, fill_value=0):
     max_size = tuple(max(s) for s in zip(*[img.shape for img in images]))
     batch_shape = (len(images),) + max_size

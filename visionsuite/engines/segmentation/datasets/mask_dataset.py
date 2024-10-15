@@ -3,7 +3,7 @@ import glob
 import os
 from PIL import Image
 import torch
-from transforms import Compose
+from visionsuite.engines.utils.torch_utils.transforms import Compose
 
 
 def get_mask(root, image_set, transforms, use_v2=False):

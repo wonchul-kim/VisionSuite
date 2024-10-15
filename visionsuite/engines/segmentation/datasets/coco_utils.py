@@ -6,7 +6,7 @@ import torch.utils.data
 import torchvision
 from PIL import Image
 from pycocotools import mask as coco_mask
-from transforms import Compose
+from visionsuite.engines.utils.torch_utils.transforms import Compose
 
 
 class FilterAndRemapCocoCategories:
@@ -98,7 +98,7 @@ def get_coco(root, image_set, transforms, use_v2=False):
     # slightly different implementations. We could refactor and unify, but
     # keeping them separate helps keeping the v2 version clean
     if use_v2:
-        import v2_extras
+        import visionsuite.engines.utils.torch_utils.v2_extras as v2_extras
         from torchvision.datasets import wrap_dataset_for_transforms_v2
 
         transforms = Compose([v2_extras.CocoDetectionToVOCSegmentation(), transforms])
