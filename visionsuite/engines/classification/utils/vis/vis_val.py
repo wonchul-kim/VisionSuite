@@ -8,6 +8,7 @@ import torch
 def save_validation(
     model, dataloader, label2class, epoch, output_dir, device, preprocessor=None
 ):
+    cnt = 0
     for batch in dataloader:
         if len(batch) == 3 or len(batch) == 4:
             for step_idx, (image, label, fname) in enumerate(
@@ -81,6 +82,7 @@ def save_validation(
         elif len(batch) == 2:
             for step_idx, (image, label) in enumerate(zip(batch[0], batch[1])):
                 # label = str(label2class[np.argmax(np.array(label), axis=1)[0]])
+                label = str(label2class[label.item()])
                 _image = torch.unsqueeze(image, axis=0).to(device)
                 preds = model(_image)
 
@@ -98,7 +100,7 @@ def save_validation(
 
                 width = image.shape[1]
                 if width < 640:
-                    font_scale = 0.2
+                    font_scale = 0.5
                     thickness = 1
                 elif width >= 640 and width < 1024:
                     font_scale = 0.7
@@ -130,23 +132,24 @@ def save_validation(
                     cv2.putText(
                         image,
                         "OK",
-                        (width - 20, 50),
+                        (width - 80, 50),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        font_scale,
+                        font_scale*2,
                         (0, 204, 0),
-                        thickness,
+                        thickness*2,
                     )
                 else:
                     cv2.putText(
                         image,
                         "NG",
-                        (width - 20, 50),
+                        (width - 80, 50),
                         cv2.FONT_HERSHEY_SIMPLEX,
-                        font_scale,
+                        font_scale*2,
                         (0, 0, 255),
-                        thickness,
+                        thickness*2,
                     )
 
                 cv2.imwrite(
-                    osp.join(output_dir, str(epoch) + "_{}.png".format(step_idx)), image
+                    osp.join(output_dir, str(epoch) + "_{}.png".format(cnt)), image
                 )
+                cnt += 1

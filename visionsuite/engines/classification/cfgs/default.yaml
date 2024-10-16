@@ -37,12 +37,12 @@ augmix_severity: 3
 random_erase: 0.0
 
 # Mixed precision training parameters
-amp: False
+amp: True
 
 # distributed training parameters
 world_size: 1
 dist_url: "env://"
-model_ema: True
+model_ema: False
 model_ema_steps: 32
 model_ema_decay: 0.99998
 use_deterministic_algorithms: False
