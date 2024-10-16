@@ -1,12 +1,12 @@
 from torchvision.transforms.functional import InterpolationMode
-from sampler import RASampler
 from torch import nn
 import os
 import torch
 import torchvision
-import presets
+import visionsuite.engines.classification.utils.presets as presets
 import time
 import torchvision.transforms
+from visionsuite.engines.classification.samplers.ra_sampler import RASampler
 from visionsuite.engines.utils.helpers import mkdir, get_cache_path
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 

@@ -4,7 +4,7 @@ from visionsuite.engines.utils.metric_logger import MetricLogger
 from visionsuite.engines.classification.metrics.accuracy import get_accuracies
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 
-def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix=""):
+def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix="", topk=5):
     model.eval()
     metric_logger = MetricLogger(delimiter="  ")
     header = f"Test: {log_suffix}"
@@ -17,7 +17,7 @@ def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix="
             output = model(image)
             loss = criterion(output, target)
 
-            acc1, acc5 = get_accuracies(output, target, topk=(1, 3))
+            acc1, acc5 = get_accuracies(output, target, topk=(1, topk))
             # FIXME need to take into account that the datasets
             # could have been padded in distributed setup
             batch_size = image.shape[0]

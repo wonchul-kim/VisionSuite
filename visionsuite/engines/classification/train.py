@@ -5,7 +5,7 @@ import torch
 import torch.utils.data
 
 from torch.utils.data.dataloader import default_collate
-from transforms import get_mixup_cutmix
+from visionsuite.engines.classification.utils.transforms import get_mixup_cutmix
 from visionsuite.engines.utils.loggers.monitor import Monitor
 from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
@@ -106,12 +106,13 @@ def main(args):
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        train_metric_logger = train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, args, model_ema, scaler)
+        train_metric_logger = train_one_epoch(model, criterion, optimizer, data_loader, 
+                                              device, epoch, args, model_ema, scaler, args.topk)
         lr_scheduler.step()
         if args.model_ema:
-            evaluate(model_ema, criterion, data_loader_test, device=device, log_suffix="EMA")
+            evaluate(model_ema, criterion, data_loader_test, device=device, topk=args.topk, log_suffix="EMA")
         else:
-            evaluate(model, criterion, data_loader_test, device=device)
+            evaluate(model, criterion, data_loader_test, device=device, topk=args.topk)
         
         vis_dir = osp.join(args.output_dir, 'vis')
         if not osp.exists(vis_dir):

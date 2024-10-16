@@ -6,7 +6,7 @@ from visionsuite.engines.utils.smoothed_value import SmoothedValue
 from visionsuite.engines.classification.metrics.accuracy import get_accuracies
 
 
-def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, args, model_ema=None, scaler=None):
+def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, args, model_ema=None, scaler=None, topk=5):
     model.train()
     metric_logger = MetricLogger(delimiter="  ")
     metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
@@ -41,7 +41,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, arg
                 # Reset ema buffer to keep copying weights during warmup period
                 model_ema.n_averaged.fill_(0)
 
-        acc1, acc5 = get_accuracies(output, target, topk=(1, 3))
+        acc1, acc5 = get_accuracies(output, target, topk=(1, topk))
         batch_size = image.shape[0]
         metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
         metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
