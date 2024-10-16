@@ -1,0 +1,56 @@
+data_path: /HDD/_projects/benchmark/classification/rps/datasets/split_dataset
+# data_path: "/datasets01/imagenet_full_size/061417/"
+model: "resnet18"
+device: "cuda"
+batch_size: 8
+epochs: 90
+workers: 16
+opt: sgd
+lr: 0.1
+momentum: 0.9
+weight_decay: 0.0001
+norm_weight_decay: null
+bias_weight_decay: null
+transformer_embedding_decay: null
+label_smoothing: 0.0
+mixup_alpha: 0.0
+cutmix_alpha: 0.0
+lr_scheduler: steplr
+lr_warmup_epochs: 0
+lr_warmup_method: "constant"
+lr_warmup_decay: 0.01
+lr_step_size: 30
+lr_gamma: 0.1
+lr_min: 0.0
+print_freq: 10
+output_dir: /HDD/_projects/benchmark/classification/rps/outputs
+resume: ""
+start_epoch: 0
+cache_dataset: False
+sync_bn: True
+test_only: False
+auto_augment: null
+ra_magnitude: 9
+augmix_severity: 3
+random_erase: 0.0
+
+# Mixed precision training parameters
+amp: False
+
+# distributed training parameters
+world_size: 1
+dist_url: "env://"
+model_ema: True
+model_ema_steps: 32
+model_ema_decay: 0.99998
+use_deterministic_algorithms: False
+interpolation: "bilinear"
+val_resize_size: 256
+val_crop_size: 224
+train_crop_size: 224
+clip_grad_norm: 1.0
+ra_sampler: True
+ra_reps: 4
+weights: null
+backend: PIL
+use_v2: False # Use V2 transforms

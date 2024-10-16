@@ -75,7 +75,7 @@ def main(args):
         train_metric_logger = train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, args.print_freq, scaler)
         confmat, val_metric_logger = evaluate(model, data_loader_test, device=device, num_classes=num_classes)
         
-        from vis.vis_val import save_validation
+        from utils.vis.vis_val import save_validation
         vis_dir = osp.join(args.output_dir, f'vis/{epoch}')
         if not osp.exists(vis_dir):
             os.makedirs(vis_dir)
