@@ -11,7 +11,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim
 from torch.optim.lr_scheduler import OneCycleLR
-from src.args import ArgumentParser
+from src.args_test import ArgumentParser
 from src.build_model import build_model
 from src import utils
 from src.prepare_data import prepare_data
