@@ -18,7 +18,9 @@ from src.prepare_data import prepare_data
 from src.utils import save_ckpt_every_epoch
 from src.utils import load_ckpt
 from src.utils import print_log
-
+import imgviz
+import cv2
+import os.path as osp
 
 from torchmetrics import JaccardIndex as IoU
 
@@ -51,7 +53,11 @@ def train_main():
     ckpt_dir = os.path.join(
         args.results_dir, args.dataset, f"{args.id}", f"{training_starttime}"
     )
+    vis_dir = os.path.join(
+        args.results_dir, args.dataset, f"{args.id}", f"{training_starttime}", 'vis'
+    )
     os.makedirs(ckpt_dir, exist_ok=True)
+    os.makedirs(vis_dir, exist_ok=True)
     os.makedirs(os.path.join(ckpt_dir, "confusion_matrices"), exist_ok=True)
 
     with open(os.path.join(ckpt_dir, "args.json"), "w") as f:
@@ -133,6 +139,7 @@ def train_main():
             model, optimizer, ckpt_path, device
         )
         start_epoch = epoch_last_ckpt + 1
+        print(">>>> LOADED ckpt: ", args.last_ckpt)
     else:
         start_epoch = 0
         best_miou = 0
@@ -140,9 +147,10 @@ def train_main():
 
     if args.load_weights:
         model.load_state_dict(torch.load(args.load_weights))
+        print(">>>> LOADED weights: ", args.load_weights)
 
     writer = SummaryWriter("runs/" + ckpt_dir.split(args.dataset)[-1])
-
+    color_map = imgviz.label_colormap(50)
     # start training -----------------------------------------------------------
     for epoch in range(int(start_epoch), args.epochs):
         # unfreeze
@@ -168,6 +176,8 @@ def train_main():
             device=device,
             val_loss=val_loss,
             epoch=epoch,
+            vis_dir=vis_dir,
+            color_map=color_map,
             debug_mode=args.debug,
             writer=writer,
             classes=args.num_classes,
@@ -332,17 +342,12 @@ def validate(
     val_loss,
     epoch,
     writer,
+    vis_dir,
+    color_map,
     loss_function_valid_unweighted=None,
-    add_log_key="",
     debug_mode=False,
     classes=19,
 ):
-    valid_split = valid_loader.dataset.split + add_log_key
-
-    # we want to track how long each part of the validation takes
-    forward_time = 0
-    copy_to_gpu_time = 0
-
     # set model to eval mode
     model.eval()
 
@@ -373,6 +378,7 @@ def validate(
     # the same resolution and can be resized together to the ground truth
     # segmentation size.
 
+    cnt = 1
     for i, sample in enumerate(tqdm(valid_loader, desc="Valid step")):
         # copy the data to gpu
         image = sample["image"].to(device)
@@ -383,12 +389,30 @@ def validate(
         # forward pass
         with torch.no_grad():
             prediction_ss, prediction_ow = model(image)
+            target = sample["label"].long().cuda() - 1
+            target[target == -1] = 255
+
+
+            if epoch % 5 == 0:
+                if not osp.exists(osp.join(vis_dir, str(epoch))):
+                    os.mkdir(osp.join(vis_dir, str(epoch)))
+                for (_image, _target, pred_ss) in zip(image, target, prediction_ss):
+                    vis_image = np.zeros((512, 1024*3, 3))
+                    
+                    vis_pred_ss = pred_ss.detach().cpu().numpy()
+                    vis_pred_ss = np.transpose(vis_pred_ss, (1, 2, 0))#.astype(np.uint8)
+                    vis_pred_ss = np.argmax(vis_pred_ss, axis=-1)
+                    vis_pred_ss = color_map[vis_pred_ss].astype(np.uint8)
+                    
+                    vis_image[:, :1024, :] = np.transpose(_image.detach().cpu().numpy(), (1, 2, 0))
+                    vis_image[:, 1024:1024*2, :] = color_map[_target.detach().cpu().numpy()].astype(np.uint8)
+                    vis_image[:, 1024*2:, :] = vis_pred_ss
+                    cv2.imwrite(osp.join(vis_dir, str(epoch), f"{epoch}_{cnt}.png"), vis_image)
+                    cnt += 1
 
             if not device.type == "cpu":
                 torch.cuda.synchronize()
 
-            target = sample["label"].long().cuda() - 1
-            target[target == -1] = 255
             compute_iou.update(prediction_ss, target.cuda())
 
             # compute valid loss

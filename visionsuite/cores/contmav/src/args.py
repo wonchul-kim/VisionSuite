@@ -16,7 +16,8 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add_argument("--results_dir", default="/HDD/etc/contmav/outputs")
         self.add_argument(
             "--last_ckpt",
-            default="",
+            # default="",
+            default="/HDD/etc/contmav/outputs/cityscapes/checkpoint/model1/ckpt_latest.pth",
             type=str,
             metavar="PATH",
             help="path to latest checkpoint",

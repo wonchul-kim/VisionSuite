@@ -16,14 +16,15 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add_argument("--results_dir", default="/HDD/etc/contmav/outputs")
         self.add_argument(
             "--last_ckpt",
-            default="",
+            default="/HDD/etc/contmav/outputs/cityscapes/checkpoint/model1/ckpt_latest.pth",
             type=str,
             metavar="PATH",
             help="path to latest checkpoint",
         )
         self.add_argument(
             "--load_weights",
-            default="/HDD/etc/contmav/outputs/cityscapes/checkpoint/16_10_2024-19_46_36-476538/best_miou.pth",
+            # default="/HDD/etc/contmav/outputs/cityscapes/checkpoint/16_10_2024-19_46_36-476538/best_miou.pth",
+            default="",
             type=str,
             metavar="PATH",
             help="path to model weights",

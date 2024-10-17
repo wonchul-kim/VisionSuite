@@ -1,6 +1,7 @@
 # etc.
 logs
 results 
+*.out 
 
 # mm archives
 work_dirs

@@ -3,21 +3,16 @@ from datetime import datetime
 import json
 import os
 import sys
-import time
 import numpy as np
 from tqdm import tqdm
 
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.optim
-from torch.optim.lr_scheduler import OneCycleLR
 from src.args_test import ArgumentParser
 from src.build_model import build_model
 from src import utils
 from src.prepare_data import prepare_data
-from src.utils import save_ckpt_every_epoch
-from src.utils import load_ckpt
-from src.utils import print_log
 import imgviz 
 import cv2
 
@@ -106,8 +101,16 @@ def train_main():
     if not args.closs:
         train_loss[3] = None
         val_loss[3] = None
+        
+    if args.last_ckpt != "":
+        ckpt = torch.load(args.last_ckpt)
+        model.load_state_dict(ckpt['state_dict'])
+        print("LOADED ckpt: ", args.last_ckpt)
 
-    model.load_state_dict(torch.load(args.load_weights))
+    if args.load_weights != "":
+        model.load_state_dict(torch.load(args.load_weights), strict=True)
+        print("LOADED weights: ", args.load_weights)
+        
     writer = SummaryWriter("runs/" + ckpt_dir.split(args.dataset)[-1])
     test(
         model=model,
@@ -119,6 +122,8 @@ def train_main():
         writer=writer,
         classes=args.num_classes,
     )
+    writer.flush()
+
 
 def test(
     model,
@@ -229,6 +234,8 @@ def test(
         + np.mean(total_loss_mav)
         + np.mean(total_loss_con)
     )
+    print("LOSS: ", total_loss)
+    print("Metrics/miou: ", miou)
     writer.add_scalar("Loss/val", total_loss, epoch)
     writer.add_scalar("Metrics/miou", miou, epoch)
     for i, iou in enumerate(ious):
@@ -240,143 +247,7 @@ def test(
 
     return miou
 
-
-def test_ow(
-    model,
-    test_loader,
-    device,
-    val_loss,
-    epoch,
-    writer,
-    classes=19,
-    mean=None,
-    var=None,
-):
-    delta = 0.6
-
-    # set model to eval mode
-    model.eval()
-
-    compute_iou = IoU(
-        task="multiclass", num_classes=2, average="none", ignore_index=255
-    ).to(device)
-
-    _, loss_obj, loss_mav, _ = val_loss
-
-    with open("mavs.pickle", "rb") as h1:
-        mavs = pickle.load(h1)
-    with open("vars.pickle", "rb") as h2:
-        vars = pickle.load(h2)
-
-    mavs = torch.vstack(tuple(mavs.values())).cpu()  # 19x19
-    new_mavs = None
-
-    for i, sample in enumerate(tqdm(test_loader, desc="Test step")):
-        # copy the data to gpu
-        image = sample["image"].to(device)
-        label = sample["label"].to(device)
-
-        if not device.type == "cpu":
-            torch.cuda.synchronize()
-
-        # forward pass
-        with torch.no_grad():
-            prediction, ow_pred = model(image)
-
-            ows_target = label.long() - 1
-            ows_target[ows_target < classes] = 0
-            ows_binary_gt = ows_target.bool().long()
-
-            s_cont = contrastive_inference(ow_pred)
-            s_sem, similarity = semantic_inference(prediction, mavs, vars)
-            s_unk = (s_cont + s_sem) / 2
-
-            ows_binary_pred = (s_unk - delta).relu().bool().int()
-
-            compute_iou.update(ows_binary_pred, ows_binary_gt)
-
-            prediction = prediction.permute(1, 0, 2, 3)
-            unk_pixels = prediction[:, :, ows_binary_pred == 0]
-
-            tmp = torch.ones(unk_pixels.shape)
-            if new_mavs is not None:
-                for i in range(new_mavs.shape[0]):
-                    mav = new_mavs[:, i].unsqueeze(1)
-                    dist = torch.norm(unk_pixels - mav, dim=0)
-                    dist = (dist < 0.5).int()
-                    tmp[:, dist == 1] = 0
-                    upd = torch.mean(unk_pixels[dist == 1], dim=0)
-                    new_mavs[i, :] = (new_mavs[i, :] + upd) / 2
-            preds = unk_pixels * tmp
-            preds = torch.unique(preds, dim=1)
-            if tmp.sum():
-                preds = preds[:, 1:]
-
-            clusters = ac(
-                n_clusters=None, affinity="euclidean", distance_threshold=0.5
-            ).fit(preds.cpu().numpy().T)
-            groups = clusters.labels_
-
-            nc = groups.max()
-            for c in nc:
-                new = preds[:, groups == c]
-                new = torch.mean(torch.tensor(new), dim=1)
-                if new_mavs is None:
-                    new_mavs = new
-                else:
-                    new_mavs = torch.vstack((new_mavs, new))
-
-    ious = compute_iou.compute().detach().cpu()
-    writer.add_scalar("Metrics/OWS/known", ious[0], epoch)
-    writer.add_scalar("Metrics/OWS/unknown", ious[1], epoch)
-
-
-def contrastive_inference(predictions, radius=1.0):
-    scores = F.relu(1 - torch.norm(predictions, dim=1) / radius)
-    return scores
-
-
-def semantic_inference(predictions, mavs, var):
-    stds = torch.vstack(tuple(var.values())).cpu()  # 19x19
-    d_pred = (
-        predictions[:, None, ...] - mavs[None, :, :, None, None]
-    )  # [8,1,19,h,w] - [1,19,19,1,1]
-    d_pred_ = d_pred / (stds[None, :, :, None, None] + 1e-8)
-    scores = torch.exp(-torch.einsum("bcfhw,bcfhw->bchw", d_pred_, d_pred) / 2)
-    best = scores.max(dim=1)
     return 1 - best[0], best[1]
-
-
-def get_optimizer(args, model):
-    # set different learning rates fo different parts of the model
-    # when using default parameters the whole model is trained with the same
-    # learning rate
-    if args.optimizer == "SGD":
-        optimizer = torch.optim.SGD(
-            model.parameters(),
-            lr=args.lr,
-            weight_decay=args.weight_decay,
-            momentum=args.momentum,
-            nesterov=True,
-        )
-    elif args.optimizer == "Adam":
-        optimizer = torch.optim.Adam(
-            model.parameters(),
-            lr=args.lr,
-            weight_decay=args.weight_decay,
-            betas=(0.9, 0.999),
-        )
-    else:
-        raise NotImplementedError(
-            "Currently only SGD and Adam as optimizers are "
-            "supported. Got {}".format(args.optimizer)
-        )
-
-    print("Using {} as optimizer".format(args.optimizer))
-    print(
-        "\n\n=========================================================================\n\n"
-    )
-    return optimizer
 
 
 if __name__ == "__main__":
