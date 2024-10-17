@@ -64,6 +64,26 @@ for img_file in tqdm(img_files):
     with torch.no_grad():
         preds = model(torch_img)
     pred = preds[0].detach().cpu()
+    
+    # start_angle = -90 / 180*np.pi
+    # x, y, w, h, r = pred[:, :-1].unbind(-1)
+    # _w = torch.where(w > h, w, h)
+    # _h = torch.where(w > h, h, w)
+    # r = torch.where(w > h, r, r + np.pi/2)
+    # r = ((r - start_angle)%np.pi) + start_angle
+    
+    # pred[:, :-1] = torch.stack([x, y, _w, _h, r], dim=-1)
+    
+    
+    cnt = 0
+    for _pred in pred:
+        if _pred[2] < _pred[3]:
+            cnt += 1
+            
+    print(cnt)
+    
+    
+    
     dets, _ = nms_rotated(pred[:, :-1], pred[:, -1], iou_threshold=nms_iou_threshold)
     confs, labels = torch.max(dets[:, 5:], axis=1)
 
