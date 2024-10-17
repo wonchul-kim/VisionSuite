@@ -60,7 +60,7 @@ class Cityscapes(CityscapesBase, DatasetBase):
             for filename in glob.iglob(self.images_path + "/**/*.*", recursive=True):
                 self.images.append(filename)
             for filename in glob.iglob(
-                self.labels_path + "/**/*labelTrainIds.png", recursive=True
+                self.labels_path + "/**/*labelIds.png", recursive=True
             ):
                 self.labels.append(filename)
             self.images.sort()
@@ -135,6 +135,8 @@ class Cityscapes(CityscapesBase, DatasetBase):
 
     def load_label(self, idx):
         label = self._load(self.labels[idx]) + 1
+        
+        label[label >= 20] = 1
         return label
 
     def __len__(self):

@@ -221,17 +221,17 @@ class CrossEntropyLoss2d(nn.Module):
 
     def forward(self, inputs, targets):
         losses = []
-        targets_m = targets.clone()
-        if targets_m.sum() == 0:
-            import ipdb;ipdb.set_trace()  # fmt: skip
-        targets_m -= 1
-        loss_all = self.ce_loss(inputs, targets_m.long())
         number_of_pixels_per_class = torch.bincount(
             targets.flatten().type(self.dtype), minlength=self.num_classes
         )
         divisor_weighted_pixel_sum = torch.sum(
             number_of_pixels_per_class[1:] * self.weight
         )  # without void
+        targets_m = targets.clone()
+        if targets_m.sum() == 0:
+            import ipdb;ipdb.set_trace()  # fmt: skip
+        targets_m -= 1
+        loss_all = self.ce_loss(inputs, targets_m.long())
         if divisor_weighted_pixel_sum > 0:
             losses.append(torch.sum(loss_all) / divisor_weighted_pixel_sum)
         else:

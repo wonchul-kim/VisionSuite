@@ -13,7 +13,7 @@ import argparse
 class ArgumentParser(argparse.ArgumentParser):
     def set_common_args(self):
         # paths
-        self.add_argument("--results_dir", default="./results")
+        self.add_argument("--results_dir", default="/HDD/etc/contmav/outputs")
         self.add_argument(
             "--last_ckpt",
             default="",
@@ -43,7 +43,7 @@ class ArgumentParser(argparse.ArgumentParser):
         self.add_argument(
             "--no_imagenet_pretraining",
             dest="pretrained_on_imagenet",
-            default=True,
+            default=False,
             action="store_false",
             help="Encoder will be initialized randomly. "
             "(If not set encoder will be initialized with "
@@ -248,7 +248,7 @@ class ArgumentParser(argparse.ArgumentParser):
         )
         self.add_argument(
             "--dataset_dir",
-            default="/export/datasets/cityscapes",
+            default="/HDD/datasets/public/cityscapes",
             help="Path to dataset root.",
         )
         self.add_argument(

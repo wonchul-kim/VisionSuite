@@ -1,21 +1,9 @@
-########################################################
-#                                                      #
-#       author: omitted for anonymous submission       #
-#                                                      #
-#     credits and copyright coming upon publication    #
-#                                                      #
-########################################################
-
 import argparse
 from datetime import datetime
 import json
 import os
-import copy
 import sys
 import time
-import warnings
-import matplotlib.pyplot as plt
-
 import numpy as np
 from tqdm import tqdm
 

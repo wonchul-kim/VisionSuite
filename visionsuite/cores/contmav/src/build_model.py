@@ -12,10 +12,11 @@ from torch import nn
 from src.models.model_one_modality import OWSNetwork
 from src.models.resnet import ResNet
 
-from torchsummary import summary
+# from torchsummary import summary
+from torchinfo import summary
 
 
-def build_model(args, n_classes):
+def build_model(args, n_classes, verbose=True):
     if not args.pretrained_on_imagenet or args.last_ckpt:
         pretrained_on_imagenet = False
     else:
@@ -71,8 +72,8 @@ def build_model(args, n_classes):
     model.to(device)
     # print(model)
     # summary(model)
-
-    print("Number of parameters:", summary(model, verbose=False).total_params)
+    print("Model:", summary(model, (1, 3, args.height, args.width)))
+    print("Number of parameters:", summary(model, (1, 3, args.height, args.width)).total_params)
     print("\n\n")
     if args.he_init:
         module_list = []
