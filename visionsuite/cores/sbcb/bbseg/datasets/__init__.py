@@ -13,6 +13,7 @@ from .custom import (
     OTFCustomBinaryJointDataset,
 )
 from .cityscapes import OTFJointCityscapesDataset
+from .mask_dataset import MaskDataset
 
 __all__ = [
     "DATASETS",
@@ -22,4 +23,5 @@ __all__ = [
     "OTFCustomJointDataset",
     "OTFCustomBinaryJointDataset",
     "OTFJointCityscapesDataset",
+    "MaskDataset",
 ]

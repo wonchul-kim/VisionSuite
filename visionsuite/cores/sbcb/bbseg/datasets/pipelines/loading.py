@@ -12,7 +12,7 @@ from mmseg.datasets.pipelines.loading import LoadAnnotations as MMSEG_LoadAnnota
 from ..builder import PIPELINES
 
 
-@PIPELINES.register_module(force=True)
+# @PIPELINES.register_module(force=True)
 class LoadAnnotations(MMSEG_LoadAnnotations):
     """Extended `LoadAnnotations` class from mmseg.
 
