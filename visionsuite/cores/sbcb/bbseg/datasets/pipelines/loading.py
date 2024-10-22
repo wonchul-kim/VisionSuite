@@ -25,10 +25,14 @@ class LoadAnnotations(MMSEG_LoadAnnotations):
             self.file_client = mmcv.FileClient(**self.file_client_args)
 
         if results.get("seg_prefix", None) is not None:
-            filename = osp.join(results["seg_prefix"], results["ann_info"]["seg_map"])
+            try:
+                filename = osp.join(results["seg_prefix"], results["ann_info"]["seg_map"])
+            except:
+                filename = osp.join(results["seg_prefix"], results["img_info"]['ann']["seg_map"])
         else:
             filename = results["ann_info"]["seg_map"]
         filename = filename.replace('labelTrainIds', 'labelIds')
+        filename = osp.join(results.get("img_prefix"), results.get('img_info')['filename'])
         img_bytes = self.file_client.get(filename)
         gt_semantic_seg = (
             mmcv.imfrombytes(img_bytes, flag="unchanged", backend=self.imdecode_backend)
