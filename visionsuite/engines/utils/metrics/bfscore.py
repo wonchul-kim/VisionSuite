@@ -95,12 +95,6 @@ def ex_distance_transform_edt(labels, tolerance):
     '''
     
 def bfscore(pred, gt, tolerances=None, mode='inner'):
-    '''
-        - True Positive (TP): 예측 경계와 실제 경계가 허용 오차 내에 있을 때.
-        - False Positive (FP): 예측 경계가 실제 경계 근처에 없을 때.
-        - False Negative (FN): 실제 경계가 예측 경계 근처에 없을 때.
-    '''
-    
     if isinstance(tolerances, int):
         tolerances={'pred': tolerances, 'gt': tolerances}
     elif isinstance(tolerances, dict):
@@ -126,7 +120,27 @@ def bfscore(pred, gt, tolerances=None, mode='inner'):
     recall = tp / (tp + fn + 1e-7)
     f1_score = 2 * (precision * recall) / (precision + recall + 1e-7)
 
-    return f1_score, precision, recall
+    return {'f1_score': f1_score, 'precision': precision, 'recall': recall}
+
+def bfscores_by_channel(pred, gt, tolerances=None, mode='inner'):
+    '''
+        - True Positive (TP): 예측 경계와 실제 경계가 허용 오차 내에 있을 때.
+        - False Positive (FP): 예측 경계가 실제 경계 근처에 없을 때.
+        - False Negative (FN): 실제 경계가 예측 경계 근처에 없을 때.
+    '''
+    
+    assert pred.ndim == 3, ValueError(f"Pred must be 3D, not {pred.shape}")
+    assert gt.ndim == 3, ValueError(f"Pred must be 3D, not {gt.shape}")
+    assert pred.shape[-1] == gt.shape[-1], ValueError(f"Pred({pred.shape[-1]}) and Gt({gt.shape[-1]}) must have same number of channels")
+    
+    _, _, ch = pred.shape
+    
+    scores = {}
+    for ch_idx in range(0, ch):
+        score = bfscore(pred, gt, tolerances=tolerances, mode=mode)
+        scores[ch_idx] = {'f1_score': score['f1_score'], 'precision': score['precision'], 'recall': score['recall']}
+        
+    return scores
 
     
 if __name__ == '__main__':
@@ -155,5 +169,5 @@ if __name__ == '__main__':
     pred = cv2.imread(img_file)
     gt = cv2.imread(mask_file)
 
-    scores = bfscore(pred, gt)
+    scores = bfscores_by_channel(pred, gt)
     print(scores)
