@@ -10,8 +10,8 @@ import warnings
 import torch
 import torch.distributed as dist
 import os
-os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-os.environ['CUDA_VISIBLE_DEVICES'] = "0"
+# os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
 
 import mmcv
 from mmcv.cnn.utils import revert_sync_batchnorm
@@ -20,7 +20,6 @@ from mmcv.utils import Config, DictAction, get_git_hash
 
 from bbseg import __version__
 from mmseg.apis import init_random_seed, set_random_seed, train_segmentor
-# from apis import train_segmentor
 from bbseg.datasets import build_dataset
 from bbseg.models import build_segmentor
 from mmseg.utils import collect_env, get_root_logger, setup_multi_processes, get_device
@@ -32,7 +31,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Train a segmentor")
     # parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512x1024_40k_cityscapes.py')
     parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512_512_mask.py')
-    parser.add_argument("--work-dir", default='/HDD/etc/sbcb/mask')
+    parser.add_argument("--work-dir", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/sbcb')
     parser.add_argument("--load-from", help="the checkpoint file to load weights from")
     parser.add_argument("--resume-from", help="the checkpoint file to resume from")
     parser.add_argument(

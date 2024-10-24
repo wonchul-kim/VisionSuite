@@ -11,7 +11,7 @@ from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelm
 def labelme2mask(input_dir, output_dir, modes, class2label, width=None, height=None, vis=False):
 
     if not osp.exists(output_dir):
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
         
     if vis:
         vis_dir = osp.join(output_dir, 'vis')
@@ -53,8 +53,8 @@ def labelme2mask(input_dir, output_dir, modes, class2label, width=None, height=N
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_tear_stabbed'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/masks_tear_stabbed'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset/val/images'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset/val/masks'
     modes = ['./']
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}

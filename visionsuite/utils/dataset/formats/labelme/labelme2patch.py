@@ -68,7 +68,7 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                     norm_val=None, vis=False, include_positive=True, classes_to_include=None):
 
     if not osp.exists(output_dir):
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
         
     if vis:
         vis_dir = osp.join(output_dir, 'vis')
@@ -173,8 +173,8 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/data'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/patches_tear_stabbed'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/labelme/split_dataset/val'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset/val/images'
     modes = ['./']
     classes_to_include = ['tear', 'stabbed']
 
