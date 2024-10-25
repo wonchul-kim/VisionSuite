@@ -173,17 +173,17 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/labelme/split_dataset/val'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset/val/images'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_dataset'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_patch_dataset'
     modes = ['./']
-    classes_to_include = ['tear', 'stabbed']
+    classes_to_include = None
 
 
-    patch_overlap_ratio = 0.2
+    patch_overlap_ratio = 0.1
     patch_width = 512
     patch_height = 512
     vis = True
-    include_positive = False
+    include_positive = True
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None

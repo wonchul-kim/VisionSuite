@@ -3,7 +3,7 @@
 import argparse
 import os
 import os.path as osp
-import numpy as np
+import shutil
 import time
 import warnings
 
@@ -59,7 +59,7 @@ def parse_args():
     )
     parser.add_argument(
         "--show",
-        action="store_true",
+        default=True,        
         help="show results",
     )
     parser.add_argument(
@@ -248,7 +248,6 @@ def main():
     # build the model and load checkpoint
     cfg.model.train_cfg = None
     model = build_segmentor(cfg.model, test_cfg=cfg.get("test_cfg"))
-    
     fp16_cfg = cfg.get("fp16", None)
     if fp16_cfg is not None:
         wrap_fp16_model(model)
@@ -266,81 +265,95 @@ def main():
 
     # clean gpu memory when starting a new evaluation.
     torch.cuda.empty_cache()
-    if not torch.cuda.is_available():
-        assert digit_version(mmcv.__version__) >= digit_version(
-            "1.4.4"
-        ), "Please use MMCV >= 1.4.4 for CPU training!"
-    model = revert_sync_batchnorm(model)
-    model = MMDataParallel(model, device_ids=cfg.gpu_ids)
-    
-    
-    # results = single_gpu_test(
-    #     model,
-    #     data_loader,
-    #     show=args.show,
-    #     out_dir=args.show_dir,
-    #     efficient_test=False,
-    #     opacity=args.opacity,
-    #     pre_eval=args.eval is not None and not eval_on_format_results,
-    #     format_only=args.format_only or eval_on_format_results,
-    #     format_args=eval_kwargs,
-    # )
+    eval_kwargs = {} if args.eval_options is None else args.eval_options
 
-    from mmcv.image import tensor2imgs
-    import imgviz
+    # Deprecated
+    efficient_test = eval_kwargs.get("efficient_test", False)
+    if efficient_test:
+        warnings.warn(
+            "``efficient_test=True`` does not have effect in tools/test.py, "
+            "the evaluation and format results are CPU memory efficient by "
+            "default"
+        )
 
-    color_map = imgviz.label_colormap(50)
-    pre_eval = True
-    model.eval()
-    results = []
-    dataset = data_loader.dataset
-    loader_indices = data_loader.batch_sampler
-
-    for batch_indices, data in zip(loader_indices, data_loader):
-        with torch.no_grad():
-            result = model(return_loss=False, **data)
-
-
-        img_tensor = data['img'][0]
-        img_metas = data['img_metas'][0].data[0]
-        imgs = tensor2imgs(img_tensor, **img_metas[0]['img_norm_cfg'])
-        assert len(imgs) == len(img_metas)
-
-        for img, img_meta, pred in zip(imgs, img_metas, result):
-            h, w, _ = img_meta['img_shape']
-            vis_img = np.zeros((h, w*2, 3))
-            vis_img[:, w:, :] = color_map[pred]
-            vis_img[:, :w, :] = img
-
-            ori_h, ori_w = img_meta['ori_shape'][:-1]
-            img_show = mmcv.imresize(img_show, (ori_w, ori_h))
-
-            if args.show_dir:
-                out_file = osp.join(args.show_dir, img_meta['ori_filename'])
-            else:
-                out_file = None
-
-            # model.module.show_result(
-            #     img_show,
-            #     result,
-            #     palette=dataset.PALETTE,
-            #     show=show,
-            #     out_file=out_file,
-            #     opacity=opacity)
-
-        # if format_only:
-        #     result = dataset.format_results(
-        #         result, indices=batch_indices, **format_args)
-        if pre_eval:
-            # TODO: adapt samples_per_gpu > 1.
-            # only samples_per_gpu=1 valid now
-            result = dataset.pre_eval(result, indices=batch_indices)
-            results.extend(result)
+    eval_on_format_results = args.eval is not None and "cityscapes" in args.eval
+    if eval_on_format_results:
+        assert len(args.eval) == 1, (
+            "eval on format results is not "
+            "applicable for metrics other than "
+            "cityscapes"
+        )
+    if args.format_only or eval_on_format_results:
+        if "imgfile_prefix" in eval_kwargs:
+            tmpdir = eval_kwargs["imgfile_prefix"]
         else:
-            results.extend(result)
+            tmpdir = ".format_cityscapes"
+            tmpdir = osp.join(args.work_dir, tmpdir)
+            eval_kwargs.setdefault("imgfile_prefix", tmpdir)
+        mmcv.mkdir_or_exist(tmpdir)
+    else:
+        tmpdir = None
 
+    if not distributed:
+        warnings.warn(
+            "SyncBN is only supported with DDP. To be compatible with DP, "
+            "we convert SyncBN to BN. Please use dist_train.sh which can "
+            "avoid this error."
+        )
+        if not torch.cuda.is_available():
+            assert digit_version(mmcv.__version__) >= digit_version(
+                "1.4.4"
+            ), "Please use MMCV >= 1.4.4 for CPU training!"
+        model = revert_sync_batchnorm(model)
+        model = MMDataParallel(model, device_ids=cfg.gpu_ids)
+        
+        results = single_gpu_test(
+            model,
+            data_loader,
+            show=args.show,
+            out_dir=args.show_dir,
+            efficient_test=False,
+            opacity=args.opacity,
+            pre_eval=args.eval is not None and not eval_on_format_results,
+            format_only=args.format_only or eval_on_format_results,
+            format_args=eval_kwargs,
+        )
+    else:
+        model = MMDistributedDataParallel(
+            model.cuda(),
+            device_ids=[torch.cuda.current_device()],
+            broadcast_buffers=False,
+        )
+        results = multi_gpu_test(
+            model,
+            data_loader,
+            args.tmpdir,
+            args.gpu_collect,
+            False,
+            pre_eval=args.eval is not None and not eval_on_format_results,
+            format_only=args.format_only or eval_on_format_results,
+            format_args=eval_kwargs,
+        )
 
-    return results
+    rank, _ = get_dist_info()
+    if rank == 0:
+        if args.out:
+            warnings.warn(
+                "The behavior of ``args.out`` has been changed since MMSeg "
+                "v0.16, the pickled outputs could be seg map as type of "
+                "np.array, pre-eval results or file paths for "
+                "``dataset.format_results()``."
+            )
+            print(f"\nwriting results to {args.out}")
+            mmcv.dump(results, args.out)
+        if args.eval:
+            eval_kwargs.update(metric=args.eval)
+            metric = dataset.evaluate(results, **eval_kwargs)
+            metric_dict = dict(config=args.config, metric=metric)
+            mmcv.dump(metric_dict, json_file, indent=4)
+            if tmpdir is not None and eval_on_format_results:
+                # remove tmp dir when cityscapes evaluation
+                shutil.rmtree(tmpdir)
 
 
 if __name__ == "__main__":

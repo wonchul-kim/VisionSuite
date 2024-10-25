@@ -4,28 +4,35 @@ import glob
 import json 
 import cv2
 from tqdm import tqdm
+from shutil import copyfile
+from visionsuite.utils.helpers import get_filename
 
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
 
-def labelme2mask(input_dir, output_dir, modes, class2label, width=None, height=None, vis=False):
+def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vis=False):
+
+    modes = [folder.split("/")[-1] for folder in glob.glob(osp.join(input_dir, "**")) if not osp.isfile(folder)]
 
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
-        
-    if vis:
-        vis_dir = osp.join(output_dir, 'vis')
-        if not osp.exists(vis_dir):
-            os.mkdir(vis_dir)
 
     for mode in modes:
         _output_dir = osp.join(output_dir, mode)
         if not osp.exists(_output_dir):
             os.mkdir(_output_dir)
+            
+            
+        if vis:
+            vis_dir = osp.join(_output_dir, 'vis')
+            if not osp.exists(vis_dir):
+                os.mkdir(vis_dir)
+            
         json_files = glob.glob(osp.join(input_dir, mode, '*.json'))
         
         for json_file in tqdm(json_files, desc=mode):
-            filename = osp.split(osp.splitext(json_file)[0])[-1]
+            img_file = osp.splitext(json_file)[0] + '.bmp'
+            filename = get_filename(json_file, False)
             with open(json_file, 'r') as jf:
                 anns = json.load(jf)
                 
@@ -34,14 +41,22 @@ def labelme2mask(input_dir, output_dir, modes, class2label, width=None, height=N
             mask = get_mask_from_labelme(json_file, width, height, class2label, 
                                         format='opencv')
             
-            cv2.imwrite(osp.join(_output_dir, filename + '.bmp'), mask)
+            mask_output_dir = osp.join(_output_dir, 'masks')
+            if not osp.exists(mask_output_dir):
+                os.mkdir(mask_output_dir)
+                        
+            image_output_dir = osp.join(_output_dir, 'images')
+            if not osp.exists(image_output_dir):
+                os.mkdir(image_output_dir)
+                
+            cv2.imwrite(osp.join(mask_output_dir, filename + '.bmp'), mask)
+            copyfile(img_file, osp.join(image_output_dir, filename + '.bmp'))
             
             if vis:
                 import numpy as np
                 import imgviz 
                 
-                assert osp.exists(osp.join(input_dir, filename + '.bmp')), ValueError(f"Input Image at input_dir must exist")
-                img = cv2.imread(osp.join(input_dir, filename + '.bmp'))
+                img = cv2.imread(img_file)
                 
                 vis_img = np.zeros((height, width*2, 3))
                 vis_img[:, :width, :] = img
@@ -53,17 +68,16 @@ def labelme2mask(input_dir, output_dir, modes, class2label, width=None, height=N
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset/val/images'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset/val/masks'
-    modes = ['./']
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_patch_labelme_dataset'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_patch_mask_dataset'
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}
     # class2label = {'scratch': 1, 'tear': 2}
     # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
-    class2label = {'tear': 1, 'stabbed': 2}
+    class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
     width, height = 512, 512
     vis = True
 
-    labelme2mask(input_dir, output_dir, modes, class2label, width, height, vis)
+    labelme2mask(input_dir, output_dir, class2label, width, height, vis)
 
 
