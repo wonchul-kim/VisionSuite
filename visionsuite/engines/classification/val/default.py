@@ -1,17 +1,24 @@
 import torch
 import warnings
+import os.path as osp 
+import os
+
 from visionsuite.engines.utils.metric_logger import MetricLogger
+from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.classification.metrics.accuracy import get_accuracies
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 
-def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix="", topk=5):
+def evaluate(model, criterion, data_loader, device, epoch, label2class, callbacks,
+             print_freq=100, log_suffix="", topk=5, archive=None):
     model.eval()
     metric_logger = MetricLogger(delimiter="  ")
     header = f"Test: {log_suffix}"
 
     num_processed_samples = 0
+    callbacks.run_callbacks('on_val_epoch_start')
     with torch.inference_mode():
         for image, target in metric_logger.log_every(data_loader, print_freq, header):
+            callbacks.run_callbacks('on_val_batch_start')
             image = image.to(device, non_blocking=True)
             target = target.to(device, non_blocking=True)
             output = model(image)
@@ -25,7 +32,10 @@ def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix="
             metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
             metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
             num_processed_samples += batch_size
+            callbacks.run_callbacks('on_val_batch_start')
+            
     # gather the stats from all processes
+    callbacks.run_callbacks('on_val_epoch_end')
 
     num_processed_samples = reduce_across_processes(num_processed_samples)
     if (
@@ -44,5 +54,13 @@ def evaluate(model, criterion, data_loader, device, print_freq=100, log_suffix="
     metric_logger.synchronize_between_processes()
 
     print(f"{header} Acc@1 {metric_logger.acc1.global_avg:.3f} Acc@5 {metric_logger.acc5.global_avg:.3f}")
+    
+    if archive:
+        vis_dir = osp.join(archive.val_dir, str(epoch))
+        if not osp.exists(vis_dir):
+            os.mkdir(vis_dir)
+            
+        from utils.vis.vis_val import save_validation
+        save_validation(model, data_loader, label2class, epoch, vis_dir, device, denormalize)
     
     return metric_logger.acc1.global_avg

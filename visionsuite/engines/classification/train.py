@@ -5,11 +5,11 @@ import torch
 import torch.utils.data
 from torch.utils.data.dataloader import default_collate
 
-from visionsuite.engines.utils.loggers.monitor import Monitor
 from visionsuite.engines.utils.torch_utils.resume import set_resume
-from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 from visionsuite.engines.utils.archives import BaseArchive
+from visionsuite.engines.utils.callbacks import Callbacks
+from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
 from visionsuite.engines.classification.utils.transforms import get_mixup_cutmix
 from visionsuite.engines.classification.losses.default import get_cross_entropy_loss
@@ -25,15 +25,17 @@ from visionsuite.engines.classification.pipelines.variables import set_variables
 
 
 
-def main(args):
-    
 
-    archive = BaseArchive(osp.join(args.output_dir, 'classification'))
-    archive.save_args(args)
+def main(args):
     
     set_variables(args)
     
-
+    archive = BaseArchive(osp.join(args.output_dir, 'classification'), monitor=True)
+    archive.save_args(args)
+    
+    callbacks = Callbacks(_callbacks=cls_callbacks)
+    
+    
     train_dir = os.path.join(args.data_path, "train")
     val_dir = os.path.join(args.data_path, "val")
     dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir, args)
@@ -41,7 +43,6 @@ def main(args):
     print(f"Classes: {classes}")
     label2class = {label: _class for label, _class in enumerate(classes)}
     
-
     num_classes = len(dataset.classes)
     mixup_cutmix = get_mixup_cutmix(
         mixup_alpha=args.mixup_alpha, cutmix_alpha=args.cutmix_alpha, num_classes=num_classes, use_v2=args.use_v2
@@ -81,36 +82,16 @@ def main(args):
     args.start_epoch = set_resume(args.resume, args.ckpt, model_without_ddp, 
                                   optimizer, lr_scheduler, scaler, args.amp)
     
-    monitor = Monitor()
-    monitor.set(output_dir=archive.output_dir, fn='monitor')
+    callbacks.run_callbacks('on_train_start')
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        train_metric_logger = train_one_epoch(model, criterion, optimizer, data_loader, 
-                                              args.device, epoch, args, model_ema, scaler, args.topk)
+        train_one_epoch(model, criterion, optimizer, data_loader, 
+                        args.device, epoch, args, callbacks, model_ema, scaler, 
+                        args.topk, archive)
         lr_scheduler.step()
-        if args.model_ema:
-            evaluate(model_ema, criterion, data_loader_test, device=args.device, topk=args.topk, log_suffix="EMA")
-        else:
-            evaluate(model, criterion, data_loader_test, device=args.device, topk=args.topk)
         
-        vis_dir = osp.join(archive.val_dir, str(epoch))
-        if not osp.exists(vis_dir):
-            os.mkdir(vis_dir)
-            
-        from utils.vis.vis_val import save_validation
-        save_validation(model, data_loader_test, label2class, epoch, vis_dir, args.device, denormalize)
-        
-        monitor.log({"learning rate": train_metric_logger.meters['lr'].value})
-        monitor.log({"train avg loss": train_metric_logger.meters['loss'].avg})
-        # for key, val in confmat.values.items():
-        #     if 'acc' in key:
-        #         monitor.log({key: val})
-        #     if 'iou' in key:
-        #         monitor.log({key: val})
-        monitor.save()
-        
-        if archive.output_dir:
+        if archive.weights_dir:
             checkpoint = {
                 "model": model_without_ddp.state_dict(),
                 "optimizer": optimizer.state_dict(),
@@ -122,10 +103,16 @@ def main(args):
                 checkpoint["model_ema"] = model_ema.state_dict()
             if scaler:
                 checkpoint["scaler"] = scaler.state_dict()
-            save_on_master(checkpoint, os.path.join(archive.output_dir, f"model_{epoch}.pth"))
-            save_on_master(checkpoint, os.path.join(archive.output_dir, "checkpoint.pth"))
+            save_on_master(checkpoint, os.path.join(archive.weights_dir, f"model_{epoch}.pth"))
+            save_on_master(checkpoint, os.path.join(archive.weights_dir, "checkpoint.pth"))
 
-
+        callbacks.run_callbacks('on_val_start')
+        evaluate(model_ema if model_ema else model, criterion, data_loader_test, args.device, epoch, label2class, callbacks, 
+                 topk=args.topk, log_suffix="EMA" if args.model_ema else "", archive=archive)
+        callbacks.run_callbacks('on_val_end')
+        
+    callbacks.run_callbacks('on_train_end')
+    
 def get_args_parser():
     import argparse
     import yaml 
