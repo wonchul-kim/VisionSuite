@@ -2,7 +2,7 @@ import torchvision
 import torch
 from visionsuite.engines.utils.torch_utils.ema import ExponentialMovingAverage
 
-def get_model(model, device, num_classes, distributed, sync_bn, weights):
+def get_model(model, device, num_classes, distributed, sync_bn, weights, gpu):
     print("Creating model")
     model = torchvision.models.get_model(model, weights=weights, num_classes=num_classes)
     model.to(device)

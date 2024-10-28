@@ -30,12 +30,12 @@ class TrainRunner(BaseTrainRunner):
     def set_configs(self, *args, **kwargs):
         super().set_configs(*args, **kwargs)
         
-        set_variables(self.args)
         
         self._archive = Archive(osp.join(self.args.output_dir, 'classification'), monitor=True)
         self._archive.save_args(self.args)
         
         self._callbacks = Callbacks(_callbacks=cls_callbacks)
+        set_variables(self.args)
         
     def set_dataset(self):
         super().set_dataset()
@@ -59,7 +59,7 @@ class TrainRunner(BaseTrainRunner):
 
         self.data_loader, self.data_loader_test = get_dataloader(dataset, dataset_test, self.train_sampler, test_sampler, self.args.batch_size, self.args.workers, collate_fn)
         
-        self.model, self.model_without_ddp = get_model(self.args.model_name, self.args.device, num_classes, self.args.distributed, self.args.sync_bn, self.args.weights)
+        self.model, self.model_without_ddp = get_model(self.args.model_name, self.args.device, num_classes, self.args.distributed, self.args.sync_bn, self.args.weights, self.args.gpu)
 
         self._criterion = get_cross_entropy_loss(label_smoothing=self.args.label_smoothing)
 
@@ -92,13 +92,3 @@ class TrainRunner(BaseTrainRunner):
                         self.data_loader, self.model_ema, self._scaler, self._archive,
                         self._lr_scheduler, self.data_loader_test, self._label2class)
         
-
-
-if __name__ == "__main__":
-    from pathlib import Path
-    FILE = Path(__file__).resolve()
-    ROOT = FILE.parents[1]
-    
-    runner = TrainRunner()
-    runner.train(ROOT / "cfgs/datasets/rps.yaml")    
-
