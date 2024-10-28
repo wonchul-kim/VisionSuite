@@ -28,7 +28,7 @@ class BaseTrainRunner:
         for key in kwargs.keys():
             assert key in default_cfgs, ValueError(f"There is no such key({key}) in configs")
         
-        default_cfgs.update(vars(kwargs))
+        default_cfgs.update(kwargs)
         
         self.args = argparse.Namespace(**default_cfgs)
     

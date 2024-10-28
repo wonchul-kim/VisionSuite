@@ -9,7 +9,7 @@ from visionsuite.engines.utils.archives import Archive
 from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
-from visionsuite.engines.classification.utils.transforms import get_mixup_cutmix
+from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 from visionsuite.engines.classification.losses.default import get_cross_entropy_loss
 from visionsuite.engines.classification.schedulers.default import get_scheduler
 from visionsuite.engines.classification.dataloaders.default import get_dataloader
