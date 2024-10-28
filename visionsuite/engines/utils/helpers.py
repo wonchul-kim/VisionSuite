@@ -33,3 +33,14 @@ def create_output_dir(output_dir, make_dirs=False):
     
     return output_dir
     
+def yaml2namespace(args_file):
+    import argparse
+    import yaml 
+
+    
+    with open(args_file, 'r') as yf:
+        cfgs = yaml.safe_load(yf)
+        
+    args = argparse.Namespace(**cfgs)
+    
+    return args

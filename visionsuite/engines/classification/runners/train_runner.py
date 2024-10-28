@@ -24,12 +24,11 @@ from visionsuite.engines.classification.datasets.directory_dataset import get_da
 from visionsuite.engines.utils.runners.base_train_runner import BaseTrainRunner
 
 class TrainRunner(BaseTrainRunner):
-    def __init__(self, args):
-        super().__init__()
-        self.args = args
+    def __init__(self):
+        super().__init__('classification')
     
-    def set_configs(self):
-        super().set_configs()
+    def set_configs(self, *args, **kwargs):
+        super().set_configs(*args, **kwargs)
         
         set_variables(self.args)
         
@@ -93,17 +92,6 @@ class TrainRunner(BaseTrainRunner):
                         self.data_loader, self.model_ema, self._scaler, self._archive,
                         self._lr_scheduler, self.data_loader_test, self._label2class)
         
-def get_args_parser(args_file):
-    import argparse
-    import yaml 
-
-    
-    with open(args_file, 'r') as yf:
-        cfgs = yaml.safe_load(yf)
-        
-    args = argparse.Namespace(**cfgs)
-    
-    return args
 
 
 if __name__ == "__main__":
@@ -111,7 +99,6 @@ if __name__ == "__main__":
     FILE = Path(__file__).resolve()
     ROOT = FILE.parents[1]
     
-    args = get_args_parser(ROOT / "cfgs/default.yaml")
-    runner = TrainRunner(args)
-    runner.train()    
+    runner = TrainRunner()
+    runner.train(ROOT / "cfgs/datasets/rps.yaml")    
 

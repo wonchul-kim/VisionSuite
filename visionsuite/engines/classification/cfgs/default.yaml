@@ -1,9 +1,4 @@
-output_dir: /HDD/_projects/benchmark/classification/rps/outputs
-input_dir: /HDD/_projects/benchmark/classification/rps/datasets/split_dataset
 
-dataset: 'directory'
-
-# data_path: "/datasets01/imagenet_full_size/061417/"
 ckpt: null
 model_name: "resnet18"
 device: "cuda"
