@@ -2,7 +2,7 @@ from torchvision.transforms.functional import InterpolationMode
 import os
 import torch
 import torchvision
-import visionsuite.engines.classification.utils.presets as presets
+import visionsuite.engines.classification.utils.augment.presets as presets
 import time
 import torchvision.transforms
 from visionsuite.engines.utils.helpers import mkdir, get_cache_path

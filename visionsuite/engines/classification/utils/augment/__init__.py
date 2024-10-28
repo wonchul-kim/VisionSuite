@@ -1,4 +1,4 @@
-from visionsuite.engines.classification.utils.presets import get_module
+from visionsuite.engines.classification.utils.augment.presets import get_module
 from .random_cut_mix import RandomCutMix
 from .random_mix_up import RandomMixUp
 
