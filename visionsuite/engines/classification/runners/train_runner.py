@@ -21,12 +21,16 @@ from visionsuite.engines.classification.pipelines.variables import set_variables
 from visionsuite.engines.classification.loops.epoch_based_loop import epoch_based_loop
 from visionsuite.engines.classification.datasets.directory_dataset import get_datasets
 
-class TrainRunner:
+from visionsuite.engines.utils.runners.base_train_runner import BaseTrainRunner
+
+class TrainRunner(BaseTrainRunner):
     def __init__(self, args):
+        super().__init__()
         self.args = args
     
-    def set_variables(self):
-
+    def set_configs(self):
+        super().set_configs()
+        
         set_variables(self.args)
         
         self._archive = BaseArchive(osp.join(self.args.output_dir, 'classification'), monitor=True)
@@ -35,6 +39,7 @@ class TrainRunner:
         self._callbacks = Callbacks(_callbacks=cls_callbacks)
         
     def set_dataset(self):
+        super().set_dataset()
         
         dataset, dataset_test, self.train_sampler, test_sampler = get_datasets(self.args)
         classes = dataset.classes
@@ -81,6 +86,8 @@ class TrainRunner:
                                     self._optimizer, self._lr_scheduler, self._scaler, self.args.amp)
 
     def run_loop(self):
+        super().run_loop()
+        
         epoch_based_loop(self._callbacks, self.args, self.train_sampler, 
                         self.model, self.model_without_ddp, self._criterion, self._optimizer, 
                         self.data_loader, self.model_ema, self._scaler, self._archive,
@@ -106,7 +113,5 @@ if __name__ == "__main__":
     
     args = get_args_parser(ROOT / "cfgs/default.yaml")
     runner = TrainRunner(args)
-    
-    runner.set_variables()
-    runner.set_dataset()
-    runner.run_loop()
+    runner.train()    
+
