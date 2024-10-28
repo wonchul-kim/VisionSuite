@@ -170,7 +170,7 @@ evaluation = dict(interval=300, metric='mAP')
 optimizer = dict(
     # _delete_=True,
     type='AdamW',
-    lr=1e-4,
+    lr=5e-4,
     betas=(0.9, 0.999),
     weight_decay=0.05,
     constructor='LayerDecayOptimizerConstructor', 
