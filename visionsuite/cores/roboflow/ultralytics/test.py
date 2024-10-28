@@ -6,12 +6,12 @@ from src.test_obb import test_obb
 if __name__ == '__main__':
     
     model_name = 'yolov8'
-    backbone = 'l'
-    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/train7/weights/best.pt"
+    backbone = 'l_rad_0.75'
+    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/rad_0.75/weights/best.pt"
 
-    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/train'
-    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/train'
-    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich_yolo/{model_name}_{backbone}'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
+    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
+    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/all/{model_name}_{backbone}'
     
     if not osp.exists(output_dir):
         os.makedirs(output_dir)

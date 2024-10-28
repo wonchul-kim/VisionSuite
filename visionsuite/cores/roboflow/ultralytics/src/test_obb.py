@@ -37,9 +37,9 @@ def test_obb(weights_file, imgsz, _classes, input_dir, output_dir, json_dir, com
         for res in obb_result:
             xywhr = res.xywhr
             angle = np.rad2deg(xywhr[0][-1].cpu().detach().item())
-            print("angle: ", angle)
+            # print("angle: ", angle)
             xyxyxyxy = res.xyxyxyxy
-            print("xyxyxyxyxy: ", xyxyxyxy)
+            # print("xyxyxyxyxy: ", xyxyxyxy)
         
         idx2xyxys = {}
         for cls, xyxys, conf in zip(classes, obb_result.xyxyxyxy, confs):

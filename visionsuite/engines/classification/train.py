@@ -1,16 +1,19 @@
 import datetime
 import os
 import os.path as osp
+
 import torch
 import torch.utils.data
-
 from torch.utils.data.dataloader import default_collate
-from visionsuite.engines.classification.utils.transforms import get_mixup_cutmix
+
 from visionsuite.engines.utils.loggers.monitor import Monitor
 from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
 from visionsuite.engines.utils.helpers import mkdir
+from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.utils.torch_utils.utils import set_torch_deterministic, get_device, save_on_master, parse_device_ids
+
+from visionsuite.engines.classification.utils.transforms import get_mixup_cutmix
 from visionsuite.engines.classification.losses.default import get_cross_entropy_loss
 from visionsuite.engines.classification.schedulers.default import get_scheduler
 from visionsuite.engines.classification.dataloaders.default import get_dataloader
@@ -20,18 +23,8 @@ from visionsuite.engines.classification.train.default import train_one_epoch
 from visionsuite.engines.classification.val.default import evaluate
 from visionsuite.engines.classification.datasets.default import load_data
 from visionsuite.engines.utils.torch_utils.utils import set_weight_decay
-import numpy as np
 
-MEAN = (0.485, 0.456, 0.406)
-STD = (0.229, 0.224, 0.225)
 
-def denormalize(x, mean=MEAN, std=STD):
-    x *= np.array(std)
-    x += np.array(mean)
-    x *= 255
-    x = x.astype(np.uint8)
-    
-    return x
 
 def main(args):
 
