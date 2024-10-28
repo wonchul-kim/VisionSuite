@@ -60,7 +60,7 @@ def evaluate(model, criterion, data_loader, device, epoch, label2class, callback
         if not osp.exists(vis_dir):
             os.mkdir(vis_dir)
             
-        from utils.vis.vis_val import save_validation
+        from visionsuite.engines.classification.utils.vis.vis_val import save_validation
         save_validation(model, data_loader, label2class, epoch, vis_dir, device, denormalize)
     
     return metric_logger.acc1.global_avg

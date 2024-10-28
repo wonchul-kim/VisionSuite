@@ -1,14 +1,13 @@
 from torchvision.transforms.functional import InterpolationMode
-from torch import nn
 import os
 import torch
 import torchvision
 import visionsuite.engines.classification.utils.presets as presets
 import time
 import torchvision.transforms
-from visionsuite.engines.classification.samplers.ra_sampler import RASampler
 from visionsuite.engines.utils.helpers import mkdir, get_cache_path
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
+from visionsuite.engines.classification.samplers.default import get_samplers
 
 def load_data(traindir, valdir, args):
     # Data loading code
@@ -87,14 +86,8 @@ def load_data(traindir, valdir, args):
             save_on_master((dataset_test, valdir), cache_path)
 
     print("Creating data loaders")
-    if args.distributed:
-        if hasattr(args, "ra_sampler") and args.ra_sampler:
-            train_sampler = RASampler(dataset, shuffle=True, repetitions=args.ra_reps)
-        else:
-            train_sampler = torch.utils.data.distributed.DistributedSampler(dataset)
-        test_sampler = torch.utils.data.distributed.DistributedSampler(dataset_test, shuffle=False)
-    else:
-        train_sampler = torch.utils.data.RandomSampler(dataset)
-        test_sampler = torch.utils.data.SequentialSampler(dataset_test)
+
+
+    train_sampler, test_sampler = get_samplers(args, dataset, dataset_test)
 
     return dataset, dataset_test, train_sampler, test_sampler
