@@ -1,3 +1,3 @@
-from .base_archive import BaseArchive
+from .archive import Archive
 
-__all__ = ['BaseArchive']
+__all__ = ['Archive']

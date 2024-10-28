@@ -4,7 +4,7 @@ from visionsuite.engines.utils.helpers import create_output_dir, mkdir
 from visionsuite.engines.utils.loggers.monitor import Monitor
 
 
-class BaseArchive:
+class Archive:
     def __init__(self, output_dir, monitor=True):
         
         self._output_dir = create_output_dir(output_dir, make_dirs=True)
