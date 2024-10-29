@@ -2,8 +2,8 @@ import os.path as osp
 
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
-from visionsuite.engines.classification.train.default import train_one_epoch
-from visionsuite.engines.classification.val.default import evaluate
+from visionsuite.engines.classification.src.train.default import train_one_epoch
+from visionsuite.engines.classification.src.val.default import evaluate
 
 def epoch_based_loop(callbacks, args, train_sampler,
                      model, model_without_ddp, criterion, optimizer, data_loader, model_ema, scaler, archive,

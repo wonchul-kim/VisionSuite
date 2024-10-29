@@ -10,16 +10,16 @@ from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
-from visionsuite.engines.classification.losses.default import get_cross_entropy_loss
-from visionsuite.engines.classification.schedulers.default import get_scheduler
-from visionsuite.engines.classification.dataloaders.default import get_dataloader
-from visionsuite.engines.classification.optimizers.default import get_optimizer
-from visionsuite.engines.classification.models.default import get_model, get_ema_model
+from visionsuite.engines.classification.src.losses.default import get_cross_entropy_loss
+from visionsuite.engines.classification.src.schedulers.default import get_scheduler
+from visionsuite.engines.classification.src.dataloaders.default import get_dataloader
+from visionsuite.engines.classification.src.optimizers.default import get_optimizer
+from visionsuite.engines.classification.src.models.default import get_model, get_ema_model
 
 from visionsuite.engines.utils.torch_utils.utils import set_weight_decay
-from visionsuite.engines.classification.pipelines.variables import set_variables
-from visionsuite.engines.classification.loops.epoch_based_loop import epoch_based_loop
-from visionsuite.engines.classification.datasets.directory_dataset import get_datasets
+from visionsuite.engines.classification.src.pipelines.variables import set_variables
+from visionsuite.engines.classification.src.loops.epoch_based_loop import epoch_based_loop
+from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.runners.base_train_runner import BaseTrainRunner
 

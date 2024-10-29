@@ -7,7 +7,7 @@ import time
 import torchvision.transforms
 from visionsuite.engines.utils.helpers import mkdir, get_cache_path
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
-from visionsuite.engines.classification.samplers.default import get_samplers
+from visionsuite.engines.classification.src.samplers.default import get_samplers
 
 def load_data(traindir, valdir, args):
     # Data loading code

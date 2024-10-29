@@ -6,8 +6,8 @@ from src.test_obb import test_obb
 if __name__ == '__main__':
     
     model_name = 'yolov8'
-    backbone = 'l_rad_0.25'
-    weights_file = f"/HDD/_projects/etc/ultralytics-main/runs/obb/train/weights/best.pt"
+    backbone = 'l_dfl'
+    weights_file = f"/HDD/_projects/etc/ultralytics-main/runs/obb/train6/weights/best.pt"
 
     input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
     json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'

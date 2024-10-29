@@ -1,7 +1,7 @@
 import os.path as osp
 
-from visionsuite.engines.classification.datasets.default import load_data
-from visionsuite.engines.classification.samplers.default import get_samplers
+from visionsuite.engines.classification.src.datasets.default import load_data
+from visionsuite.engines.classification.src.samplers.default import get_samplers
 
 def get_datasets(args):
     

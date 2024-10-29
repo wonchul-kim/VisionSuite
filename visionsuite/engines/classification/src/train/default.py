@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 from visionsuite.engines.utils.metric_logger import MetricLogger
 from visionsuite.engines.utils.smoothed_value import SmoothedValue
-from visionsuite.engines.classification.metrics.accuracy import get_accuracies
+from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, args, callbacks,
