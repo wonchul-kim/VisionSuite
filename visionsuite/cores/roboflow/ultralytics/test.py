@@ -7,7 +7,7 @@ if __name__ == '__main__':
     
     model_name = 'yolov8'
     backbone = 'l_dfl'
-    weights_file = f"/HDD/_projects/etc/ultralytics-main/runs/obb/train6/weights/best.pt"
+    weights_file = f"/HDD/_projects/etc/ultralytics-main/runs/obb/train4/weights/best.pt"
 
     input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'
     json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset/val'

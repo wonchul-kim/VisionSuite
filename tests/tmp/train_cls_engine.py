@@ -1,4 +1,4 @@
-from visionsuite.engines.classification.runners.train_runner import TrainRunner
+from visionsuite.engines.classification.src.runners.train_runner import TrainRunner
 
 
 
