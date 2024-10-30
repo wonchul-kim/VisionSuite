@@ -21,7 +21,7 @@ from visionsuite.engines.classification.src.pipelines.variables import set_varia
 from visionsuite.engines.classification.src.loops.epoch_based_loop import epoch_based_loop
 from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
-from visionsuite.engines.utils.runners.base_train_runner import BaseTrainRunner
+from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
 
 class TrainRunner(BaseTrainRunner):
     def __init__(self):
