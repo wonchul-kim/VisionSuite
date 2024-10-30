@@ -10,18 +10,14 @@ from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
-from visionsuite.engines.classification.src.schedulers.default import get_scheduler
 from visionsuite.engines.classification.src.dataloaders.default import get_dataloader
-from visionsuite.engines.classification.src.optimizers.default import get_optimizer
-from visionsuite.engines.classification.src.models.default import get_ema_model
 
 from visionsuite.engines.utils.torch_utils.utils import set_weight_decay
 from visionsuite.engines.classification.src.pipelines.variables import set_variables
-from visionsuite.engines.classification.src.loops.epoch_based_loop import epoch_based_loop
 from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
-from visionsuite.engines.classification.utils.registry import RUNNERS, MODELS, LOSSES, OPTIMIZERS
+from visionsuite.engines.classification.utils.registry import RUNNERS, MODELS, LOSSES, OPTIMIZERS, SCHEDULERS, LOOPS
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
@@ -67,6 +63,9 @@ class TrainRunner(BaseTrainRunner):
         self.args.model['sync_bn'] = self.args.sync_bn
         self.args.model['gpu'] = self.args.gpu
         self.model, self.model_without_ddp = MODELS.get("get_model")(self.args.model)
+        self.model_ema = MODELS.get('get_ema_model')(self.model_without_ddp, self.args.device, 
+                                       self.args.world_size, self.args.batch_size, self.args.epochs,
+                                       self.args.ema)
         
         self._criterion = LOSSES.get('get_loss')(self.args.loss)
 
@@ -85,16 +84,15 @@ class TrainRunner(BaseTrainRunner):
 
         self._optimizer = OPTIMIZERS.get("get_optimizer")(self.args.optimizer, parameters)
         self._scaler = torch.cuda.amp.GradScaler() if self.args.amp else None
-        self._lr_scheduler = get_scheduler(self._optimizer, self.args.lr_scheduler, self.args.lr_step_size, self.args.lr_gamma, self.args.epochs, 
-                    self.args.lr_warmup_method, self.args.lr_warmup_epochs, self.args.lr_min, self.args.lr_warmup_decay)
-        self.model_ema = get_ema_model(self.model_without_ddp, self.args.device, self.args.model_ema, self.args.world_size, self.args.batch_size, self.args.model_ema_steps, self.args.model_ema_decay, self.args.epochs)
+        self._lr_scheduler = SCHEDULERS.get('get_scheduler')(self._optimizer, self.args.epochs, self.args.scheduler)
         self.args.start_epoch = set_resume(self.args.resume, self.args.ckpt, self.model_without_ddp, 
                                     self._optimizer, self._lr_scheduler, self._scaler, self.args.amp)
 
     def run_loop(self):
         super().run_loop()
         
-        epoch_based_loop(self._callbacks, self.args, self.train_sampler, 
+        loop = LOOPS.get('epoch_based_loop')
+        loop(self._callbacks, self.args, self.train_sampler, 
                         self.model, self.model_without_ddp, self._criterion, self._optimizer, 
                         self.data_loader, self.model_ema, self._scaler, self._archive,
                         self._lr_scheduler, self.data_loader_test, self._label2class)

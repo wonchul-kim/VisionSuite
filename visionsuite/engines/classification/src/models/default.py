@@ -30,18 +30,19 @@ def get_model(model_config):
 
     return model, model_without_ddp
 
-def get_ema_model(model_without_ddp, device, model_ema, world_size, batch_size, model_ema_steps, model_ema_decay, epochs):
+@MODELS.register()
+def get_ema_model(model_without_ddp, device, world_size, batch_size, epochs, ema_config):
             
     model_ema = None
-    if model_ema:
+    if ema_config['use']:
         # Decay adjustment that aims to keep the decay independent of other hyper-parameters originally proposed at:
         # https://github.com/facebookresearch/pycls/blob/f8cd9627/pycls/core/net.py#L123
         #
         # total_ema_updates = (Dataset_size / n_GPUs) * epochs / (batch_size_per_gpu * EMA_steps)
         # We consider constant = Dataset_size for a given dataset/setup and omit it. Thus:
         # adjust = 1 / total_ema_updates ~= n_GPUs * batch_size_per_gpu * EMA_steps / epochs
-        adjust = world_size * batch_size * model_ema_steps / epochs
-        alpha = 1.0 - model_ema_decay
+        adjust = world_size * batch_size * ema_config['steps'] / epochs
+        alpha = 1.0 - ema_config['decay']
         alpha = min(1.0, alpha * adjust)
         model_ema = ExponentialMovingAverage(model_without_ddp, device=device, decay=1.0 - alpha)
         

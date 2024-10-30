@@ -11,6 +11,17 @@ ROOT = FILE.parent
 class BaseTrainRunner:
     def __init__(self, task):
         self._task = task
+        
+        ## define basic atrributes to train
+        self._archive = None
+        self._callbacks = None 
+        self._model = None 
+        self._datasets = {'train': None, 'val': None}
+        self._dataloaders = {'train': None, 'val': None}
+        self._scheduler = None 
+        self._optimizer = None 
+        self._loop = None 
+        
 
     @property 
     def task(self):

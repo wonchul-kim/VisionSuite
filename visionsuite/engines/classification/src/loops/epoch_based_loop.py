@@ -4,7 +4,9 @@ from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
 from visionsuite.engines.classification.src.train.default import train_one_epoch
 from visionsuite.engines.classification.src.val.default import evaluate
+from visionsuite.engines.classification.utils.registry import LOOPS
 
+@LOOPS.register()
 def epoch_based_loop(callbacks, args, train_sampler,
                      model, model_without_ddp, criterion, optimizer, data_loader, model_ema, scaler, archive,
                      lr_scheduler, data_loader_test, label2class):
@@ -35,7 +37,7 @@ def epoch_based_loop(callbacks, args, train_sampler,
 
         callbacks.run_callbacks('on_val_start')
         evaluate(model_ema if model_ema else model, criterion, data_loader_test, args.device, epoch, label2class, callbacks, 
-                 topk=args.topk, log_suffix="EMA" if args.model_ema else "", archive=archive)
+                  topk=args.topk, log_suffix="EMA" if args.ema['use'] else "", archive=archive)
         callbacks.run_callbacks('on_val_end')
         
     callbacks.run_callbacks('on_train_end')
