@@ -41,9 +41,12 @@ classes = ['BOX']
 idx2class = {idx: cls for idx, cls in enumerate(classes)}
 _classes = ['BOX']
 _idx2class = {idx: cls for idx, cls in enumerate(_classes)}
-input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
-json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
-output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich/{model_name}_{backbone}'
+input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/sfaw/{model_name}_{backbone}'
+# input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
+# json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
+# output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich/{model_name}_{backbone}'
 
 if not osp.exists(output_dir):
     os.makedirs(output_dir)
@@ -73,16 +76,6 @@ for img_file in tqdm(img_files):
     # r = ((r - start_angle)%np.pi) + start_angle
     
     # pred[:, :-1] = torch.stack([x, y, _w, _h, r], dim=-1)
-    
-    
-    cnt = 0
-    for _pred in pred:
-        if _pred[2] < _pred[3]:
-            cnt += 1
-            
-    print(cnt)
-    
-    
     
     dets, _ = nms_rotated(pred[:, :-1], pred[:, -1], iou_threshold=nms_iou_threshold)
     confs, labels = torch.max(dets[:, 5:], axis=1)

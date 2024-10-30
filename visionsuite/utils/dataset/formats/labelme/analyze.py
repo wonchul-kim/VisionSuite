@@ -18,6 +18,9 @@ def analyze_labelme(input_dir, output_dir, project_name, title, subtitle):
         
     modes = [folder.split("/")[-1] for folder in glob.glob(osp.join(input_dir, "**")) if not osp.isfile(folder)]
 
+    if len(modes) == 0:
+        modes = ['./']
+
     num_images = {}
     labels_by_mode = {}
     labels_by_image = {}
@@ -144,10 +147,10 @@ if __name__ == '__main__':
     
     # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
     
-    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich'
-    output_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+    output_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
 
-    project_name = 'RICH'
+    project_name = 'SFAW'
     title = "Dataset Analysis"
     subtitle = f"The dataset is {project_name}"
     
