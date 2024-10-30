@@ -11,7 +11,8 @@ LOOPS = Registry('loop', build_func=build_from_cfg)
 RUNNERS = Registry('runner', build_func=build_from_cfg)
 ENGINES = Registry('engine', build_func=build_from_cfg)
 FUNCTIONALS = Registry('functional', build_func=build_from_cfg)
+PIPELINES = Registry('pipelines', build_func=build_from_cfg)
 
 __all__ = [
     'build_from_cfg', 'Registry', 'MODELS', 'OPTIMIZERS', 'DATASETS', 'DATALOADERS', 'LOSSES', 'SCHEDULERS', 'LOOPS',
-    'RUNNERS', 'ENGINES', 'FUNCTIONALS']
+    'RUNNERS', 'ENGINES', 'FUNCTIONALS', 'PIPELINES']

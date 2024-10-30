@@ -21,6 +21,7 @@ class BaseTrainRunner:
         self._scheduler = None 
         self._optimizer = None 
         self._loop = None 
+        self._loss = None
         
 
     @property 

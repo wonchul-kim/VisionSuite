@@ -12,12 +12,12 @@ from visionsuite.engines.classification.utils.callbacks import callbacks as cls_
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 from visionsuite.engines.classification.src.dataloaders.default import get_dataloader
 
-from visionsuite.engines.utils.torch_utils.utils import set_weight_decay
 from visionsuite.engines.classification.src.pipelines.variables import set_variables
 from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
-from visionsuite.engines.classification.utils.registry import RUNNERS, MODELS, LOSSES, OPTIMIZERS, SCHEDULERS, LOOPS
+from visionsuite.engines.classification.utils.registry import (RUNNERS, MODELS, LOSSES, OPTIMIZERS, 
+                                                               SCHEDULERS, LOOPS, PIPELINES)
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
@@ -67,23 +67,14 @@ class TrainRunner(BaseTrainRunner):
                                        self.args.world_size, self.args.batch_size, self.args.epochs,
                                        self.args.ema)
         
-        self._criterion = LOSSES.get('get_loss')(self.args.loss)
+        self._loss = LOSSES.get('get_loss')(self.args.loss)
 
-        custom_keys_weight_decay = []
-        if self.args.bias_weight_decay is not None:
-            custom_keys_weight_decay.append(("bias", self.args.bias_weight_decay))
-        if self.args.transformer_embedding_decay is not None:
-            for key in ["class_token", "position_embedding", "relative_position_bias_table"]:
-                custom_keys_weight_decay.append((key, self.args.transformer_embedding_decay))
-        parameters = set_weight_decay(
-            self.model,
-            self.args.optimizer['weight_decay'],
-            norm_weight_decay=self.args.norm_weight_decay,
-            custom_keys_weight_decay=custom_keys_weight_decay if len(custom_keys_weight_decay) > 0 else None,
-        )
+        parameters = OPTIMIZERS.get('get_parameters')(self.args.bias_weight_decay, self.args.transformer_embedding_decay,
+                   self.model, self.args.optimizer['weight_decay'],
+                   self.args.norm_weight_decay)
 
         self._optimizer = OPTIMIZERS.get("get_optimizer")(self.args.optimizer, parameters)
-        self._scaler = torch.cuda.amp.GradScaler() if self.args.amp else None
+        self._scaler = PIPELINES.get('get_scaler')(self.args.amp)
         self._lr_scheduler = SCHEDULERS.get('get_scheduler')(self._optimizer, self.args.epochs, self.args.scheduler)
         self.args.start_epoch = set_resume(self.args.resume, self.args.ckpt, self.model_without_ddp, 
                                     self._optimizer, self._lr_scheduler, self._scaler, self.args.amp)
@@ -93,7 +84,7 @@ class TrainRunner(BaseTrainRunner):
         
         loop = LOOPS.get('epoch_based_loop')
         loop(self._callbacks, self.args, self.train_sampler, 
-                        self.model, self.model_without_ddp, self._criterion, self._optimizer, 
+                        self.model, self.model_without_ddp, self._loss, self._optimizer, 
                         self.data_loader, self.model_ema, self._scaler, self._archive,
                         self._lr_scheduler, self.data_loader_test, self._label2class)
         

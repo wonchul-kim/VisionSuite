@@ -6,6 +6,7 @@ from visionsuite.engines.utils.registry import DATALOADERS as ROOT_DATALOADERS
 from visionsuite.engines.utils.registry import LOSSES as ROOT_LOSSES
 from visionsuite.engines.utils.registry import SCHEDULERS as ROOT_SCHEDULERS
 from visionsuite.engines.utils.registry import LOOPS as ROOT_LOOPS
+from visionsuite.engines.utils.registry import PIPELINES as ROOT_PIPELINES
 from visionsuite.engines.utils.registry import Registry
 
 
@@ -50,3 +51,7 @@ LOOPS = Registry('loops', parent=ROOT_LOOPS,
                    locations=['visionsuite.engines.classification.src.loops']
         )
 
+PIPELINES = Registry('pipelines', parent=ROOT_PIPELINES, 
+                   scope=scope,
+                   locations=['visionsuite.engines.classification.src.pipelines']
+        )
