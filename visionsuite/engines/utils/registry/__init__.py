@@ -1,4 +1,4 @@
-from .root import RUNNERS
+from .root import RUNNERS, MODELS, OPTIMIZERS, DATASETS, DATALOADERS, LOSSES, SCHEDULERS, LOOPS
 from .registry import Registry
 
-__all__ = ['Registry', 'RUNNERS']
+__all__ = ['Registry', 'RUNNERS', 'MODELS', 'OPTIMIZERS', 'DATASETS', 'DATALOADERS', 'LOSSES', 'SCHEDULERS', 'LOOPS']

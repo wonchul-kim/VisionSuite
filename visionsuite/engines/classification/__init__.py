@@ -1,4 +1,4 @@
-import visionsuite.engines.classification.src
+import visionsuite.engines.classification.src # to pre-compile
 from visionsuite.engines.utils.bases import BaseEngine
 from visionsuite.engines.classification.utils.registry import RUNNERS
 
