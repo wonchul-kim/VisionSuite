@@ -10,11 +10,10 @@ from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
-from visionsuite.engines.classification.src.losses.default import get_cross_entropy_loss
 from visionsuite.engines.classification.src.schedulers.default import get_scheduler
 from visionsuite.engines.classification.src.dataloaders.default import get_dataloader
 from visionsuite.engines.classification.src.optimizers.default import get_optimizer
-from visionsuite.engines.classification.src.models.default import get_model, get_ema_model
+from visionsuite.engines.classification.src.models.default import get_ema_model
 
 from visionsuite.engines.utils.torch_utils.utils import set_weight_decay
 from visionsuite.engines.classification.src.pipelines.variables import set_variables
@@ -22,7 +21,7 @@ from visionsuite.engines.classification.src.loops.epoch_based_loop import epoch_
 from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
-from visionsuite.engines.classification.utils.registry import RUNNERS
+from visionsuite.engines.classification.utils.registry import RUNNERS, MODELS, LOSSES, OPTIMIZERS
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
@@ -61,9 +60,15 @@ class TrainRunner(BaseTrainRunner):
 
         self.data_loader, self.data_loader_test = get_dataloader(dataset, dataset_test, self.train_sampler, test_sampler, self.args.batch_size, self.args.workers, collate_fn)
         
-        self.model, self.model_without_ddp = get_model(self.args.model_name, self.args.device, num_classes, self.args.distributed, self.args.sync_bn, self.args.weights, self.args.gpu)
-
-        self._criterion = get_cross_entropy_loss(label_smoothing=self.args.label_smoothing)
+        
+        self.args.model['num_classes'] = num_classes 
+        self.args.model['distributed'] = self.args.distributed
+        self.args.model['device'] = self.args.device
+        self.args.model['sync_bn'] = self.args.sync_bn
+        self.args.model['gpu'] = self.args.gpu
+        self.model, self.model_without_ddp = MODELS.get("get_model")(self.args.model)
+        
+        self._criterion = LOSSES.get('get_loss')(self.args.loss)
 
         custom_keys_weight_decay = []
         if self.args.bias_weight_decay is not None:
@@ -73,12 +78,12 @@ class TrainRunner(BaseTrainRunner):
                 custom_keys_weight_decay.append((key, self.args.transformer_embedding_decay))
         parameters = set_weight_decay(
             self.model,
-            self.args.weight_decay,
+            self.args.optimizer['weight_decay'],
             norm_weight_decay=self.args.norm_weight_decay,
             custom_keys_weight_decay=custom_keys_weight_decay if len(custom_keys_weight_decay) > 0 else None,
         )
 
-        self._optimizer = get_optimizer(self.args.opt, self.args.lr, parameters, self.args.momentum, self.args.weight_decay)
+        self._optimizer = OPTIMIZERS.get("get_optimizer")(self.args.optimizer, parameters)
         self._scaler = torch.cuda.amp.GradScaler() if self.args.amp else None
         self._lr_scheduler = get_scheduler(self._optimizer, self.args.lr_scheduler, self.args.lr_step_size, self.args.lr_gamma, self.args.epochs, 
                     self.args.lr_warmup_method, self.args.lr_warmup_epochs, self.args.lr_min, self.args.lr_warmup_decay)

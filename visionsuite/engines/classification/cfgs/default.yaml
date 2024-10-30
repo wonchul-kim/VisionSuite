@@ -1,15 +1,28 @@
 
+model:
+  backend: 'torchvision_model'
+  model_name: 'resnet'
+  backbone: '18'
+  weights: null
+  num_classes: null
+
+loss:
+  loss_name: cross_entropy
+  label_smoothing: 0.0
+
+optimizer:
+  optimizer_name: sgd
+  lr: 0.1
+  momentum: 0.9
+  weight_decay: 0.0001
+  
 ckpt: null
-model_name: "resnet18"
 device: "cuda"
 device_ids: '0,1'
 batch_size: 8
 epochs: 90
 workers: 16
-opt: sgd
-lr: 0.1
-momentum: 0.9
-weight_decay: 0.0001
+
 norm_weight_decay: null
 bias_weight_decay: null
 transformer_embedding_decay: null
@@ -55,7 +68,6 @@ train_crop_size: 224
 clip_grad_norm: 1.0
 ra_sampler: True
 ra_reps: 4
-weights: null
 backend: PIL
 use_v2: False # Use V2 transforms
 

@@ -61,8 +61,8 @@ def load_data(traindir, valdir, args):
         # TODO: this could probably be weights_only=True
         dataset_test, _ = torch.load(cache_path, weights_only=False)
     else:
-        if args.weights:
-            weights = torchvision.models.get_weight(args.weights)
+        if args.model['weights']:
+            weights = torchvision.models.get_weight(args.model['weights'])
             preprocessing = weights.transforms(antialias=True)
             if args.backend == "tensor":
                 preprocessing = torchvision.transforms.Compose([torchvision.transforms.PILToTensor(), preprocessing])
