@@ -1,5 +1,4 @@
-from visionsuite.engines.classification.src.runners.train_runner import TrainRunner
-
+from visionsuite.engines.classification import Engine
 
 
 if __name__ == "__main__":
@@ -7,6 +6,6 @@ if __name__ == "__main__":
     FILE = Path(__file__).resolve()
     ROOT = FILE.parents[2]
     
-    runner = TrainRunner()
+    runner = Engine('classification')
     runner.train(ROOT / "visionsuite/engines/classification/cfgs/datasets/rps.yaml")    
 

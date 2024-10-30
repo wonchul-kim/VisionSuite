@@ -22,7 +22,9 @@ from visionsuite.engines.classification.src.loops.epoch_based_loop import epoch_
 from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
+from visionsuite.engines.classification.utils.registry import RUNNERS
 
+@RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
     def __init__(self):
         super().__init__('classification')
