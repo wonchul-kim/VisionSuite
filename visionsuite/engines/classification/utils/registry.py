@@ -1,11 +1,11 @@
 from visionsuite.engines.utils.registry.losses import TORCH_LOSSES
+from visionsuite.engines.utils.registry.optims import TORCH_OPTIMIZERS
+from visionsuite.engines.utils.registry.schedulers import TORCH_SCHEDULERS
+
 from visionsuite.engines.utils.registry import RUNNERS as ROOT_RUNNERS
 from visionsuite.engines.utils.registry import MODELS as ROOT_MODELS
-from visionsuite.engines.utils.registry import OPTIMIZERS as ROOT_OPTIMIZERS
 from visionsuite.engines.utils.registry import DATASETS as ROOT_DATASETS
 from visionsuite.engines.utils.registry import DATALOADERS as ROOT_DATALOADERS
-from visionsuite.engines.utils.registry import LOSSES as ROOT_LOSSES
-from visionsuite.engines.utils.registry import SCHEDULERS as ROOT_SCHEDULERS
 from visionsuite.engines.utils.registry import LOOPS as ROOT_LOOPS
 from visionsuite.engines.utils.registry import PIPELINES as ROOT_PIPELINES
 from visionsuite.engines.utils.registry import SAMPLERS as ROOT_SAMPLERS
@@ -24,7 +24,7 @@ MODELS = Registry('models', parent=ROOT_MODELS,
                    locations=['visionsuite.engines.classification.src.models']
         )
 
-OPTIMIZERS = Registry('optimizers', parent=ROOT_OPTIMIZERS, 
+OPTIMIZERS = Registry('optimizers', parent=TORCH_OPTIMIZERS, 
                    scope=scope,
                    locations=['visionsuite.engines.classification.src.optimizers']
         )
@@ -44,7 +44,7 @@ LOSSES = Registry('losses', parent=TORCH_LOSSES,
                    locations=['visionsuite.engines.classification.src.losses']
         )
 
-SCHEDULERS = Registry('schedulers', parent=ROOT_SCHEDULERS, 
+SCHEDULERS = Registry('schedulers', parent=TORCH_SCHEDULERS, 
                    scope=scope,
                    locations=['visionsuite.engines.classification.src.schedulers']
         )

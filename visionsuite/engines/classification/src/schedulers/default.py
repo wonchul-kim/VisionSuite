@@ -3,42 +3,46 @@ from visionsuite.engines.classification.utils.registry import SCHEDULERS
 
 
 @SCHEDULERS.register()
-def get_scheduler(optimizer, epochs, scheduler_config):
-    if scheduler_config['scheduler_name'] == "steplr":
-        main_lr_scheduler = torch.optim.lr_scheduler.StepLR(optimizer, 
-                                                            step_size=scheduler_config['lr_step_size'], 
-                                                            gamma=scheduler_config['lr_gamma'])
-    elif scheduler_config['scheduler_name'] == "cosineannealinglr":
+def lr_scheduler(optimizer, epochs, scheduler_config, warmup_scheduler_config):
+    from visionsuite.engines.utils.helpers import get_params_from_obj
+    if scheduler_config['scheduler_name'] == "CosineAnnealingLR":
         main_lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(
             optimizer, T_max = epochs - scheduler_config['lr_warmup_epochs'], eta_min=scheduler_config['lr_min']
         )
-    elif scheduler_config['scheduler_name'] == "exponentiallr":
-        main_lr_scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer, 
-                                                                   gamma=scheduler_config['lr_gamma'])
     else:
-        raise RuntimeError(
-            f"Invalid lr scheduler '{scheduler_config['scheduler_name']}'. Only StepLR, CosineAnnealingLR and ExponentialLR "
-            "are supported."
-        )
-
-    if scheduler_config['lr_warmup_epochs'] > 0:
-        if scheduler_config['lr_warmup_method'] == "linear":
-            warmup_lr_scheduler = torch.optim.lr_scheduler.LinearLR(
-                optimizer, start_factor=scheduler_config['lr_warmup_decay'], total_iters=scheduler_config['lr_warmup_epochs']
-            )
-        elif scheduler_config['lr_warmup_method'] == "constant":
-            warmup_lr_scheduler = torch.optim.lr_scheduler.ConstantLR(
-                optimizer, factor=scheduler_config['lr_warmup_decay'], total_iters=scheduler_config['lr_warmup_epochs']
-            )
-        else:
+        scheduler_obj = SCHEDULERS.get(scheduler_config['scheduler_name'])
+        if not scheduler_obj:
             raise RuntimeError(
-                f"Invalid warmup lr method '{scheduler_config['lr_warmup_method']}'. Only linear and constant are supported."
-            )
-        lr_scheduler = torch.optim.lr_scheduler.SequentialLR(
-            optimizer, schedulers=[warmup_lr_scheduler, main_lr_scheduler], milestones=[scheduler_config['lr_warmup_epochs']]
+                f"Invalid lr scheduler '{scheduler_config['scheduler_name']}'")
+        scheduler_params = get_params_from_obj(scheduler_obj)
+        for key in scheduler_params.keys():
+            if key in scheduler_config:
+                scheduler_params[key] = scheduler_config[key]
+                
+            if key == 'optimizer':
+                scheduler_params[key] = optimizer
+                
+                
+        main_lr_scheduler = scheduler_obj(**scheduler_params)
+    
+    if warmup_scheduler_config and warmup_scheduler_config['total_iters'] > 0:
+        scheduler_obj = SCHEDULERS.get(warmup_scheduler_config['warmup_scheduler_name'])
+        if not scheduler_obj:
+            raise RuntimeError(
+                f"Invalid lr scheduler '{warmup_scheduler_config['warmup_scheduler_name']}'. Only ConstantLR and LinearLR are available")
+        scheduler_params = get_params_from_obj(scheduler_obj)
+        for key in scheduler_params.keys():
+            if key in warmup_scheduler_config:
+                scheduler_params[key] = warmup_scheduler_config[key]
+                
+            if key == 'optimizer':
+                scheduler_params[key] = optimizer
+                
+        warmup_lr_scheduler = scheduler_obj(**scheduler_params)
+        lr_scheduler = SCHEDULERS.get(warmup_scheduler_config['integrate_scheduler_name'])(
+            optimizer, schedulers=[warmup_lr_scheduler, main_lr_scheduler], milestones=[warmup_scheduler_config['total_iters']]
         )
     else:
         lr_scheduler = main_lr_scheduler
-        
         
     return lr_scheduler
