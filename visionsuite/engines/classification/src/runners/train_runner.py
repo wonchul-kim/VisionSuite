@@ -55,30 +55,26 @@ class TrainRunner(BaseTrainRunner):
         self.val_dataloader = DATALOADERS.get('torch_dataloader')(val_dataset, test_sampler, self.args.batch_size, self.args.workers, collate_fn)
         
     def set_model(self):
-        self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(**self.args.model)
-        self.model.to_device(self.args.device)
-        self.model.set_dist(self.args.distributed, self.args.sync_bn, self.args.gpu)
-        self.model.set_ema(self.args.world_size, self.args.batch_size, 
-                           self.args.epochs, self.args.ema)
-        
-        self._loss = LOSSES.get('get_loss')(self.args.loss)
+        super().set_model()
+        self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(**vars(self.args))
+        self.loss = LOSSES.get('get_loss')(self.args.loss)
 
         parameters = OPTIMIZERS.get('get_parameters')(self.args.bias_weight_decay, self.args.transformer_embedding_decay,
                    self.model.model, self.args.optimizer['weight_decay'],
                    self.args.norm_weight_decay)
 
-        self._optimizer = OPTIMIZERS.get("get_optimizer")(self.args.optimizer, parameters)
-        self._scaler = PIPELINES.get('get_scaler')(self.args.amp)
-        self._lr_scheduler = SCHEDULERS.get('get_scheduler')(self._optimizer, self.args.epochs, self.args.scheduler)
+        self.optimizer = OPTIMIZERS.get("get_optimizer")(self.args.optimizer, parameters)
+        self.scaler = PIPELINES.get('get_scaler')(self.args.amp)
+        self.lr_scheduler = SCHEDULERS.get('get_scheduler')(self.optimizer, self.args.epochs, self.args.scheduler)
         self.args.start_epoch = set_resume(self.args.resume, self.args.ckpt, self.model.model_without_ddp, 
-                                    self._optimizer, self._lr_scheduler, self._scaler, self.args.amp)
+                                    self.optimizer, self.lr_scheduler, self.scaler, self.args.amp)
 
     def run_loop(self):
         super().run_loop()
         
         loop = LOOPS.get('epoch_based_loop')
         loop(self._callbacks, self.args, self.train_sampler, 
-                        self.model.model, self.model.model_without_ddp, self._loss, self._optimizer, 
-                        self.train_dataloader, self.model.model_ema, self._scaler, self._archive,
-                        self._lr_scheduler, self.val_dataloader, self._label2class)
+                        self.model.model, self.model.model_without_ddp, self.loss, self.optimizer, 
+                        self.train_dataloader, self.model.model_ema, self.scaler, self._archive,
+                        self.lr_scheduler, self.val_dataloader, self._label2class)
         

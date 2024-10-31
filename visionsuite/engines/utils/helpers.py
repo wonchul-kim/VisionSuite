@@ -45,3 +45,6 @@ def yaml2namespace(args_file):
     args = argparse.Namespace(**cfgs)
     
     return args
+
+def assert_key_dict(dictionary, key):
+    assert key in dictionary, ValueError(f"There is no key({key})")

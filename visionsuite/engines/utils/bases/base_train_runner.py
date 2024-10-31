@@ -65,6 +65,7 @@ class BaseTrainRunner:
     def set_dataset(self):
         pass 
     
+    @abstractmethod
     def set_model(self):
         pass
 
