@@ -12,7 +12,6 @@ from visionsuite.engines.classification.utils.callbacks import callbacks as cls_
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 from visionsuite.engines.classification.src.dataloaders.default import get_dataloader
 
-from visionsuite.engines.classification.src.pipelines.variables import set_variables
 from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
@@ -27,12 +26,13 @@ class TrainRunner(BaseTrainRunner):
     def set_configs(self, *args, **kwargs):
         super().set_configs(*args, **kwargs)
         
-        
+    def set_variables(self):
+        super().set_variables()
+
         self._archive = Archive(osp.join(self.args.output_dir, 'classification'), monitor=True)
         self._archive.save_args(self.args)
         
         self._callbacks = Callbacks(_callbacks=cls_callbacks)
-        set_variables(self.args)
         
     def set_dataset(self):
         super().set_dataset()
