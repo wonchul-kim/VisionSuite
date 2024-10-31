@@ -13,7 +13,7 @@ from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
 from visionsuite.engines.classification.utils.params import TrainParams
 
 
-class BaseTrainRunner(TrainParams):
+class BaseTrainRunner:
     def __init__(self, task):
         super().__init__()
         
@@ -80,5 +80,6 @@ class BaseTrainRunner(TrainParams):
         self.set_configs(*args, **kwargs)
         self.set_variables()
         self.set_dataset()
+        self.set_model()
         self.run_loop()
     

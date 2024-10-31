@@ -3,19 +3,19 @@ import os.path as osp
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
 from visionsuite.engines.classification.src.train.default import train_one_epoch
-from visionsuite.engines.classification.src.val.default import evaluate
+from visionsuite.engines.classification.src.val.default import val
 from visionsuite.engines.classification.utils.registry import LOOPS
 
 @LOOPS.register()
 def epoch_based_loop(callbacks, args, train_sampler,
-                     model, model_without_ddp, criterion, optimizer, data_loader, model_ema, scaler, archive,
-                     lr_scheduler, data_loader_test, label2class):
+                     model, model_without_ddp, criterion, optimizer, train_dataloader, model_ema, scaler, archive,
+                     lr_scheduler, val_dataloader, label2class):
         
     callbacks.run_callbacks('on_train_start')
     for epoch in range(args.start_epoch, args.epochs):
         if args.distributed:
             train_sampler.set_epoch(epoch)
-        train_one_epoch(model, criterion, optimizer, data_loader, 
+        train_one_epoch(model, criterion, optimizer, train_dataloader, 
                         args.device, epoch, args, callbacks, model_ema, scaler, 
                         args.topk, archive)
         lr_scheduler.step()
@@ -36,7 +36,7 @@ def epoch_based_loop(callbacks, args, train_sampler,
             save_on_master(checkpoint, osp.join(archive.weights_dir, "checkpoint.pth"))
 
         callbacks.run_callbacks('on_val_start')
-        evaluate(model_ema if model_ema else model, criterion, data_loader_test, args.device, epoch, label2class, callbacks, 
+        val(model_ema if model_ema else model, criterion, val_dataloader, args.device, epoch, label2class, callbacks, 
                   topk=args.topk, log_suffix="EMA" if args.ema['use'] else "", archive=archive)
         callbacks.run_callbacks('on_val_end')
         

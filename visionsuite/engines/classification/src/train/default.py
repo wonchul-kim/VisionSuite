@@ -6,7 +6,7 @@ from visionsuite.engines.utils.smoothed_value import SmoothedValue
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 
 
-def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, args, callbacks,
+def train_one_epoch(model, criterion, optimizer, dataloader, device, epoch, args, callbacks,
                     model_ema=None, scaler=None, topk=5, archive=None):
     model.train()
     metric_logger = MetricLogger(delimiter="  ")
@@ -15,7 +15,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, device, epoch, arg
 
     header = f"Epoch: [{epoch}]"
     callbacks.run_callbacks('on_train_epoch_start')
-    for i, (image, target) in enumerate(metric_logger.log_every(data_loader, args.print_freq, header)):
+    for i, (image, target) in enumerate(metric_logger.log_every(dataloader, args.print_freq, header)):
         callbacks.run_callbacks('on_train_batch_start')
         start_time = time.time()
         image, target = image.to(device), target.to(device)

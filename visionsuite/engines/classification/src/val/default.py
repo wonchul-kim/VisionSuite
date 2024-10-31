@@ -8,7 +8,7 @@ from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 
-def evaluate(model, criterion, data_loader, device, epoch, label2class, callbacks,
+def val(model, criterion, dataloader, device, epoch, label2class, callbacks,
              print_freq=100, log_suffix="", topk=5, archive=None):
     model.eval()
     metric_logger = MetricLogger(delimiter="  ")
@@ -17,7 +17,7 @@ def evaluate(model, criterion, data_loader, device, epoch, label2class, callback
     num_processed_samples = 0
     callbacks.run_callbacks('on_val_epoch_start')
     with torch.inference_mode():
-        for image, target in metric_logger.log_every(data_loader, print_freq, header):
+        for image, target in metric_logger.log_every(dataloader, print_freq, header):
             callbacks.run_callbacks('on_val_batch_start')
             image = image.to(device, non_blocking=True)
             target = target.to(device, non_blocking=True)
@@ -39,13 +39,13 @@ def evaluate(model, criterion, data_loader, device, epoch, label2class, callback
 
     num_processed_samples = reduce_across_processes(num_processed_samples)
     if (
-        hasattr(data_loader.dataset, "__len__")
-        and len(data_loader.dataset) != num_processed_samples
+        hasattr(dataloader.dataset, "__len__")
+        and len(dataloader.dataset) != num_processed_samples
         and torch.distributed.get_rank() == 0
     ):
         # See FIXME above
         warnings.warn(
-            f"It looks like the dataset has {len(data_loader.dataset)} samples, but {num_processed_samples} "
+            f"It looks like the dataset has {len(dataloader.dataset)} samples, but {num_processed_samples} "
             "samples were used for the validation, which might bias the results. "
             "Try adjusting the batch size and / or the world size. "
             "Setting the world size to 1 is always a safe bet."
@@ -61,6 +61,6 @@ def evaluate(model, criterion, data_loader, device, epoch, label2class, callback
             os.mkdir(vis_dir)
             
         from visionsuite.engines.classification.utils.vis.vis_val import save_validation
-        save_validation(model, data_loader, label2class, epoch, vis_dir, device, denormalize)
+        save_validation(model, dataloader, label2class, epoch, vis_dir, device, denormalize)
     
     return metric_logger.acc1.global_avg
