@@ -1,3 +1,3 @@
-from .default import get_parameters
+from .default import optimizer
 
-__all__ = ['get_parameters']
+__all__ = ['optimizer']

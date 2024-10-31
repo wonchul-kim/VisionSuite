@@ -68,33 +68,8 @@ class TrainRunner(BaseTrainRunner):
     def set_model(self):
         super().set_model()
         self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(**vars(self.args))
-        
-        from visionsuite.engines.utils.helpers import get_params_from_obj
-        loss_obj = LOSSES.get(self.args.loss['loss_name'])
-        loss_params = get_params_from_obj(loss_obj)
-        for key in loss_params.keys():
-            if key in self.args.loss:
-                loss_params[key] = self.args.loss[key]
-            
-        self.loss = loss_obj(**loss_params)
-
-        parameters = OPTIMIZERS.get('get_parameters')(self.args.bias_weight_decay, self.args.transformer_embedding_decay,
-                   self.model.model, self.args.optimizer['weight_decay'],
-                   self.args.norm_weight_decay)
-
-
-        from visionsuite.engines.utils.helpers import get_params_from_obj
-        optim_obj = OPTIMIZERS.get(self.args.optimizer['optimizer_name'])
-        optim_params = get_params_from_obj(optim_obj)
-        for key in optim_params.keys():
-            if key in self.args.optimizer:
-                optim_params[key] = self.args.optimizer[key]
-                
-            if key == 'params':
-                optim_params[key] = parameters
-        self.optimizer = optim_obj(**optim_params)
-
-        # self.optimizer = OPTIMIZERS.get("get_optimizer")(self.args.optimizer, parameters)
+        self.loss = LOSSES.get("loss")(self.args.loss)
+        self.optimizer = OPTIMIZERS.get('optimizer')(self.model.model, self.args.optimizer)
         self.scaler = PIPELINES.get('get_scaler')(self.args.amp)
         self.lr_scheduler = SCHEDULERS.get('lr_scheduler')(self.optimizer, self.args.epochs, self.args.scheduler, self.args.warmup_scheduler)
         self.args.start_epoch = set_resume(self.args.resume, self.args.ckpt, self.model.model_without_ddp, 
