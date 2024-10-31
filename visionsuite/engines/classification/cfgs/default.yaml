@@ -12,7 +12,7 @@ ema:
   decay: 0.99998
 
 loss:
-  loss_name: cross_entropy
+  loss_name: CrossEntropyLoss
   label_smoothing: 0.0
 
 optimizer:

@@ -68,7 +68,15 @@ class TrainRunner(BaseTrainRunner):
     def set_model(self):
         super().set_model()
         self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(**vars(self.args))
-        self.loss = LOSSES.get(self.args.loss['loss_name'])(self.args.loss)
+        
+        from visionsuite.engines.utils.helpers import get_params_from_obj
+        loss_obj = LOSSES.get(self.args.loss['loss_name'])
+        loss_params = get_params_from_obj(loss_obj)
+        for key in loss_params.keys():
+            if key in self.args.loss:
+                loss_params[key] = self.args.loss[key]
+            
+        self.loss = LOSSES.get(self.args.loss['loss_name'])(**loss_params)
 
         parameters = OPTIMIZERS.get('get_parameters')(self.args.bias_weight_decay, self.args.transformer_embedding_decay,
                    self.model.model, self.args.optimizer['weight_decay'],

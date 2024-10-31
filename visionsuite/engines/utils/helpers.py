@@ -48,3 +48,13 @@ def yaml2namespace(args_file):
 
 def assert_key_dict(dictionary, key):
     assert key in dictionary, ValueError(f"There is no key({key})")
+    
+def get_params_from_obj(obj):
+    import inspect
+
+    signature = inspect.signature(obj)
+
+    # Extract the parameters
+    parameters = {param.name: param.default for param in signature.parameters.values()}
+    
+    return parameters
