@@ -6,15 +6,15 @@ from src.test_obb import test_obb
 if __name__ == '__main__':
     
     model_name = 'yolov8'
-    backbone = 'l_dfl_0.0'
-    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/dfl_0.0/weights/best.pt"
+    backbone = 'l_dfl_0.2_norad'
+    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/dfl_0.2_norad/weights/best.pt"
 
-    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
-    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
-    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich/{model_name}_{backbone}'
-    # input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
-    # json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
-    # output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/sfaw/{model_name}_{backbone}'
+    # input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_doosan/val'
+    # json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_doosan/val'
+    # output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/doosan/{model_name}_{backbone}'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/sfaw/{model_name}_{backbone}'
     
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
