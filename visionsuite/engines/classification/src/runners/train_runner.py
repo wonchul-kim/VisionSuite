@@ -12,11 +12,10 @@ from visionsuite.engines.classification.utils.callbacks import callbacks as cls_
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 from visionsuite.engines.classification.src.dataloaders.default import get_dataloader
 
-from visionsuite.engines.classification.src.datasets.directory_dataset import get_datasets
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
 from visionsuite.engines.classification.utils.registry import (RUNNERS, MODELS, LOSSES, OPTIMIZERS, 
-                                                               SCHEDULERS, LOOPS, PIPELINES)
+                                                               SCHEDULERS, LOOPS, PIPELINES, DATASETS)
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
@@ -37,7 +36,7 @@ class TrainRunner(BaseTrainRunner):
     def set_dataset(self):
         super().set_dataset()
         
-        dataset, dataset_test, self.train_sampler, test_sampler = get_datasets(self.args)
+        dataset, dataset_test, self.train_sampler, test_sampler = DATASETS.get("get_datasets")(self.args)
         classes = dataset.classes
         print(f"Classes: {classes}")
         self._label2class = {label: _class for label, _class in enumerate(classes)}
