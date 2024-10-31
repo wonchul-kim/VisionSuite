@@ -1,5 +1,5 @@
 import os.path as osp
-
+import torch
 from torch.utils.data.dataloader import default_collate
 
 from visionsuite.engines.utils.torch_utils.resume import set_resume
@@ -67,10 +67,11 @@ class TrainRunner(BaseTrainRunner):
         
     def set_model(self):
         super().set_model()
-        self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(**vars(self.args))
+        self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(vars(self.args))
         self.loss = LOSSES.get("loss")(self.args.loss)
         self.optimizer = OPTIMIZERS.get('optimizer')(self.model.model, self.args.optimizer)
-        self.scaler = PIPELINES.get('get_scaler')(self.args.amp)
+
+        self.scaler = torch.cuda.amp.GradScaler() if self.args.amp else None
         self.lr_scheduler = SCHEDULERS.get('lr_scheduler')(self.optimizer, self.args.epochs, self.args.scheduler, self.args.warmup_scheduler)
         self.args.start_epoch = set_resume(self.args.resume, self.args.ckpt, self.model.model_without_ddp, 
                                     self.optimizer, self.lr_scheduler, self.scaler, self.args.amp)

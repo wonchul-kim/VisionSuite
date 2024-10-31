@@ -9,6 +9,7 @@ from visionsuite.engines.utils.registry import DATALOADERS as ROOT_DATALOADERS
 from visionsuite.engines.utils.registry import LOOPS as ROOT_LOOPS
 from visionsuite.engines.utils.registry import PIPELINES as ROOT_PIPELINES
 from visionsuite.engines.utils.registry import SAMPLERS as ROOT_SAMPLERS
+from visionsuite.engines.utils.registry import FUNCTIONALS as ROOT_FUNCTIONALS
 
 from visionsuite.engines.utils.registry import Registry
 
@@ -62,4 +63,9 @@ PIPELINES = Registry('pipelines', parent=ROOT_PIPELINES,
 SAMPLERS = Registry('samplers', parent=ROOT_SAMPLERS, 
                    scope=scope,
                    locations=['visionsuite.engines.classification.src.samplers']
+        )
+
+FUNCTIONALS = Registry('samplers', parent=ROOT_FUNCTIONALS, 
+                   scope=scope,
+                   locations=['visionsuite.engines.classification.src.functionals']
         )

@@ -24,7 +24,7 @@ optimizer:
   norm_weight_decay: null
   bias_weight_decay: null
   transformer_embedding_decay: null
-  
+
 scheduler:
   scheduler_name: StepLR
   step_size: 30
@@ -37,15 +37,13 @@ warmup_scheduler:
   factor: 0.01
   integrate_scheduler_name: SequentialLR
 
+
 ckpt: null
 device: "cuda"
 device_ids: '0,1'
 batch_size: 8
 epochs: 90
 workers: 16
-
-
-label_smoothing: 0.0
 
 resume: ""
 cache_dataset: False

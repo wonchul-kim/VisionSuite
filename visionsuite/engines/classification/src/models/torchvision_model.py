@@ -8,7 +8,7 @@ from visionsuite.engines.utils.helpers import assert_key_dict
         
 @MODELS.register()
 class TorchvisionModel:
-    def __init__(self, **config):
+    def __init__(self, config):
         
         self._config = config
         self._device = 'cpu'
