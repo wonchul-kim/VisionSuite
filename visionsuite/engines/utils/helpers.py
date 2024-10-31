@@ -24,11 +24,12 @@ def create_output_dir(output_dir, make_dirs=False):
     now = datetime.datetime.now()
     year = now.year 
     month = now.month
+    day = now.day
     hour = now.hour
     minute = now.minute
     second = now.second
     
-    output_dir = osp.join(output_dir, f'{year}_{month}_{hour}_{minute}_{second}')
+    output_dir = osp.join(output_dir, f'{year}_{month}_{day}_{hour}_{minute}_{second}')
     mkdir(output_dir, make_dirs=make_dirs)
     
     return output_dir

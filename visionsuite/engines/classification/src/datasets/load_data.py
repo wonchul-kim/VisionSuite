@@ -1,50 +1,27 @@
-import os.path as osp
-import torchvision.transforms as transforms
+from torchvision.transforms.functional import InterpolationMode
+import os
+import torch
+import torchvision
+import visionsuite.engines.classification.utils.augment.presets as presets
+import time
+import torchvision.transforms
+from visionsuite.engines.utils.helpers import mkdir, get_cache_path
+from visionsuite.engines.utils.torch_utils.utils import save_on_master
+from visionsuite.engines.classification.utils.registry import SAMPLERS
 
-# from visionsuite.engines.classification.src.datasets.load_data import load_data
-from visionsuite.engines.classification.utils.registry import DATASETS
 
-           
 
-# @DATASETS.register()
-# def directory_datasets(args):
-#     train_dir = osp.join(args.input_dir, "train")
-#     val_dir = osp.join(args.input_dir, "val")
-#     dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir, args)
-    
-#     return dataset, dataset_test, train_sampler, test_sampler
-
-@DATASETS.register()
-def directory_datasets(args):
-    train_dir = osp.join(args.input_dir, "train")
-    val_dir = osp.join(args.input_dir, "val")
-    
-    
-    mean=(0.485, 0.456, 0.406)
-    std=(0.229, 0.224, 0.225)
-        
-    transform = transforms.Compose(
-                                    [transforms.ToTensor(),
-                                    transforms.Normalize(mean=mean, std=std)])
-    
-    dataset, dataset_test, train_sampler, test_sampler = load_data(train_dir, val_dir, transform, args)
-    
-    return dataset, dataset_test, train_sampler, test_sampler
-
-def load_data(traindir, valdir, transform, args):
-    import os
-    import torch
-    import torchvision
-    import time
-    import torchvision.transforms
-    from visionsuite.engines.utils.helpers import mkdir, get_cache_path
-    from visionsuite.engines.utils.torch_utils.utils import save_on_master
-    from visionsuite.engines.classification.utils.registry import SAMPLERS
-
+def load_data(traindir, valdir, args):
     # Data loading code
     print("Loading data")
-    
+    val_resize_size, val_crop_size, train_crop_size = (
+        args.val_resize_size,
+        args.val_crop_size,
+        args.train_crop_size,
+    )
+    interpolation = InterpolationMode(args.interpolation)
 
+    print("Loading training data")
     st = time.time()
     cache_path = get_cache_path(traindir)
     if args.cache_dataset and os.path.exists(cache_path):
@@ -53,9 +30,24 @@ def load_data(traindir, valdir, transform, args):
         # TODO: this could probably be weights_only=True
         dataset, _ = torch.load(cache_path, weights_only=False)
     else:
+        # We need a default value for the variables below because args may come
+        # from train_quantization.py which doesn't define them.
+        auto_augment_policy = getattr(args, "auto_augment", None)
+        random_erase_prob = getattr(args, "random_erase", 0.0)
+        ra_magnitude = getattr(args, "ra_magnitude", None)
+        augmix_severity = getattr(args, "augmix_severity", None)
         dataset = torchvision.datasets.ImageFolder(
             traindir,
-            transform,
+            presets.ClassificationPresetTrain(
+                crop_size=train_crop_size,
+                interpolation=interpolation,
+                auto_augment_policy=auto_augment_policy,
+                random_erase_prob=random_erase_prob,
+                ra_magnitude=ra_magnitude,
+                augmix_severity=augmix_severity,
+                backend=args.backend,
+                use_v2=args.use_v2,
+            ),
         )
         if args.cache_dataset:
             print(f"Saving dataset_train to {cache_path}")
@@ -78,7 +70,13 @@ def load_data(traindir, valdir, transform, args):
                 preprocessing = torchvision.transforms.Compose([torchvision.transforms.PILToTensor(), preprocessing])
 
         else:
-            preprocessing = transform
+            preprocessing = presets.ClassificationPresetEval(
+                crop_size=val_crop_size,
+                resize_size=val_resize_size,
+                interpolation=interpolation,
+                backend=args.backend,
+                use_v2=args.use_v2,
+            )
 
         dataset_test = torchvision.datasets.ImageFolder(
             valdir,
