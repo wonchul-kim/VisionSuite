@@ -10,10 +10,13 @@ import yaml
 from visionsuite.engines.utils.helpers import yaml2namespace
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
+from visionsuite.engines.classification.utils.params import TrainParams
 
 
-class BaseTrainRunner:
+class BaseTrainRunner(TrainParams):
     def __init__(self, task):
+        super().__init__()
+        
         self._task = task
         
         ## define basic atrributes to train
