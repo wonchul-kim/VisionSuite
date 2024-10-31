@@ -68,7 +68,7 @@ class TrainRunner(BaseTrainRunner):
     def set_model(self):
         super().set_model()
         self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(**vars(self.args))
-        self.loss = LOSSES.get('get_loss')(self.args.loss)
+        self.loss = LOSSES.get(self.args.loss['loss_name'])(self.args.loss)
 
         parameters = OPTIMIZERS.get('get_parameters')(self.args.bias_weight_decay, self.args.transformer_embedding_decay,
                    self.model.model, self.args.optimizer['weight_decay'],
