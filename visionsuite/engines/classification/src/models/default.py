@@ -1,22 +1,12 @@
-import torchvision
 import torch
 from visionsuite.engines.utils.torch_utils.ema import ExponentialMovingAverage
 from visionsuite.engines.utils.registry import MODELS
 
 
 @MODELS.register()
-def torchvision_model(**config):
-# def torchvision_model(model_name, num_classes, weights=None):
-    try:
-        return torchvision.models.get_model(name=config['model_name'] + config['backbone'], num_classes=config['num_classes'], weights=config['weights'])
-    except Exception as error:
-        raise RuntimeError(f"There has been error when loading torchvision model: {config['model_name']}")
-        
-@MODELS.register()
 def get_model(model_config):
     
-    model_obj = MODELS.get(model_config['backend'] if model_config['backend'] is not None else "")
-    # model = model_obj(model_config['model_name'] + model_config['backbone'], model_config['num_classes'], model_config['weights'])
+    model_obj = MODELS.get(f"{model_config['backend']}_model" if model_config['backend'] is not None else "")
     model = model_obj(**model_config)
     model.to(model_config['device'])
 

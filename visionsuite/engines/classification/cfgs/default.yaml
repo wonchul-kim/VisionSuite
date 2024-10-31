@@ -1,6 +1,6 @@
 
 model:
-  backend: 'torchvision_model'
+  backend: 'torchvision'
   model_name: 'resnet'
   backbone: '18'
   weights: null
