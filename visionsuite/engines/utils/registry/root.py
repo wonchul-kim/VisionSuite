@@ -1,6 +1,7 @@
 from .build_functions import build_from_cfg
 from .registry import Registry
 
+
 MODELS = Registry('model', build_func=build_from_cfg)
 OPTIMIZERS = Registry('optimzer', build_func=build_from_cfg)
 DATASETS = Registry('dataset', build_func=build_from_cfg)

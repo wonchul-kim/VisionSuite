@@ -1,3 +1,4 @@
+from visionsuite.engines.utils.registry.losses import TORCH_LOSSES
 from visionsuite.engines.utils.registry import RUNNERS as ROOT_RUNNERS
 from visionsuite.engines.utils.registry import MODELS as ROOT_MODELS
 from visionsuite.engines.utils.registry import OPTIMIZERS as ROOT_OPTIMIZERS
@@ -38,7 +39,7 @@ DATALOADERS = Registry('dataloaders', parent=ROOT_DATALOADERS,
                    locations=['visionsuite.engines.classification.src.dataloaders']
         )
 
-LOSSES = Registry('losses', parent=ROOT_LOSSES, 
+LOSSES = Registry('losses', parent=TORCH_LOSSES, 
                    scope=scope,
                    locations=['visionsuite.engines.classification.src.losses']
         )
