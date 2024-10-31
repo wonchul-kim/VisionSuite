@@ -2,6 +2,7 @@ import torch
 from visionsuite.engines.classification.src.samplers.ra_sampler import RASampler
 from visionsuite.engines.classification.utils.registry import SAMPLERS
 
+
 @SAMPLERS.register()
 def get_samplers(args, dataset, dataset_test):
     if args.distributed:

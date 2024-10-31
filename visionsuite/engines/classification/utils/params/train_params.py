@@ -33,6 +33,7 @@ class TrainParams:
         self._current_epoch = val
     
     
+    
 if __name__ == '__main__':
     params = TrainParams()
     print(params.current_epoch)

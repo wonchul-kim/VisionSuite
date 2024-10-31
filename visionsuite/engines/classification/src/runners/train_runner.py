@@ -12,7 +12,7 @@ from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
 from visionsuite.engines.classification.utils.registry import (RUNNERS, MODELS, LOSSES, OPTIMIZERS, 
                                                                SCHEDULERS, LOOPS, PIPELINES, 
-                                                               DATASETS, DATALOADERS)
+                                                               DATASETS, DATALOADERS, SAMPLERS)
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
@@ -33,15 +33,26 @@ class TrainRunner(BaseTrainRunner):
     def set_dataset(self):
         super().set_dataset()
         
-        train_dataset, val_dataset, self.train_sampler, test_sampler = DATASETS.get("get_datasets")(self.args)
-        classes = train_dataset.classes
-        print(f"Classes: {classes}")
-        self._label2class = {label: _class for label, _class in enumerate(classes)}
         
-        num_classes = len(train_dataset.classes)
-        self.args.model['num_classes'] = num_classes 
+        mean=(0.485, 0.456, 0.406)
+        std=(0.229, 0.224, 0.225)
+            
+            
+        import torchvision.transforms as transforms
+        transform = transforms.Compose(
+                                        [transforms.ToTensor(),
+                                        transforms.Normalize(mean=mean, std=std)])
+        
+        self.train_dataset = DATASETS.get("torchivision_image_folder_dataset")(self.args.input_dir + '/train', transform)
+        self.val_dataset = DATASETS.get("torchivision_image_folder_dataset")(self.args.input_dir + '/val', transform)
+
+        self.train_sampler, self.val_sampler = SAMPLERS.get("get_samplers")(self.args, self.train_dataset, self.val_dataset)
+
+        self._label2class = {label: _class for label, _class in enumerate(self.train_dataset.classes)}
+        
+        self.args.model['num_classes'] = len(self.train_dataset.classes) 
         mixup_cutmix = get_mixup_cutmix(
-            mixup_alpha=self.args.mixup_alpha, cutmix_alpha=self.args.cutmix_alpha, num_classes=num_classes, use_v2=self.args.use_v2
+            mixup_alpha=self.args.mixup_alpha, cutmix_alpha=self.args.cutmix_alpha, num_classes=len(self.train_dataset.classes) , use_v2=self.args.use_v2
         )
         if mixup_cutmix is not None:
 
@@ -51,8 +62,8 @@ class TrainRunner(BaseTrainRunner):
         else:
             collate_fn = default_collate
 
-        self.train_dataloader = DATALOADERS.get('torch_dataloader')(train_dataset, self.train_sampler, self.args.batch_size, self.args.workers, collate_fn)
-        self.val_dataloader = DATALOADERS.get('torch_dataloader')(val_dataset, test_sampler, self.args.batch_size, self.args.workers, collate_fn)
+        self.train_dataloader = DATALOADERS.get('torch_dataloader')(self.train_dataset, self.train_sampler, self.args.batch_size, self.args.workers, collate_fn)
+        self.val_dataloader = DATALOADERS.get('torch_dataloader')(self.val_dataset, self.val_sampler, self.args.batch_size, self.args.workers, collate_fn)
         
     def set_model(self):
         super().set_model()
