@@ -3,7 +3,7 @@ import torch
 import datetime
 import time
 from collections import defaultdict
-from visionsuite.engines.utils.smoothed_value import SmoothedValue
+from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
 
 class MetricLogger:
     def __init__(self, delimiter="\t"):

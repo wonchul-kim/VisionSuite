@@ -1,7 +1,7 @@
 import torch
 import warnings
 from visionsuite.engines.segmentation.metrics.confusion_matrix import ConfusionMatrix
-from visionsuite.engines.utils.metric_logger import MetricLogger
+from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 
 def evaluate(model, data_loader, device, num_classes):

@@ -1,9 +1,7 @@
-import os.path as osp
 import torch
 from torch.utils.data.dataloader import default_collate
 
 from visionsuite.engines.utils.torch_utils.resume import set_resume
-from visionsuite.engines.utils.archives import Archive
 from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
@@ -25,18 +23,13 @@ class TrainRunner(BaseTrainRunner):
     def set_variables(self):
         super().set_variables()
 
-        self._archive = Archive(osp.join(self.args.output_dir, 'classification'), monitor=True)
-        self._archive.save_args(self.args)
-        
         self._callbacks = Callbacks(_callbacks=cls_callbacks)
         
     def set_dataset(self):
         super().set_dataset()
         
-        
         mean=(0.485, 0.456, 0.406)
         std=(0.229, 0.224, 0.225)
-            
             
         import torchvision.transforms as transforms
         transform = transforms.Compose(

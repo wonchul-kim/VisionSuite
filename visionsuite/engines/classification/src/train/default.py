@@ -1,8 +1,8 @@
 import time
 import torch
 import torch.nn as nn
-from visionsuite.engines.utils.metric_logger import MetricLogger
-from visionsuite.engines.utils.smoothed_value import SmoothedValue
+from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
+from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 
 

@@ -3,7 +3,7 @@ import warnings
 import os.path as osp 
 import os
 
-from visionsuite.engines.utils.metric_logger import MetricLogger
+from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes

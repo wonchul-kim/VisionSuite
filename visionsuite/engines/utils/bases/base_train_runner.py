@@ -11,6 +11,7 @@ from visionsuite.engines.utils.helpers import yaml2namespace
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
 from visionsuite.engines.classification.utils.params import TrainParams
+from visionsuite.engines.utils.archives import Archive
 
 
 class BaseTrainRunner:
@@ -18,17 +19,7 @@ class BaseTrainRunner:
         super().__init__()
         
         self._task = task
-        
-        ## define basic atrributes to train
-        self._archive = None
-        self._callbacks = None 
-        self._model = None 
-        self._datasets = {'train': None, 'val': None}
-        self._dataloaders = {'train': None, 'val': None}
-        self._scheduler = None 
-        self._optimizer = None 
-        self._loop = None 
-        self._loss = None
+        self.pipelines = {}
         
     @property 
     def task(self):
@@ -60,6 +51,9 @@ class BaseTrainRunner:
         init_distributed_mode(self.args)
         set_torch_deterministic(self.args.use_deterministic_algorithms)
         self.args.device = get_device(self.args.device)
+        
+        self._archive = Archive(osp.join(self.args.output_dir, self._task), monitor=True)
+        self._archive.save_args(self.args)
         
     @abstractmethod
     def set_dataset(self):

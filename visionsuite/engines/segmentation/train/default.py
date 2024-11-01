@@ -1,7 +1,7 @@
 import torch
 import visionsuite.engines.utils.torch_utils as torch_utils
-from visionsuite.engines.utils.smoothed_value import SmoothedValue
-from visionsuite.engines.utils.metric_logger import MetricLogger
+from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
+from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, device, epoch, print_freq, scaler=None):
