@@ -30,6 +30,7 @@ class EpochBasedLoop(BaseLoop):
                         self.args['train']['topk'], self.archive)
             self.lr_scheduler.step()
             
+            #TODO: MOVE THIS INTO CALLBACK ------------------------------------------------------------
             if self.archive.weights_dir:
                 checkpoint = {
                     "model": self.model.model_without_ddp.state_dict(),
@@ -42,8 +43,13 @@ class EpochBasedLoop(BaseLoop):
                     checkpoint["model_ema"] = self.model.model_ema.state_dict()
                 if self.scaler:
                     checkpoint["scaler"] = self.scaler.state_dict()
-                save_on_master(checkpoint, osp.join(self.archive.weights_dir, f"model_{epoch}.pth"))
-                save_on_master(checkpoint, osp.join(self.archive.weights_dir, "checkpoint.pth"))
+                
+                if self.archive.args['save_model']['last']:
+                    save_on_master(checkpoint, osp.join(self.archive.weights_dir, "checkpoint.pth"))    
+                    
+                if epoch%self.archive.args['save_model']['freq_epoch'] == 0:
+                    save_on_master(checkpoint, osp.join(self.archive.weights_dir, f"model_{epoch}.pth"))
+            # ----------------------------------------------------------------------------------------------
 
             self.callbacks.run_callbacks('on_val_start')
             self.validator(self.model.model_ema if self.model.model_ema else self.model.model, 

@@ -49,7 +49,8 @@ class BaseTrainRunner:
         set_torch_deterministic(self.args['train']['use_deterministic_algorithms'])
         self.args['train']['device'] = get_device(self.args['train']['device'])
         
-        self._archive = Archive(osp.join(self.args['archive']['output_dir'], self._task), monitor=True)
+        self._archive = Archive()
+        self._archive.build(**self.args['archive'])
         self._archive.save_args(self.args)
         
     @abstractmethod

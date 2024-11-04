@@ -73,6 +73,9 @@ train:
 val:
   validator:
     type: base_validator
+    epoch: 1
+    batch_size: 2
+
 
 distributed:
   world_size: 1
@@ -95,3 +98,14 @@ augment:
   # random_erase: 0.0
 
   # backend: PIL
+
+archive:
+  save_model:
+    last: True 
+    best: 
+      loss: True 
+      acc: True
+    freq_epoch: 10
+
+  monitor:
+    use: True
