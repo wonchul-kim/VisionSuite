@@ -10,8 +10,7 @@ from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
 from visionsuite.engines.classification.src.datasets.build import build_dataset
 from visionsuite.engines.classification.src.models.build import build_model
 from visionsuite.engines.classification.src.loops.build import build_loop
-from visionsuite.engines.classification.utils.registry import (RUNNERS, LOSSES, OPTIMIZERS, 
-                                                               SCHEDULERS, LOOPS)
+from visionsuite.engines.classification.utils.registry import RUNNERS
                                                                
 
 
