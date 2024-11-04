@@ -45,39 +45,39 @@ def is_main_process():
 
 
 def init_distributed_mode(args):
-    args['gpu'] = args['device_ids'][0]
+    args['distributed']['gpu'] = args['train']['device_ids'][0]
     
     if "RANK" in os.environ and "WORLD_SIZE" in os.environ:
         print(">>> case 1")
-        args['rank'] = int(os.environ["RANK"])
-        args['world_size'] = int(os.environ["WORLD_SIZE"])
-        args['gpu'] = int(os.environ["LOCAL_RANK"])
-        print(f"rank: ", args['rank'])
-        print(f"world_size: ", args['world_size'])
-        print(f"gpu: ", args['gpu'])
+        args['distributed']['rank'] = int(os.environ["RANK"])
+        args['distributed']['world_size'] = int(os.environ["WORLD_SIZE"])
+        args['distributed']['gpu'] = int(os.environ["LOCAL_RANK"])
+        print(f"rank: ", args['distributed']['rank'])
+        print(f"world_size: ", args['distributed']['world_size'])
+        print(f"gpu: ", args['distributed']['gpu'])
         
         
     # elif "SLURM_PROCID" in os.environ:
-    #     args['rank = int(os.environ["SLURM_PROCID"])
-    #     args['gpu = args['rank % torch.cuda.device_count()
+    #     args['distributed']['rank = int(os.environ["SLURM_PROCID"])
+    #     args['distributed']['gpu = args['distributed']['rank % torch.cuda.device_count()
     elif hasattr(args, "rank"):
         print(">>> case 2")
         pass
     else:
         print("Not using distributed mode")
-        args['distributed'] = False
+        args['distributed']['use'] = False
         return
 
-    args['distributed'] = True
+    args['distributed']['use'] = True
 
-    torch.cuda.set_device(args['gpu'])
-    args['dist_backend'] = "nccl"
-    print(f"| distributed init (rank {args['rank']}): {args['dist_url']}", flush=True)
+    torch.cuda.set_device(args['distributed']['gpu'])
+    args['distributed']['dist_backend'] = "nccl"
+    print(f"| distributed init (rank {args['distributed']['rank']}): {args['distributed']['dist_url']}", flush=True)
     torch.distributed.init_process_group(
-        backend=args['dist_backend'], init_method=args['dist_url'], world_size=args['world_size'], rank=args['rank']
+        backend=args['distributed']['dist_backend'], init_method=args['distributed']['dist_url'], world_size=args['distributed']['world_size'], rank=args['distributed']['rank']
     )
     torch.distributed.barrier()
-    setup_for_distributed(args['rank'] == 0)
+    setup_for_distributed(args['distributed']['rank'] == 0)
 
 
 def reduce_across_processes(val):

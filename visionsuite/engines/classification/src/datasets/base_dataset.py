@@ -47,7 +47,7 @@ class BaseDataset(BaseOOPModule):
         import torch 
         from visionsuite.engines.classification.utils.registry import SAMPLERS
 
-        if self.args['distributed']:
+        if self.args['distributed']['use']:
             if self.args['sampler']['type']:
                 self.train_sampler = SAMPLERS.get(self.args['sampler']['type'])(self.train_dataset, shuffle=True, repetitions=self.args['sampler']['reps'])
             else:

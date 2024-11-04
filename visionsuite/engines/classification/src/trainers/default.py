@@ -15,7 +15,7 @@ def train_one_epoch(model, criterion, optimizer, dataloader, device, epoch, args
 
     header = f"Epoch: [{epoch}]"
     callbacks.run_callbacks('on_train_epoch_start')
-    for i, (image, target) in enumerate(metric_logger.log_every(dataloader, args['print_freq'], header)):
+    for i, (image, target) in enumerate(metric_logger.log_every(dataloader, args['train']['print_freq'], header)):
         callbacks.run_callbacks('on_train_batch_start')
         start_time = time.time()
         image, target = image.to(device), target.to(device)
@@ -26,21 +26,21 @@ def train_one_epoch(model, criterion, optimizer, dataloader, device, epoch, args
         optimizer.zero_grad()
         if scaler is not None:
             scaler.scale(loss).backward()
-            if args['clip_grad_norm'] is not None:
+            if args['train']['clip_grad_norm'] is not None:
                 # we should unscale the gradients of optimizer's assigned params if do gradient clipping
                 scaler.unscale_(optimizer)
-                nn.utils.clip_grad_norm_(model.parameters(), args['clip_grad_norm'])
+                nn.utils.clip_grad_norm_(model.parameters(), args['train']['clip_grad_norm'])
             scaler.step(optimizer)
             scaler.update()
         else:
             loss.backward()
-            if args['clip_grad_norm'] is not None:
-                nn.utils.clip_grad_norm_(model.parameters(), args['clip_grad_norm'])
+            if args['train']['clip_grad_norm'] is not None:
+                nn.utils.clip_grad_norm_(model.parameters(), args['train']['clip_grad_norm'])
             optimizer.step()
 
-        if model_ema and i % args['model_ema_steps'] == 0:
+        if model_ema and i % args['ema']['steps'] == 0:
             model_ema.update_parameters(model)
-            if epoch < args['lr_warmup_epochs']:
+            if epoch < args['warmup_scheduler']['total_iters']:
                 # Reset ema buffer to keep copying weights during warmup period
                 model_ema.n_averaged.fill_(0)
 

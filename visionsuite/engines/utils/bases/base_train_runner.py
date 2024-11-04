@@ -31,7 +31,7 @@ class BaseTrainRunner:
         cfgs = yaml2dict(cfgs_file)
 
         def _parse_args(args):
-            args['device_ids'] = parse_device_ids(args['device_ids'])
+            args['train']['device_ids'] = parse_device_ids(args['train']['device_ids'])
             
         if default_cfgs_file is None:
             default_cfgs_file=ROOT.parents[1] / self._task / 'cfgs/default.yaml'
@@ -46,10 +46,10 @@ class BaseTrainRunner:
     @abstractmethod
     def set_variables(self):
         init_distributed_mode(self.args)
-        set_torch_deterministic(self.args['use_deterministic_algorithms'])
-        self.args['device'] = get_device(self.args['device'])
+        set_torch_deterministic(self.args['train']['use_deterministic_algorithms'])
+        self.args['train']['device'] = get_device(self.args['train']['device'])
         
-        self._archive = Archive(osp.join(self.args['output_dir'], self._task), monitor=True)
+        self._archive = Archive(osp.join(self.args['archive']['output_dir'], self._task), monitor=True)
         self._archive.save_args(self.args)
         
     @abstractmethod

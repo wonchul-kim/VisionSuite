@@ -5,15 +5,15 @@ from torch.utils.data.dataloader import default_collate
 
 
 @DATALOADERS.register()
-def torch_dataloader(dataset, sampler, batch_size, workers, augment=None):
+def torch_dataloader(dataset, sampler, batch_size, workers, mixup_cutmix=None):
     
     collate_fn = default_collate
-    if augment and 'mixup_cutmix' in augment and augment['mixup_cutmix']:
+    if mixup_cutmix:
         mixup_cutmix = get_mixup_cutmix(
-                mixup_alpha=augment['mixup_cutmix']['mixup_alpha'], 
-                cutmix_alpha=augment['mixup_cutmix']['cutmix_alpha'], 
+                mixup_alpha=mixup_cutmix['mixup_alpha'], 
+                cutmix_alpha=mixup_cutmix['cutmix_alpha'], 
                 num_classes=len(dataset.classes), 
-                use_v2=augment['use_v2']
+                use_v2=mixup_cutmix['use_v2']
             )
         if mixup_cutmix is not None:
             def collate_fn(batch):

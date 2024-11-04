@@ -3,14 +3,17 @@ dataset:
   type: CifarDataset
   num_classes: 10
   input_dir: /HDD/_projects/benchmark/classification/rps/datasets/split_dataset
-output_dir: /HDD/_projects/benchmark/classification/rps/outputs
+  
+archive: 
+  output_dir: /HDD/_projects/benchmark/classification/rps/outputs
 
 model:
   type: "resnet"
   backbone: '18'
 
-device_ids: 0
-batch_size: 8
-epochs: 90
+train:
+  device_ids: 0
+  batch_size: 8
+  epochs: 90
 
-amp: True
+  amp: True

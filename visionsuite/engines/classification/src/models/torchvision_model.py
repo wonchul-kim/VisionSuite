@@ -60,7 +60,7 @@ class TorchvisionModel(BaseOOPModule):
         self._model_without_ddp = self._model
         if self.args['distributed']:
             assert_key_dict(self.args, 'gpu')
-            self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['gpu']])
+            self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['distributed']['gpu']])
             self._model_without_ddp = self.model.module
             
     def set_ema(self):
@@ -77,11 +77,11 @@ class TorchvisionModel(BaseOOPModule):
             # total_ema_updates = (Dataset_size / n_GPUs) * epochs / (batch_size_per_gpu * EMA_steps)
             # We consider constant = Dataset_size for a given dataset/setup and omit it. Thus:
             # adjust = 1 / total_ema_updates ~= n_GPUs * batch_size_per_gpu * EMA_steps / epochs
-            adjust = self.args['world_size'] * self.args['batch_size'] * self.args['ema_config']['steps'] / self.args['epochs']
+            adjust = self.args['distributed']['world_size'] * self.args['train']['batch_size'] * self.args['ema_config']['steps'] / self.args['train']['epochs']
             alpha = 1.0 - self.args['ema']['decay']
             alpha = min(1.0, alpha * adjust)
             self._model_ema = ExponentialMovingAverage(self._model_without_ddp, 
-                                                 device=self.args['device'], 
+                                                 device=self.args['train']['device'], 
                                                  decay=1.0 - alpha)
             
         

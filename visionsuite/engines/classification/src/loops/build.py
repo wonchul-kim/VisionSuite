@@ -1,6 +1,6 @@
-from visionsuite.engines.classification.src.loops.loop import Loop 
+from visionsuite.engines.classification.src.loops.base_loop import BaseLoop 
 
 def build_loop():
-    loop = Loop()
+    loop = BaseLoop()
 
     return loop

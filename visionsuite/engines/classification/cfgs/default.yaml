@@ -46,37 +46,37 @@ dataset:
 loop:
   type: epoch_based_loop
 
-ckpt: null
-device: "cuda"
-device_ids: '0,1'
-batch_size: 8
-epochs: 90
-workers: 16
+resume: 
+  use: False
 
-resume: ""
-cache_dataset: False
-sync_bn: True
-test_only: False
+train:
+  ckpt: null
+  device: "cuda"
+  device_ids: '0,1'
+  batch_size: 8
+  epochs: 90
+  workers: 16
 
-# Mixed precision training parameters
-amp: True
+  cache_dataset: False
+  sync_bn: True
+  test_only: False
 
-# distributed training parameters
-world_size: 1
-dist_url: "env://"
+  amp: True
+  use_deterministic_algorithms: False
+  clip_grad_norm: 1.0
 
-print_freq: 10
+  print_freq: 10
+  topk: 3
 
-use_deterministic_algorithms: False
-clip_grad_norm: 1.0
-
-
-topk: 3
+distributed:
+  world_size: 1
+  dist_url: "env://"
 
 augment:
   mixup_cutmix: 
     mixup_alpha: 0.0
     cutmix_alpha: 0.0
+    use_v2: False # Use V2 transforms
 
   # val_resize_size: 256
   # val_crop_size: 224
@@ -88,5 +88,4 @@ augment:
   # augmix_severity: 3
   # random_erase: 0.0
 
-  use_v2: False # Use V2 transforms
   # backend: PIL
