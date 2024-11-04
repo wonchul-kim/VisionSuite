@@ -1,15 +1,15 @@
 import torch
 import torchvision 
-import argparse 
-from types import SimpleNamespace
+
 
 from visionsuite.engines.utils.torch_utils.ema import ExponentialMovingAverage
 from visionsuite.engines.utils.registry import MODELS
 from visionsuite.engines.utils.helpers import assert_key_dict
+from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
         
 @MODELS.register()
-class TorchvisionModel:
+class TorchvisionModel(BaseOOPModule):
     def __init__(self):
         self.args = None
         self._device = 'cpu'
@@ -18,19 +18,7 @@ class TorchvisionModel:
         self._model = None 
                
     def build(self, *args, **kwargs):
-        print(f"args: ", args)
-        print(f"kwargs: ", kwargs)
-        
-        if isinstance(kwargs, (argparse.Namespace, SimpleNamespace)):
-            self.args = dict(kwargs)
-        elif isinstance(kwargs, dict):
-            self.args = kwargs
-        else:
-            NotImplementedError(f"NOT Considered this case for args({args}) and kwargs({kwargs})")
-        
-        assert self.args is not None, RuntimeError(f"Args for dataset is None")
-        
-        print(f"Loaded args: {self.args}")
+        super().build(*args, **kwargs)
         
         self.load_model() 
         self.to_device()

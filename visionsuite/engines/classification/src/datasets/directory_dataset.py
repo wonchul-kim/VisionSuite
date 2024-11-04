@@ -1,12 +1,11 @@
-import argparse
-from types import SimpleNamespace
 import os.path as osp
 
 from visionsuite.engines.classification.utils.registry import DATASETS
+from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
 
 @DATASETS.register()
-class DirectoryDataset:
+class DirectoryDataset(BaseOOPModule):
     def __init__(self, transform=None):
         self.args = None
         
@@ -33,20 +32,7 @@ class DirectoryDataset:
         self._transform = val
         
     def build(self, load=True, *args, **kwargs, ):
-        print(f"args: ", args)
-        print(f"kwargs: ", kwargs)
-        
-        if isinstance(kwargs, (argparse.Namespace, SimpleNamespace)):
-            self.args = dict(kwargs)
-        elif isinstance(kwargs, dict):
-            self.args = kwargs
-        else:
-            NotImplementedError(f"NOT Considered this case for args({args}) and kwargs({kwargs})")
-        
-        assert self.args is not None, RuntimeError(f"Args for dataset is None")
-        
-        print(f"Loaded args: {self.args}")
-        
+        super().build(*args, **kwargs)
         if load:
             self._load()
     

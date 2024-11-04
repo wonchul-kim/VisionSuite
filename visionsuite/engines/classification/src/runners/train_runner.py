@@ -62,6 +62,8 @@ class TrainRunner(BaseTrainRunner):
         train_dataloader = build_dataloader(self.args, dataset, collate_fn)
         val_dataloader = build_dataloader(self.args, dataset, collate_fn)
         
+        
+        
         loss = LOSSES.get("loss")(self.args['loss'])
         optimizer = OPTIMIZERS.get('optimizer')(model.model, self.args['optimizer'])
 
