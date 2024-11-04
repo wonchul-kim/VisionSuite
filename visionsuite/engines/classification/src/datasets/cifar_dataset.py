@@ -20,10 +20,10 @@ class CifarDataset(BaseDataset):
     def load_dataset(self):
         super().load_dataset()
         
-        self.train_dataset = getattr(torchvision.datasets, f"CIFAR{self.num_classes}")(root='./tmp/data', 
+        self.train_dataset = getattr(torchvision.datasets, f"CIFAR{self.num_classes}")(root='/tmp/data', 
                                                         train=True, download=True, transform=self._transform)
             
-        self.val_dataset = getattr(torchvision.datasets, f"CIFAR{self.num_classes}")(root='./tmp/data', 
+        self.val_dataset = getattr(torchvision.datasets, f"CIFAR{self.num_classes}")(root='/tmp/data', 
                                                         train=False, download=True, transform=self._transform)
 
         self.label2index = {index: label for index, label in enumerate(self.train_dataset.classes)}
