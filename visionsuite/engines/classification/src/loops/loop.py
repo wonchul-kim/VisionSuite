@@ -6,13 +6,10 @@ from visionsuite.engines.classification.utils.registry import (LOSSES, OPTIMIZER
 
 class Loop(BaseOOPModule):
     def __init__(self):
-        
         self.args = None 
         
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
-        
-        print(args, kwargs)
         
     def run(self, model, dataset, archive=None, callbacks=None):
         train_dataloader = build_dataloader(self.args, dataset, mode='train')
@@ -25,7 +22,6 @@ class Loop(BaseOOPModule):
         lr_scheduler = SCHEDULERS.get('lr_scheduler')(optimizer, self.args['epochs'], self.args['scheduler'], self.args['warmup_scheduler'])
         self.args['start_epoch'] = set_resume(self.args['resume'], self.args['ckpt'], model.model_without_ddp, 
                                     optimizer, lr_scheduler, scaler, self.args['amp'])
-        
         
         loop = LOOPS.get(self.args['loop']['type'])
         loop(callbacks, self.args, dataset.train_sampler, 

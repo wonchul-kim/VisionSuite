@@ -2,8 +2,8 @@ import os.path as osp
 
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
-from visionsuite.engines.classification.src.train.default import train_one_epoch
-from visionsuite.engines.classification.src.val.default import val
+from visionsuite.engines.classification.src.trainers.default import train_one_epoch
+from visionsuite.engines.classification.src.validators.default import val
 from visionsuite.engines.classification.utils.registry import LOOPS
 
 @LOOPS.register()
