@@ -26,7 +26,7 @@ class TrainRunner(BaseTrainRunner):
         super().set_variables()
         
     def run(self):
-        super().start_train()
+        super().run()
         
         mean=(0.485, 0.456, 0.406)
         std=(0.229, 0.224, 0.225)
