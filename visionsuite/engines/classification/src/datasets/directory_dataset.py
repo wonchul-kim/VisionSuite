@@ -7,10 +7,10 @@ from visionsuite.engines.classification.utils.registry import DATASETS
 
 @DATASETS.register()
 class DirectoryDataset:
-    def __init__(self):
+    def __init__(self, transform=None):
         self.args = None
         
-        self._transform = None
+        self._transform = transform
         self.train_dataset = None
         self.val_dataset = None
         
@@ -32,7 +32,7 @@ class DirectoryDataset:
     def transform(self, val):
         self._transform = val
         
-    def build(self, *args, **kwargs):
+    def build(self, load=True, *args, **kwargs, ):
         print(f"args: ", args)
         print(f"kwargs: ", kwargs)
         
@@ -47,6 +47,10 @@ class DirectoryDataset:
         
         print(f"Loaded args: {self.args}")
         
+        if load:
+            self._load()
+    
+    def _load(self):
         self.load_dataset()
         self.load_sampler()
 

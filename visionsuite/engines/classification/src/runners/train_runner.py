@@ -8,11 +8,13 @@ from visionsuite.engines.classification.utils.callbacks import callbacks as cls_
 from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
-from visionsuite.engines.classification.utils.registry import (RUNNERS, MODELS, LOSSES, OPTIMIZERS, 
-                                                               SCHEDULERS, LOOPS, PIPELINES, 
-                                                               DATASETS, DATALOADERS, SAMPLERS)
+from visionsuite.engines.classification.src.datasets.build import build_dataset
+from visionsuite.engines.classification.src.models.build import build_model
+from visionsuite.engines.classification.src.dataloaders.build import build_dataloader
+from visionsuite.engines.classification.utils.registry import (RUNNERS, LOSSES, OPTIMIZERS, 
+                                                               SCHEDULERS, LOOPS, PIPELINES)
+                                                               
 
-from visionsuite.engines.classification.src.datasets.directory_dataset import DirectoryDataset
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
@@ -38,8 +40,7 @@ class TrainRunner(BaseTrainRunner):
                                         [transforms.ToTensor(),
                                         transforms.Normalize(mean=mean, std=std)])
         
-        dataset = DirectoryDataset()
-        dataset.transform = transform
+        dataset = build_dataset(**self.args, transform=transform)
         dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
         
         mixup_cutmix = get_mixup_cutmix(
@@ -53,13 +54,13 @@ class TrainRunner(BaseTrainRunner):
         else:
             collate_fn = default_collate
 
-        model = MODELS.get(f"{self.args['model']['backend'].capitalize()}Model")()
+        model = build_model(self.args)
         model.build(**self.args['model'], num_classes=dataset.num_classes, 
                     device=self.args['device'], distributed=self.args['distributed'],
                     sync_bn=self.args['sync_bn'], gpu=self.args['gpu'])
         
-        train_dataloader = DATALOADERS.get('torch_dataloader')(dataset.train_dataset, dataset.train_sampler, self.args['batch_size'], self.args['workers'], collate_fn)
-        val_dataloader = DATALOADERS.get('torch_dataloader')(dataset.val_dataset, dataset.val_sampler, self.args['batch_size'], self.args['workers'], collate_fn)
+        train_dataloader = build_dataloader(self.args, dataset, collate_fn)
+        val_dataloader = build_dataloader(self.args, dataset, collate_fn)
         
         loss = LOSSES.get("loss")(self.args['loss'])
         optimizer = OPTIMIZERS.get('optimizer')(model.model, self.args['optimizer'])

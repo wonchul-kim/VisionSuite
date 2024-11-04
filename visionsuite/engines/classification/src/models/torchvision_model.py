@@ -39,11 +39,11 @@ class TorchvisionModel:
         
     def load_model(self):
         try:
-            self._model = torchvision.models.get_model(name=self.args['model_name'] + self.args['backbone'], 
+            self._model = torchvision.models.get_model(name=self.args['type'] + self.args['backbone'], 
                                                        num_classes=self.args['num_classes'], 
                                                        weights=self.args['weights'])
         except Exception as error:
-            raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['model_name']} with config({self.args}): ")
+            raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
         
     @property
     def model(self):

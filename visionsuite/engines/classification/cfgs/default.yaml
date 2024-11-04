@@ -1,7 +1,7 @@
 
 model:
   backend: 'torchvision'
-  model_name: 'resnet'
+  type: 'resnet'
   backbone: '18'
   weights: null
   ema: 
