@@ -20,9 +20,9 @@ class Loop(BaseOOPModule):
         
         print(args, kwargs)
         
-    def run(self, model, dataset, archive=None, callbacks=None, collate_fn=None):
-        train_dataloader = build_dataloader(self.args, dataset, collate_fn)
-        val_dataloader = build_dataloader(self.args, dataset, collate_fn)
+    def run(self, model, dataset, archive=None, callbacks=None):
+        train_dataloader = build_dataloader(self.args, dataset, mode='train')
+        val_dataloader = build_dataloader(self.args, dataset, mode='val')
         
         loss = LOSSES.get("loss")(self.args['loss'])
         optimizer = OPTIMIZERS.get('optimizer')(model.model, self.args['optimizer'])

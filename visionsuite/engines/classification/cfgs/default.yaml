@@ -73,19 +73,20 @@ clip_grad_norm: 1.0
 
 topk: 3
 
-# augment:
-mixup_alpha: 0.0
-cutmix_alpha: 0.0
+augment:
+  mixup_cutmix: 
+    mixup_alpha: 0.0
+    cutmix_alpha: 0.0
 
-# val_resize_size: 256
-# val_crop_size: 224
-# train_crop_size: 224
-# interpolation: "bilinear"
+  # val_resize_size: 256
+  # val_crop_size: 224
+  # train_crop_size: 224
+  # interpolation: "bilinear"
 
-# auto_augment: null
-# ra_magnitude: 9
-# augmix_severity: 3
-# random_erase: 0.0
+  # auto_augment: null
+  # ra_magnitude: 9
+  # augmix_severity: 3
+  # random_erase: 0.0
 
-use_v2: False # Use V2 transforms
-# backend: PIL
+  use_v2: False # Use V2 transforms
+  # backend: PIL
