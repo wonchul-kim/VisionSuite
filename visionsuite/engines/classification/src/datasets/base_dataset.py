@@ -1,34 +1,62 @@
-import os.path as osp
-
+from abc import abstractmethod
 from visionsuite.engines.classification.utils.registry import DATASETS
-from visionsuite.engines.classification.src.datasets.base_dataset import BaseDataset
+from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
 
 @DATASETS.register()
-class DirectoryDataset(BaseDataset):
+class BaseDataset(BaseOOPModule):
     def __init__(self, transform=None):
+        self.args = None
         
-        if transform is None:
-            mean=(0.485, 0.456, 0.406)
-            std=(0.229, 0.224, 0.225)
-                
-            import torchvision.transforms as transforms
-            transform = transforms.Compose(
-                                            [transforms.ToTensor(),
-                                            transforms.Normalize(mean=mean, std=std)])
+        self._transform = transform
+        self.train_dataset = None
+        self.val_dataset = None
+        
+        self.train_sampler = None 
+        self.val_sampler = None
+        
+        self.label2index = None
+        self.index2label = None
+        self.num_classes = None
+        self.classes = None
+        
+        self.process = {}
+        
+    @property 
+    def transform(self):
+        return self._transform 
+    
+    @transform.setter
+    def transform(self, val):
+        self._transform = val
+        
+    def build(self, load=True, *args, **kwargs):
+        super().build(*args, **kwargs)
+        if load:
+            self._load()
+    
+    def _load(self):
+        self.load_dataset()
+        self.load_sampler()
+
+    @abstractmethod
+    def load_dataset(self):
+        pass
+
+    def load_sampler(self):
+        import torch 
+        from visionsuite.engines.classification.utils.registry import SAMPLERS
+
+        if self.args['distributed']:
+            if self.args['sampler']['type']:
+                self.train_sampler = SAMPLERS.get(self.args['sampler']['type'])(self.train_dataset, shuffle=True, repetitions=self.args['sampler']['reps'])
+            else:
+                self.train_sampler = torch.utils.data.distributed.DistributedSampler(self.train_dataset)
+            self.val_sampler = torch.utils.data.distributed.DistributedSampler(self.val_dataset, shuffle=False)
+        else:
+            self.train_sampler = torch.utils.data.RandomSampler(self.train_dataset)
+            self.val_sampler = torch.utils.data.SequentialSampler(self.val_dataset)
             
-        super().__init__(transform=transform)
-
-    def load_dataset(self, train_folder_name='train', val_folder_name='val'):
-        
-        self.train_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
-        self.val_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)
-
-        self.label2index = {index: label for index, label in enumerate(self.train_dataset.classes)}
-        self.index2label = {label: index for index, label in enumerate(self.train_dataset.classes)}
-        self.classes = self.train_dataset.classes
-        self.num_classes = len(self.train_dataset.classes)
-        print(f"label2index: {self.label2index}")
 
 # def load_data(traindir, valdir, transform, args):
 #     import os

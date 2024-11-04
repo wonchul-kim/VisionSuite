@@ -1,6 +1,7 @@
 
 dataset:
-  type: 'cifar10'
+  type: CifarDataset
+  num_classes: 10
   input_dir: /HDD/_projects/benchmark/classification/rps/datasets/split_dataset
 output_dir: /HDD/_projects/benchmark/classification/rps/outputs
 

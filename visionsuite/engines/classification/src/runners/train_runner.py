@@ -5,7 +5,6 @@ from visionsuite.engines.classification.src.models.build import build_model
 from visionsuite.engines.classification.src.loops.build import build_loop
 from visionsuite.engines.classification.utils.registry import RUNNERS
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
-                                                               
 
 
 @RUNNERS.register()
@@ -21,16 +20,8 @@ class TrainRunner(BaseTrainRunner):
         
     def run(self):
         super().run()
-        
-        mean=(0.485, 0.456, 0.406)
-        std=(0.229, 0.224, 0.225)
-            
-        import torchvision.transforms as transforms
-        transform = transforms.Compose(
-                                        [transforms.ToTensor(),
-                                        transforms.Normalize(mean=mean, std=std)])
-        
-        dataset = build_dataset(**self.args, transform=transform)
+                
+        dataset = build_dataset(**self.args)()
         dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
         
         model = build_model(self.args)
