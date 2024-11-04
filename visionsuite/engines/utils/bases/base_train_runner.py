@@ -53,7 +53,7 @@ class BaseTrainRunner:
         self._archive.save_args(self.args)
         
     @abstractmethod
-    def start_train(self):
+    def run(self):
         pass 
     
     
@@ -61,5 +61,5 @@ class BaseTrainRunner:
         
         self.set_configs(cfgs_file=cfgs_file, *args, **kwargs)
         self.set_variables()
-        self.start_train()
+        self.run()
     
