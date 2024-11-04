@@ -1,7 +1,6 @@
 import torch
 from torch.utils.data.dataloader import default_collate
 
-from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.classification.utils.callbacks import callbacks as cls_callbacks
 
@@ -10,9 +9,9 @@ from visionsuite.engines.classification.utils.augment import get_mixup_cutmix
 from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
 from visionsuite.engines.classification.src.datasets.build import build_dataset
 from visionsuite.engines.classification.src.models.build import build_model
-from visionsuite.engines.classification.src.dataloaders.build import build_dataloader
+from visionsuite.engines.classification.src.loops.build import build_loop
 from visionsuite.engines.classification.utils.registry import (RUNNERS, LOSSES, OPTIMIZERS, 
-                                                               SCHEDULERS, LOOPS, PIPELINES)
+                                                               SCHEDULERS, LOOPS)
                                                                
 
 
@@ -26,8 +25,6 @@ class TrainRunner(BaseTrainRunner):
         
     def set_variables(self):
         super().set_variables()
-
-        self._callbacks = Callbacks(_callbacks=cls_callbacks)
         
     def start_train(self):
         super().start_train()
@@ -50,7 +47,6 @@ class TrainRunner(BaseTrainRunner):
 
             def collate_fn(batch):
                 return mixup_cutmix(*default_collate(batch))
-
         else:
             collate_fn = default_collate
 
@@ -59,23 +55,8 @@ class TrainRunner(BaseTrainRunner):
                     device=self.args['device'], distributed=self.args['distributed'],
                     sync_bn=self.args['sync_bn'], gpu=self.args['gpu'])
         
-        train_dataloader = build_dataloader(self.args, dataset, collate_fn)
-        val_dataloader = build_dataloader(self.args, dataset, collate_fn)
-        
-        
-        
-        loss = LOSSES.get("loss")(self.args['loss'])
-        optimizer = OPTIMIZERS.get('optimizer')(model.model, self.args['optimizer'])
-
-        scaler = torch.cuda.amp.GradScaler() if self.args['amp'] else None
-        lr_scheduler = SCHEDULERS.get('lr_scheduler')(optimizer, self.args['epochs'], self.args['scheduler'], self.args['warmup_scheduler'])
-        self.args['start_epoch'] = set_resume(self.args['resume'], self.args['ckpt'], model.model_without_ddp, 
-                                    optimizer, lr_scheduler, scaler, self.args['amp'])
-        
-        
-        loop = LOOPS.get('epoch_based_loop')
-        loop(self._callbacks, self.args, dataset.train_sampler, 
-                        model.model, model.model_without_ddp, loss, optimizer, 
-                        train_dataloader, model.model_ema, scaler, self._archive,
-                        lr_scheduler, val_dataloader, dataset.label2index)
+        callbacks = Callbacks(_callbacks=cls_callbacks)
+        loop = build_loop()
+        loop.build(**self.args)
+        loop.run(model, dataset, self._archive, callbacks, collate_fn)
         

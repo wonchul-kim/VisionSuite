@@ -43,6 +43,8 @@ dataset:
     type: RASampler
     reps: 4
 
+loop:
+  type: epoch_based_loop
 
 ckpt: null
 device: "cuda"
