@@ -2,18 +2,12 @@ import torch
 from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.classification.src.dataloaders.build import build_dataloader
-from visionsuite.engines.classification.utils.registry import (LOSSES, OPTIMIZERS, 
-                                                               SCHEDULERS, LOOPS)
+from visionsuite.engines.classification.utils.registry import (LOSSES, OPTIMIZERS, SCHEDULERS, LOOPS)
 
 class Loop(BaseOOPModule):
     def __init__(self):
         
         self.args = None 
-        
-        # self._loss = None
-        # self._optimizer = None 
-        # self._scaler = None 
-        # self._lr_scheduler = None 
         
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
