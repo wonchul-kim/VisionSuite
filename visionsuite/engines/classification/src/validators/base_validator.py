@@ -7,8 +7,11 @@ from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
+from visionsuite.engines.classification.utils.registry import VALIDATORS
 
-def val(model, criterion, dataloader, device, epoch, label2class, callbacks,
+
+@VALIDATORS.register()
+def base_validator(model, criterion, dataloader, device, epoch, label2class, callbacks,
              print_freq=100, log_suffix="", topk=5, archive=None):
     model.eval()
     metric_logger = MetricLogger(delimiter="  ")

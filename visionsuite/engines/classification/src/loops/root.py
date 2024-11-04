@@ -1,3 +1,3 @@
-from .epoch_based_loop import epoch_based_loop
+from .epoch_based_loop import EpochBasedLoop
 
-__all__ = ['epoch_based_loop']
+__all__ = ['EpochBasedLoop']

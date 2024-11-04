@@ -1,8 +1,9 @@
 from .root import (RUNNERS, MODELS, OPTIMIZERS, DATASETS, 
                    DATALOADERS, LOSSES, SCHEDULERS, LOOPS, 
-                   PIPELINES, SAMPLERS, FUNCTIONALS)
+                   PIPELINES, SAMPLERS, FUNCTIONALS,
+                   TRAINERS, VALIDATORS)
 from .registry import Registry
 
 __all__ = ['Registry', 'RUNNERS', 'MODELS', 'OPTIMIZERS', 'DATASETS', 
            'DATALOADERS', 'LOSSES', 'SCHEDULERS', 'LOOPS', 'PIPELINES',
-           'SAMPLERS', 'FUNCTIONALS']
+           'SAMPLERS', 'FUNCTIONALS', 'TRAINERS', 'VALIDATORS']

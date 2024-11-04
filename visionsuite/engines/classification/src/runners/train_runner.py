@@ -30,7 +30,7 @@ class TrainRunner(BaseTrainRunner):
                     sync_bn=self.args['train']['sync_bn'], gpu=self.args['distributed']['gpu'])
         
         callbacks = Callbacks(_callbacks=cls_callbacks)
-        loop = build_loop()
+        loop = build_loop(**self.args['loop'])
         loop.build(_model=model, _dataset=dataset, _archive=self._archive, _callbacks=callbacks, 
                    **self.args)
         loop.run()

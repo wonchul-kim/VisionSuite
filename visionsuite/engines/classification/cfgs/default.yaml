@@ -44,12 +44,14 @@ dataset:
     reps: 4
 
 loop:
-  type: epoch_based_loop
+  type: EpochBasedLoop
 
 resume: 
   use: False
 
 train:
+  trainer:
+    type: base_trainer
   ckpt: null
   device: "cuda"
   device_ids: '0,1'
@@ -67,6 +69,10 @@ train:
 
   print_freq: 10
   topk: 3
+
+val:
+  validator:
+    type: base_validator
 
 distributed:
   world_size: 1

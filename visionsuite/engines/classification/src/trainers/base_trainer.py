@@ -4,9 +4,11 @@ import torch.nn as nn
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
+from visionsuite.engines.classification.utils.registry import TRAINERS
 
 
-def train_one_epoch(model, criterion, optimizer, dataloader, device, epoch, args, callbacks,
+@TRAINERS.register()
+def base_trainer(model, criterion, optimizer, dataloader, device, epoch, args, callbacks,
                     model_ema=None, scaler=None, topk=5, archive=None):
     model.train()
     metric_logger = MetricLogger(delimiter="  ")

@@ -1,4 +1,5 @@
 import torch 
+from abc import abstractmethod
 from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.classification.src.dataloaders.build import build_dataloader
@@ -19,6 +20,10 @@ class BaseLoop(BaseOOPModule):
         self.scale = None 
         self.loss = None 
         self.optimizer = None
+        
+        self.dataset = None
+        self.callbacks = None
+        self.archive = None
         
     def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
         super().build(*args, **kwargs)
@@ -42,8 +47,6 @@ class BaseLoop(BaseOOPModule):
         
         self.loop = LOOPS.get(self.args['loop']['type'])
 
+    @abstractmethod
     def run(self):
-        self.loop(self.callbacks, self.args, self.dataset.train_sampler, 
-                        self.model, self.loss, self.optimizer, 
-                        self.train_dataloader, self.scaler, self.archive,
-                        self.lr_scheduler, self.val_dataloader, self.dataset.label2index)
+        pass

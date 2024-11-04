@@ -1,6 +1,6 @@
-from visionsuite.engines.classification.src.loops.base_loop import BaseLoop 
+from visionsuite.engines.classification.utils.registry import LOOPS
 
-def build_loop():
-    loop = BaseLoop()
+def build_loop(**loop_config):
+    loop = LOOPS.get(loop_config['type'], case_sensitive=True)()
 
     return loop

@@ -10,6 +10,8 @@ from visionsuite.engines.utils.registry import LOOPS as ROOT_LOOPS
 from visionsuite.engines.utils.registry import PIPELINES as ROOT_PIPELINES
 from visionsuite.engines.utils.registry import SAMPLERS as ROOT_SAMPLERS
 from visionsuite.engines.utils.registry import FUNCTIONALS as ROOT_FUNCTIONALS
+from visionsuite.engines.utils.registry import TRAINERS as ROOT_TRAINERS
+from visionsuite.engines.utils.registry import VALIDATORS as ROOT_VALIDATORS
 
 from visionsuite.engines.utils.registry import Registry
 
@@ -65,7 +67,17 @@ SAMPLERS = Registry('samplers', parent=ROOT_SAMPLERS,
                    locations=['visionsuite.engines.classification.src.samplers']
         )
 
-FUNCTIONALS = Registry('samplers', parent=ROOT_FUNCTIONALS, 
+FUNCTIONALS = Registry('functionals', parent=ROOT_FUNCTIONALS, 
                    scope=scope,
                    locations=['visionsuite.engines.classification.src.functionals']
+        )
+
+TRAINERS = Registry('trainers', parent=ROOT_TRAINERS, 
+                   scope=scope,
+                   locations=['visionsuite.engines.classification.src.trainers']
+        )
+
+VALIDATORS = Registry('validators', parent=ROOT_VALIDATORS, 
+                   scope=scope,
+                   locations=['visionsuite.engines.classification.src.validators']
         )

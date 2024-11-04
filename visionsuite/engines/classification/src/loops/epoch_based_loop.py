@@ -2,42 +2,55 @@ import os.path as osp
 
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
-from visionsuite.engines.classification.src.trainers.default import train_one_epoch
-from visionsuite.engines.classification.src.validators.default import val
+from visionsuite.engines.classification.src.trainers.build import build_trainer
+from visionsuite.engines.classification.src.validators.build import build_validator
 from visionsuite.engines.classification.utils.registry import LOOPS
+from visionsuite.engines.classification.src.loops.base_loop import BaseLoop
 
 @LOOPS.register()
-def epoch_based_loop(callbacks, args, train_sampler,
-                     model, criterion, optimizer, train_dataloader, scaler, archive,
-                     lr_scheduler, val_dataloader, label2class):
+class EpochBasedLoop(BaseLoop):
+    def __init__(self):
+        super().__init__()
         
-    callbacks.run_callbacks('on_train_start')
-    for epoch in range(args['start_epoch'], args['train']['epochs']):
-        if args['distributed']['use']:
-            train_sampler.set_epoch(epoch)
-        train_one_epoch(model.model, criterion, optimizer, train_dataloader, 
-                        args['train']['device'], epoch, args, callbacks, model.model_ema, scaler, 
-                        args['train']['topk'], archive)
-        lr_scheduler.step()
         
-        if archive.weights_dir:
-            checkpoint = {
-                "model": model.model_without_ddp.state_dict(),
-                "optimizer": optimizer.state_dict(),
-                "lr_scheduler": lr_scheduler.state_dict(),
-                "epoch": epoch,
-                "args": args,
-            }
-            if model.model_ema:
-                checkpoint["model_ema"] = model.model_ema.state_dict()
-            if scaler:
-                checkpoint["scaler"] = scaler.state_dict()
-            save_on_master(checkpoint, osp.join(archive.weights_dir, f"model_{epoch}.pth"))
-            save_on_master(checkpoint, osp.join(archive.weights_dir, "checkpoint.pth"))
+    def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
+        super().build(_model, _dataset, _callbacks=_callbacks, _archive=_archive, *args, **kwargs)
+        
+        self.trainer = build_trainer(**self.args['train']['trainer'])
+        self.validator = build_validator(**self.args['val']['validator'])
+        
+    def run(self):
+        
+        self.callbacks.run_callbacks('on_train_start')
+        for epoch in range(self.args['start_epoch'], self.args['train']['epochs']):
+            if self.args['distributed']['use']:
+                self.dataset.train_sampler.set_epoch(epoch)
+            self.trainer(self.model.model, self.loss, self.optimizer, self.train_dataloader, 
+                        self.args['train']['device'], epoch, self.args, self.callbacks, self.model.model_ema, self.scaler, 
+                        self.args['train']['topk'], self.archive)
+            self.lr_scheduler.step()
+            
+            if self.archive.weights_dir:
+                checkpoint = {
+                    "model": self.model.model_without_ddp.state_dict(),
+                    "optimizer": self.optimizer.state_dict(),
+                    "lr_scheduler": self.lr_scheduler.state_dict(),
+                    "epoch": epoch,
+                    "args": self.args,
+                }
+                if self.model.model_ema:
+                    checkpoint["model_ema"] = self.model.model_ema.state_dict()
+                if self.scaler:
+                    checkpoint["scaler"] = self.scaler.state_dict()
+                save_on_master(checkpoint, osp.join(self.archive.weights_dir, f"model_{epoch}.pth"))
+                save_on_master(checkpoint, osp.join(self.archive.weights_dir, "checkpoint.pth"))
 
-        callbacks.run_callbacks('on_val_start')
-        val(model.model_ema if model.model_ema else model.model, criterion, val_dataloader, args['train']['device'], epoch, label2class, callbacks, 
-                  topk=args['train']['topk'], log_suffix="EMA" if args['model']['ema']['use'] else "", archive=archive)
-        callbacks.run_callbacks('on_val_end')
-        
-    callbacks.run_callbacks('on_train_end')
+            self.callbacks.run_callbacks('on_val_start')
+            self.validator(self.model.model_ema if self.model.model_ema else self.model.model, 
+                     self.loss, self.val_dataloader, self.args['train']['device'], epoch, 
+                     self.dataset.label2index, self.callbacks, 
+                    topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 
+                    archive=self.archive)
+            self.callbacks.run_callbacks('on_val_end')
+            
+        self.callbacks.run_callbacks('on_train_end')
