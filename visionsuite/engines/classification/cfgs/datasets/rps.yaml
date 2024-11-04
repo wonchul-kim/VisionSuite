@@ -1,7 +1,8 @@
-output_dir: /HDD/_projects/benchmark/classification/rps/outputs
-input_dir: /HDD/_projects/benchmark/classification/rps/datasets/split_dataset
+dataset:
+  type: DirectoryDataset
+  input_dir: /HDD/_projects/benchmark/classification/rps/datasets/split_dataset
 
-dataset: 'directory'
+output_dir: /HDD/_projects/benchmark/classification/rps/outputs
 
 model_name: "vit_b_32"
 device_ids: 0

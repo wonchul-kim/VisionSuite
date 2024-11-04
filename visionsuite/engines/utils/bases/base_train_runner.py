@@ -4,16 +4,14 @@ ROOT = FILE.parent
 
 from abc import abstractmethod
 import os.path as osp
-import argparse 
-import yaml
 
-from visionsuite.engines.utils.helpers import yaml2namespace
+from visionsuite.engines.utils.helpers import yaml2dict, update_dict
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
 from visionsuite.engines.classification.utils.params import TrainParams
 from visionsuite.engines.utils.archives import Archive
 
-
+            
 class BaseTrainRunner:
     def __init__(self, task):
         super().__init__()
@@ -26,55 +24,42 @@ class BaseTrainRunner:
         return self._task 
         
     @abstractmethod
-    def set_configs(self, default_cfgs_file=None, *args, **kwargs):
-        
-        def _parse_args():
-            self.args.device_ids = parse_device_ids(self.args.device_ids)
+    def set_configs(self, cfgs_file=None, default_cfgs_file=None, *args, **kwargs):
+
+        assert osp.exists(cfgs_file), ValueError(f'There is no such cfgs file: {cfgs_file}')
+
+        cfgs = yaml2dict(cfgs_file)
+
+        def _parse_args(args):
+            args['device_ids'] = parse_device_ids(args['device_ids'])
             
         if default_cfgs_file is None:
             default_cfgs_file=ROOT.parents[1] / self._task / 'cfgs/default.yaml'
-        with open(default_cfgs_file, 'r') as yf:
-            default_cfgs = yaml.load(yf)
-            
-        default_cfgs.update(vars(self.args))
+        default_cfgs = yaml2dict(default_cfgs_file)
+
+        update_dict(default_cfgs, cfgs)  
+        update_dict(default_cfgs, kwargs)          
         
-        for key in kwargs.keys():
-            assert key in default_cfgs, ValueError(f"There is no such key({key}) in configs")
-        
-        default_cfgs.update(kwargs)
-        
-        self.args = argparse.Namespace(**default_cfgs)
-        _parse_args()
+        self.args = default_cfgs
+        _parse_args(self.args)
 
     @abstractmethod
     def set_variables(self):
         init_distributed_mode(self.args)
-        set_torch_deterministic(self.args.use_deterministic_algorithms)
-        self.args.device = get_device(self.args.device)
+        set_torch_deterministic(self.args['use_deterministic_algorithms'])
+        self.args['device'] = get_device(self.args['device'])
         
-        self._archive = Archive(osp.join(self.args.output_dir, self._task), monitor=True)
+        self._archive = Archive(osp.join(self.args['output_dir'], self._task), monitor=True)
         self._archive.save_args(self.args)
         
     @abstractmethod
-    def set_dataset(self):
+    def start_train(self):
         pass 
     
-    @abstractmethod
-    def set_model(self):
-        pass
-
-    @abstractmethod
-    def run_loop(self):
-        pass 
     
-    def train(self, cfgs_file, *args, **kwargs):
+    def train(self, cfgs_file=None, *args, **kwargs):
         
-        assert osp.exists(cfgs_file), ValueError(f'There is no such cfgs file: {cfgs_file}')
-        
-        self.args = yaml2namespace(cfgs_file)
-        self.set_configs(*args, **kwargs)
+        self.set_configs(cfgs_file=cfgs_file, *args, **kwargs)
         self.set_variables()
-        self.set_dataset()
-        self.set_model()
-        self.run_loop()
+        self.start_train()
     

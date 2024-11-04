@@ -1,13 +1,13 @@
 
-def set_configs():
+def set_configs(self):
     pass
 
-def set_variables():
+def set_variables(self):
     pass
 
-def set_dataset():
+def set_dataset(*args, **kwargs):
     pass
 
-def set_model():
+def set_model(self):
     pass
     

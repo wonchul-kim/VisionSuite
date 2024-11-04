@@ -37,16 +37,23 @@ def create_output_dir(output_dir, make_dirs=False):
     return output_dir
     
 def yaml2namespace(args_file):
-    import argparse
+    from types import SimpleNamespace
     import yaml 
-
     
     with open(args_file, 'r') as yf:
         cfgs = yaml.safe_load(yf)
         
-    args = argparse.Namespace(**cfgs)
+    args = SimpleNamespace(**cfgs)
     
     return args
+    
+def yaml2dict(args_file):
+    import yaml 
+    
+    with open(args_file, 'r') as yf:
+        cfgs = yaml.safe_load(yf)
+        
+    return cfgs
 
 def assert_key_dict(dictionary, key):
     assert key in dictionary, ValueError(f"There is no key({key})")
@@ -60,3 +67,11 @@ def get_params_from_obj(obj):
     parameters = {param.name: param.default for param in signature.parameters.values()}
     
     return parameters
+
+def update_dict(A, B):
+    for key, value in B.items():
+        # assert key in A, ValueError(f"There is no such key({key})")
+        if isinstance(value, dict) and key in A and isinstance(A[key], dict):
+            update_dict(A[key], value)
+        else:
+            A[key] = value

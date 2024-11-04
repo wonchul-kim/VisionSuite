@@ -1,11 +1,80 @@
+import argparse
+from types import SimpleNamespace
+import os.path as osp
+
 from visionsuite.engines.classification.utils.registry import DATASETS
 
-           
+
 @DATASETS.register()
-def torchivision_image_folder_dataset(input_dir, transform):
-    import torchvision
+class DirectoryDataset:
+    def __init__(self):
+        self.args = None
+        
+        self._transform = None
+        self.train_dataset = None
+        self.val_dataset = None
+        
+        self.train_sampler = None 
+        self.val_sampler = None
+        
+        self.label2index = None
+        self.index2label = None
+        self.num_classes = None
+        self.classes = None
+        
+        self.process = {}
+        
+    @property 
+    def transform(self):
+        return self._transform 
     
-    return torchvision.datasets.ImageFolder(input_dir, transform)
+    @transform.setter
+    def transform(self, val):
+        self._transform = val
+        
+    def build(self, *args, **kwargs):
+        print(f"args: ", args)
+        print(f"kwargs: ", kwargs)
+        
+        if isinstance(kwargs, (argparse.Namespace, SimpleNamespace)):
+            self.args = dict(kwargs)
+        elif isinstance(kwargs, dict):
+            self.args = kwargs
+        else:
+            NotImplementedError(f"NOT Considered this case for args({args}) and kwargs({kwargs})")
+        
+        assert self.args is not None, RuntimeError(f"Args for dataset is None")
+        
+        print(f"Loaded args: {self.args}")
+        
+        self.load_dataset()
+        self.load_sampler()
+
+    def load_dataset(self, train_folder_name='train', val_folder_name='val'):
+        
+        self.train_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
+        self.val_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)
+
+        self.label2index = {index: label for index, label in enumerate(self.train_dataset.classes)}
+        self.index2label = {label: index for index, label in enumerate(self.train_dataset.classes)}
+        self.classes = self.train_dataset.classes
+        self.num_classes = len(self.train_dataset.classes)
+        print(f"label2index: {self.label2index}")
+
+    def load_sampler(self):
+        import torch 
+        from visionsuite.engines.classification.utils.registry import SAMPLERS
+
+        if self.args['distributed']:
+            if self.args['sampler']['type']:
+                self.train_sampler = SAMPLERS.get(self.args['sampler']['type'])(self.train_dataset, shuffle=True, repetitions=self.args['sampler']['reps'])
+            else:
+                self.train_sampler = torch.utils.data.distributed.DistributedSampler(self.train_dataset)
+            self.val_sampler = torch.utils.data.distributed.DistributedSampler(self.val_dataset, shuffle=False)
+        else:
+            self.train_sampler = torch.utils.data.RandomSampler(self.train_dataset)
+            self.val_sampler = torch.utils.data.SequentialSampler(self.val_dataset)
+            
 
 # def load_data(traindir, valdir, transform, args):
 #     import os

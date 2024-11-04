@@ -7,9 +7,12 @@ import time
 import torchvision.transforms
 from visionsuite.engines.utils.helpers import mkdir, get_cache_path
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
-from visionsuite.engines.classification.utils.registry import SAMPLERS
+from visionsuite.engines.classification.utils.registry import SAMPLERS, DATASETS
 
-
+@DATASETS.register()
+def image_folder(directory, transform):
+    
+    return torchvision.datasets.ImageFolder(directory, transform)
 
 def load_data(traindir, valdir, args):
     # Data loading code

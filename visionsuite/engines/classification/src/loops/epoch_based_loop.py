@@ -12,12 +12,12 @@ def epoch_based_loop(callbacks, args, train_sampler,
                      lr_scheduler, val_dataloader, label2class):
         
     callbacks.run_callbacks('on_train_start')
-    for epoch in range(args.start_epoch, args.epochs):
-        if args.distributed:
+    for epoch in range(args['start_epoch'], args['epochs']):
+        if args['distributed']:
             train_sampler.set_epoch(epoch)
         train_one_epoch(model, criterion, optimizer, train_dataloader, 
-                        args.device, epoch, args, callbacks, model_ema, scaler, 
-                        args.topk, archive)
+                        args['device'], epoch, args, callbacks, model_ema, scaler, 
+                        args['topk'], archive)
         lr_scheduler.step()
         
         if archive.weights_dir:
@@ -36,8 +36,8 @@ def epoch_based_loop(callbacks, args, train_sampler,
             save_on_master(checkpoint, osp.join(archive.weights_dir, "checkpoint.pth"))
 
         callbacks.run_callbacks('on_val_start')
-        val(model_ema if model_ema else model, criterion, val_dataloader, args.device, epoch, label2class, callbacks, 
-                  topk=args.topk, log_suffix="EMA" if args.ema['use'] else "", archive=archive)
+        val(model_ema if model_ema else model, criterion, val_dataloader, args['device'], epoch, label2class, callbacks, 
+                  topk=args['topk'], log_suffix="EMA" if args['model']['ema']['use'] else "", archive=archive)
         callbacks.run_callbacks('on_val_end')
         
     callbacks.run_callbacks('on_train_end')

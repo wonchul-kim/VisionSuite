@@ -12,6 +12,8 @@ from visionsuite.engines.classification.utils.registry import (RUNNERS, MODELS, 
                                                                SCHEDULERS, LOOPS, PIPELINES, 
                                                                DATASETS, DATALOADERS, SAMPLERS)
 
+from visionsuite.engines.classification.src.datasets.directory_dataset import DirectoryDataset
+
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner):
     def __init__(self):
@@ -25,8 +27,8 @@ class TrainRunner(BaseTrainRunner):
 
         self._callbacks = Callbacks(_callbacks=cls_callbacks)
         
-    def set_dataset(self):
-        super().set_dataset()
+    def start_train(self):
+        super().start_train()
         
         mean=(0.485, 0.456, 0.406)
         std=(0.229, 0.224, 0.225)
@@ -36,16 +38,12 @@ class TrainRunner(BaseTrainRunner):
                                         [transforms.ToTensor(),
                                         transforms.Normalize(mean=mean, std=std)])
         
-        self.train_dataset = DATASETS.get("torchivision_image_folder_dataset")(self.args.input_dir + '/train', transform)
-        self.val_dataset = DATASETS.get("torchivision_image_folder_dataset")(self.args.input_dir + '/val', transform)
-
-        self.train_sampler, self.val_sampler = SAMPLERS.get("get_samplers")(self.args, self.train_dataset, self.val_dataset)
-
-        self._label2class = {label: _class for label, _class in enumerate(self.train_dataset.classes)}
+        dataset = DirectoryDataset()
+        dataset.transform = transform
+        dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
         
-        self.args.model['num_classes'] = len(self.train_dataset.classes) 
         mixup_cutmix = get_mixup_cutmix(
-            mixup_alpha=self.args.mixup_alpha, cutmix_alpha=self.args.cutmix_alpha, num_classes=len(self.train_dataset.classes) , use_v2=self.args.use_v2
+            mixup_alpha=self.args['mixup_alpha'], cutmix_alpha=self.args['cutmix_alpha'], num_classes=len(dataset.train_dataset.classes) , use_v2=self.args['use_v2']
         )
         if mixup_cutmix is not None:
 
@@ -55,26 +53,26 @@ class TrainRunner(BaseTrainRunner):
         else:
             collate_fn = default_collate
 
-        self.train_dataloader = DATALOADERS.get('torch_dataloader')(self.train_dataset, self.train_sampler, self.args.batch_size, self.args.workers, collate_fn)
-        self.val_dataloader = DATALOADERS.get('torch_dataloader')(self.val_dataset, self.val_sampler, self.args.batch_size, self.args.workers, collate_fn)
+        model = MODELS.get(f"{self.args['model']['backend'].capitalize()}Model")()
+        model.build(**self.args['model'], num_classes=dataset.num_classes, 
+                    device=self.args['device'], distributed=self.args['distributed'],
+                    sync_bn=self.args['sync_bn'], gpu=self.args['gpu'])
         
-    def set_model(self):
-        super().set_model()
-        self.model = MODELS.get(f"{self.args.model['backend'].capitalize()}Model")(vars(self.args))
-        self.loss = LOSSES.get("loss")(self.args.loss)
-        self.optimizer = OPTIMIZERS.get('optimizer')(self.model.model, self.args.optimizer)
+        train_dataloader = DATALOADERS.get('torch_dataloader')(dataset.train_dataset, dataset.train_sampler, self.args['batch_size'], self.args['workers'], collate_fn)
+        val_dataloader = DATALOADERS.get('torch_dataloader')(dataset.val_dataset, dataset.val_sampler, self.args['batch_size'], self.args['workers'], collate_fn)
+        
+        loss = LOSSES.get("loss")(self.args['loss'])
+        optimizer = OPTIMIZERS.get('optimizer')(model.model, self.args['optimizer'])
 
-        self.scaler = torch.cuda.amp.GradScaler() if self.args.amp else None
-        self.lr_scheduler = SCHEDULERS.get('lr_scheduler')(self.optimizer, self.args.epochs, self.args.scheduler, self.args.warmup_scheduler)
-        self.args.start_epoch = set_resume(self.args.resume, self.args.ckpt, self.model.model_without_ddp, 
-                                    self.optimizer, self.lr_scheduler, self.scaler, self.args.amp)
-
-    def run_loop(self):
-        super().run_loop()
+        scaler = torch.cuda.amp.GradScaler() if self.args['amp'] else None
+        lr_scheduler = SCHEDULERS.get('lr_scheduler')(optimizer, self.args['epochs'], self.args['scheduler'], self.args['warmup_scheduler'])
+        self.args['start_epoch'] = set_resume(self.args['resume'], self.args['ckpt'], model.model_without_ddp, 
+                                    optimizer, lr_scheduler, scaler, self.args['amp'])
+        
         
         loop = LOOPS.get('epoch_based_loop')
-        loop(self._callbacks, self.args, self.train_sampler, 
-                        self.model.model, self.model.model_without_ddp, self.loss, self.optimizer, 
-                        self.train_dataloader, self.model.model_ema, self.scaler, self._archive,
-                        self.lr_scheduler, self.val_dataloader, self._label2class)
+        loop(self._callbacks, self.args, dataset.train_sampler, 
+                        model.model, model.model_without_ddp, loss, optimizer, 
+                        train_dataloader, model.model_ema, scaler, self._archive,
+                        lr_scheduler, val_dataloader, dataset.label2index)
         

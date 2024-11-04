@@ -1,7 +1,6 @@
 import torchvision
 import torchvision.transforms as transforms
 
-from visionsuite.engines.classification.src.samplers.default import get_samplers
 from visionsuite.engines.classification.utils.registry import DATASETS
 
 
@@ -19,7 +18,9 @@ def cifar10_datasets(args):
     val_dataset = torchvision.datasets.CIFAR10(root='./tmp/data', 
                                                  train=False, download=True, transform=transform)
     
-    train_sampler, val_sampler = get_samplers(args, train_dataset, val_dataset)
+    # TODO
+    train_sampler, val_sampler = None, None
+    # train_sampler, val_sampler = get_samplers(args, train_dataset, val_dataset)
     
     
     return train_dataset, val_dataset, train_sampler, val_sampler
