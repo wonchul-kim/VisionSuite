@@ -173,8 +173,8 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_dataset'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_patch_dataset'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_labelme_dataset'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_labelme_patch_dataset'
     modes = ['./']
     classes_to_include = None
 

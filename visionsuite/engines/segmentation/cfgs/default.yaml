@@ -1,6 +1,7 @@
 optimizer: SGD
-output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed
-data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/scratch_tear_stabbed
+output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch
+data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset
+# data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/tenneco/split_patch_mask_dataset
 dataset: mask
 model: deeplabv3_resnet50
 aux_loss: True
@@ -9,7 +10,7 @@ device: cuda
 batch_size: 2
 epochs: 150
 workers: 16
-lr: 0.01
+lr: 0.0001
 momentum: 0.9
 weight_decay: 0.0001
 lr_warmup_epochs: 0

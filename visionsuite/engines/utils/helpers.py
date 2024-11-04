@@ -9,6 +9,8 @@ def mkdir(path, make_dirs=False):
             os.makedirs(path)
         else:
             os.mkdir(path)
+            
+        print(f"Created directory: {path}")
     else:
         warnings.warn(f"There is already {path}")
 

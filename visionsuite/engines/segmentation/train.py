@@ -45,10 +45,10 @@ def main(args):
     minute = now.minute
     second = now.second
     
-    args.output_dir += f'_{args.model}_{hour}_{minute}_{second}'
+    args.output_dir = osp.join(args.output_dir, f'_{args.model}_{hour}_{minute}_{second}')
     
     if args.output_dir:
-        mkdir(args.output_dir)
+        mkdir(args.output_dir, True)
 
     init_distributed_mode(args)
     device = get_device(args.device)

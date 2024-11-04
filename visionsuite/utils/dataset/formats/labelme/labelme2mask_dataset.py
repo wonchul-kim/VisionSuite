@@ -68,13 +68,13 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_patch_labelme_dataset'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_patch_mask_dataset'
+    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/tenneco/split_patch_labelme_dataset'
+    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/tenneco/split_patch_mask_dataset'
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}
     # class2label = {'scratch': 1, 'tear': 2}
     # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
-    class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
+    class2label = {'stabbed': 1, 'stabbed_c': 2, 'stabbed_p': 3, 'scratch': 4}
     width, height = 512, 512
     vis = True
 
