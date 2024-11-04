@@ -23,7 +23,7 @@ def get_optim_parameters(model, optimizer_config):
 def optimizer(model, optimizer_config):
     
     from visionsuite.engines.utils.helpers import get_params_from_obj
-    optim_obj = OPTIMIZERS.get(optimizer_config['optimizer_name'])
+    optim_obj = OPTIMIZERS.get(optimizer_config['type'])
     optim_params = get_params_from_obj(optim_obj)
     for key in optim_params.keys():
         if key in optimizer_config:

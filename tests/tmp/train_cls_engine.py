@@ -8,4 +8,5 @@ if __name__ == "__main__":
     
     runner = Engine('classification')
     runner.train(ROOT / "visionsuite/engines/classification/cfgs/datasets/rps.yaml")    
+    # runner.train(ROOT / "visionsuite/engines/classification/cfgs/datasets/cifar10.yaml")    
 

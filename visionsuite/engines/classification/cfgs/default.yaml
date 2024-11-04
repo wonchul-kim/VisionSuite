@@ -10,11 +10,11 @@ model:
     decay: 0.99998
 
 loss:
-  loss_name: CrossEntropyLoss
+  type: CrossEntropyLoss
   label_smoothing: 0.0
 
 optimizer:
-  optimizer_name: SGD
+  type: SGD
   lr: 0.1
   momentum: 0.9
   weight_decay: 0.0001
@@ -24,16 +24,16 @@ optimizer:
   transformer_embedding_decay: null
 
 scheduler:
-  scheduler_name: StepLR
+  type: StepLR
   step_size: 30
   gamma: 0.1
   eta_min: 0.0
 
 warmup_scheduler:
-  warmup_scheduler_name: ConstantLR
+  warmup_type: ConstantLR
   total_iters: 0
   factor: 0.01
-  integrate_scheduler_name: SequentialLR
+  integrate_type: SequentialLR
 
 
 dataset:
