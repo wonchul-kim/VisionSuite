@@ -21,7 +21,7 @@ class TrainRunner(BaseTrainRunner):
     def run(self):
         super().run()
                 
-        dataset = build_dataset(**self.args)()
+        dataset = build_dataset(**self.args)
         dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
         
         model = build_model(self.args)

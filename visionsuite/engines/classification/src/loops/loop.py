@@ -7,6 +7,7 @@ from visionsuite.engines.classification.src.optimizers.build import build_optimi
 from visionsuite.engines.classification.src.schedulers.build import build_scheduler
 from visionsuite.engines.classification.utils.registry import LOOPS
 
+
 class Loop(BaseOOPModule):
     def __init__(self):
         self.args = None 
