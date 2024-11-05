@@ -73,7 +73,7 @@ train:
 val:
   validator:
     type: base_validator
-    epoch: 1
+    epoch: 2
     batch_size: 2
 
 
@@ -108,4 +108,7 @@ archive:
     freq_epoch: 10
 
   monitor:
+    use: True
+
+  save_val:
     use: True

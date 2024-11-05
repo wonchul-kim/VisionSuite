@@ -57,7 +57,6 @@ def base_trainer(model, criterion, optimizer, dataloader, device, epoch, args, c
 
     callbacks.run_callbacks('on_train_epoch_end')
 
-        
     archive.monitor.log({"learning rate": metric_logger.meters['lr'].value})
     archive.monitor.log({"train avg loss": metric_logger.meters['loss'].avg})
     # for key, val in confmat.values.items():
@@ -67,4 +66,4 @@ def base_trainer(model, criterion, optimizer, dataloader, device, epoch, args, c
     #         archive.monitor.log({key: val})
     archive.monitor.save()
 
-    return metric_logger
+    # return metric_logger
