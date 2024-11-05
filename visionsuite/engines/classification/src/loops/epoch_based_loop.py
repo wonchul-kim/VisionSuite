@@ -20,22 +20,30 @@ class EpochBasedLoop(BaseLoop):
         self.train_results = TrainResults()
         self.val_results = ValResults()
         
-        self.trainer = build_trainer(**self.args['train']['trainer'])(
-                                self.model.model, self.loss, self.optimizer, self.train_dataloader, 
-                                self.args['train']['device'], self.args, self.callbacks, self.model.model_ema, self.scaler, 
-                                self.args['train']['topk'], self.archive, self.train_results)
-        self.validator = build_validator(**self.args['val']['validator'])
-        
+        self.trainer = build_trainer(**self.args['train']['trainer'])()
+        self.trainer.build(self.model.model, self.loss, self.optimizer, self.train_dataloader, 
+                            self.args['train']['device'], self.args, self.callbacks, self.model.model_ema, self.scaler, 
+                            self.args['train']['topk'], self.archive, self.train_results)
+        self.validator = build_validator(**self.args['val']['validator'])()
+        self.validator.build(self.args['val'], self.model.model_ema if self.model.model_ema else self.model.model, 
+                     self.loss, self.val_dataloader, self.args['train']['device'],  
+                     self.dataset.label2index, self.callbacks, 
+                    topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 
+                    archive=self.archive, results=self.val_results)
         
     def run(self):
         super().run()
         self.callbacks.run_callbacks('on_train_start')
         for epoch in range(self.args['start_epoch'], self.args['train']['epochs']):
+            self.callbacks.run_callbacks('on_train_epoch_start')
+
             if self.args['distributed']['use']:
                 self.dataset.train_sampler.set_epoch(epoch)
             self.trainer.run(epoch)
             self.lr_scheduler.step()
-            
+
+            self.callbacks.run_callbacks('on_train_epoch_end')
+
             #TODO: MOVE THIS INTO CALLBACK AND ADD BEST ----------------------------------------------------
             if self.archive.weights_dir:
                 checkpoint = {
@@ -58,11 +66,7 @@ class EpochBasedLoop(BaseLoop):
             # ----------------------------------------------------------------------------------------------
 
             self.callbacks.run_callbacks('on_val_start')
-            self.validator(self.args['val'], self.model.model_ema if self.model.model_ema else self.model.model, 
-                     self.loss, self.val_dataloader, self.args['train']['device'], epoch, 
-                     self.dataset.label2index, self.callbacks, 
-                    topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 
-                    archive=self.archive, results=self.val_results)
+            self.validator.run(epoch)
             self.callbacks.run_callbacks('on_val_end')
             
         self.callbacks.run_callbacks('on_train_end')

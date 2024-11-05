@@ -71,8 +71,8 @@ train:
 
 val:
   validator:
-    type: base_validator
-  epoch: 2
+    type: BaseValidator
+  epoch: 1
   batch_size: 2
   workers: 16
 

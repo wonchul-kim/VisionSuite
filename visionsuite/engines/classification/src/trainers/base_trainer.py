@@ -2,6 +2,7 @@ import time
 import psutil
 import torch
 import torch.nn as nn
+from abc import abstractmethod
 
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
@@ -11,11 +12,13 @@ from visionsuite.engines.utils.system.gpu_logger import GPULogger
 from visionsuite.engines.utils.bases import BaseOOPModule
 
 @TRAINERS.register()
-class BaseTrainer:
-    def __init__(self, model, criterion, optimizer, dataloader, device, args, callbacks,
-                    model_ema=None, scaler=None, topk=5, archive=None, results=None):
-        # super().__init__()
+class BaseTrainer(BaseOOPModule):
+    def __init__(self):
+        super().__init__()
         
+        
+    def build(self, model, criterion, optimizer, dataloader, device, args, callbacks,
+                    model_ema=None, scaler=None, topk=5, archive=None, results=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -29,6 +32,7 @@ class BaseTrainer:
         self.archive = archive
         self.results = results
         
+    @abstractmethod
     def run(self, epoch):
         self.model.train()
         gpu_logger = GPULogger(self.args['train']['device_ids'])
@@ -37,7 +41,6 @@ class BaseTrainer:
         metric_logger.add_meter("img/s", SmoothedValue(window_size=10, fmt="{value}"))
 
         header = f"Epoch: [{epoch}]"
-        self.callbacks.run_callbacks('on_train_self._start')
         start_time_epoch = time.time()
         for i, (image, target) in enumerate(metric_logger.log_every(self.dataloader, self.args['train']['print_freq'], header)):
             self.callbacks.run_callbacks('on_train_batch_start')
@@ -77,8 +80,6 @@ class BaseTrainer:
             metric_logger.meters['gpu'].update((torch.cuda.memory_allocated() + torch.cuda.memory_reserved()) / 1024**2)
             gpu_logger.update()
             self.callbacks.run_callbacks('on_train_batch_end')
-
-        self.callbacks.run_callbacks('on_train_epoch_end')
 
         self.archive.monitor.log({"learning rate": metric_logger.meters['lr'].value})
         self.archive.monitor.log({"train avg loss": metric_logger.meters['loss'].global_avg})
