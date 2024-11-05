@@ -20,7 +20,10 @@ class EpochBasedLoop(BaseLoop):
         self.train_results = TrainResults()
         self.val_results = ValResults()
         
-        self.trainer = build_trainer(**self.args['train']['trainer'])
+        self.trainer = build_trainer(**self.args['train']['trainer'])(
+                                self.model.model, self.loss, self.optimizer, self.train_dataloader, 
+                                self.args['train']['device'], self.args, self.callbacks, self.model.model_ema, self.scaler, 
+                                self.args['train']['topk'], self.archive, self.train_results)
         self.validator = build_validator(**self.args['val']['validator'])
         
         
@@ -30,9 +33,7 @@ class EpochBasedLoop(BaseLoop):
         for epoch in range(self.args['start_epoch'], self.args['train']['epochs']):
             if self.args['distributed']['use']:
                 self.dataset.train_sampler.set_epoch(epoch)
-            self.trainer(self.model.model, self.loss, self.optimizer, self.train_dataloader, 
-                        self.args['train']['device'], epoch, self.args, self.callbacks, self.model.model_ema, self.scaler, 
-                        self.args['train']['topk'], self.archive, self.train_results)
+            self.trainer.run(epoch)
             self.lr_scheduler.step()
             
             #TODO: MOVE THIS INTO CALLBACK AND ADD BEST ----------------------------------------------------
