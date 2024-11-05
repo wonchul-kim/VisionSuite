@@ -12,7 +12,6 @@ class EpochBasedLoop(BaseLoop):
     def __init__(self):
         super().__init__()
         
-        
     def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
         super().build(_model, _dataset, _callbacks=_callbacks, _archive=_archive, *args, **kwargs)
         
@@ -20,7 +19,7 @@ class EpochBasedLoop(BaseLoop):
         self.validator = build_validator(**self.args['val']['validator'])
         
     def run(self):
-        
+        super().run()
         self.callbacks.run_callbacks('on_train_start')
         for epoch in range(self.args['start_epoch'], self.args['train']['epochs']):
             if self.args['distributed']['use']:
@@ -52,7 +51,7 @@ class EpochBasedLoop(BaseLoop):
             # ----------------------------------------------------------------------------------------------
 
             self.callbacks.run_callbacks('on_val_start')
-            self.validator(self.args['val']['validator'], self.model.model_ema if self.model.model_ema else self.model.model, 
+            self.validator(self.args['val'], self.model.model_ema if self.model.model_ema else self.model.model, 
                      self.loss, self.val_dataloader, self.args['train']['device'], epoch, 
                      self.dataset.label2index, self.callbacks, 
                     topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 

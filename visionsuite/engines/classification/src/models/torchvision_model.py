@@ -11,6 +11,7 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 @MODELS.register()
 class TorchvisionModel(BaseOOPModule):
     def __init__(self):
+        super().__init__()
         self.args = None
         self._device = 'cpu'
         self._model_without_ddp = None
@@ -25,14 +26,6 @@ class TorchvisionModel(BaseOOPModule):
         self.set_dist()
         self.set_ema()
         
-    def load_model(self):
-        try:
-            self._model = torchvision.models.get_model(name=self.args['type'] + self.args['backbone'], 
-                                                       num_classes=self.args['num_classes'], 
-                                                       weights=self.args['weights'])
-        except Exception as error:
-            raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
-        
     @property
     def model(self):
         return self._model
@@ -44,12 +37,23 @@ class TorchvisionModel(BaseOOPModule):
     @property
     def model_ema(self):
         return self._model_ema
+    
+    @BaseOOPModule.track_status
+    def load_model(self):
+        try:
+            self._model = torchvision.models.get_model(name=self.args['type'] + self.args['backbone'], 
+                                                       num_classes=self.args['num_classes'], 
+                                                       weights=self.args['weights'])
+        except Exception as error:
+            raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
            
+    @BaseOOPModule.track_status
     def to_device(self):
         assert_key_dict(self.args, 'device')
         self._device = self.args['device']
         self._model.to(self._device)
 
+    @BaseOOPModule.track_status
     def set_dist(self):
         assert_key_dict(self.args, 'distributed')
         assert_key_dict(self.args, 'sync_bn')
@@ -62,7 +66,8 @@ class TorchvisionModel(BaseOOPModule):
             assert_key_dict(self.args, 'gpu')
             self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['distributed']['gpu']])
             self._model_without_ddp = self.model.module
-            
+
+    @BaseOOPModule.track_status
     def set_ema(self):
         assert_key_dict(self.args, 'ema')
         self._model_ema = None

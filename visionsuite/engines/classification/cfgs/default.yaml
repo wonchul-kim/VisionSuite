@@ -35,7 +35,6 @@ warmup_scheduler:
   factor: 0.01
   integrate_type: SequentialLR
 
-
 dataset:
   type: DirectoryDataset 
   load_method: image_folder
@@ -73,8 +72,9 @@ train:
 val:
   validator:
     type: base_validator
-    epoch: 2
-    batch_size: 2
+  epoch: 2
+  batch_size: 2
+  workers: 16
 
 
 distributed:

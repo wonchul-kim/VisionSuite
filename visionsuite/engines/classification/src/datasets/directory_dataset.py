@@ -7,7 +7,6 @@ from visionsuite.engines.classification.src.datasets.base_dataset import BaseDat
 @DATASETS.register()
 class DirectoryDataset(BaseDataset):
     def __init__(self, transform=None):
-        
         if transform is None:
             mean=(0.485, 0.456, 0.406)
             std=(0.229, 0.224, 0.225)
@@ -20,6 +19,7 @@ class DirectoryDataset(BaseDataset):
         super().__init__(transform=transform)
 
     def load_dataset(self, train_folder_name='train', val_folder_name='val'):
+        super().load_dataset()
         
         self.train_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
         self.val_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)

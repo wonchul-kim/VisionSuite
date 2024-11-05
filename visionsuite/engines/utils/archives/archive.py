@@ -7,6 +7,7 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
 class Archive(BaseOOPModule):
     def __init__(self, output_dir=None):
+        super().__init__()
         self.args = None
         self._output_dir = output_dir
         
@@ -19,24 +20,28 @@ class Archive(BaseOOPModule):
         self.create_directories()
         self._load()
         
+    @property
+    def output_dir(self):
+        return self._output_dir
+    
+    @BaseOOPModule.track_status
     def _load(self):
         self._load_monitor()
-        
+    
+    @BaseOOPModule.track_status
     def _load_monitor(self):
         if self.args['monitor']['use']:
             self.monitor = Monitor()
             self.monitor.set(output_dir=self.logs_dir, fn='monitor')
         else:
             self.monitor = None
-            
-    @property
-    def output_dir(self):
-        return self._output_dir
     
+    @BaseOOPModule.track_status
     def save_args(self, args):
         with open(osp.join(self.cfgs_dir, 'args.yaml'), 'w') as yf:
             yaml.dump(args, yf, default_flow_style=False)
-            
+    
+    @BaseOOPModule.track_status
     def create_directories(self):
         for directory in ['val', 'cfgs', 'logs', 'weights']:
             mkdir(osp.join(self._output_dir, directory))

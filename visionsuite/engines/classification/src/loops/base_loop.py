@@ -11,6 +11,7 @@ from visionsuite.engines.classification.utils.registry import LOOPS
 
 class BaseLoop(BaseOOPModule):
     def __init__(self):
+        super().__init__()
         self.args = None 
         
         self.model = None 
@@ -24,7 +25,7 @@ class BaseLoop(BaseOOPModule):
         self.dataset = None
         self.callbacks = None
         self.archive = None
-        
+            
     def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
         super().build(*args, **kwargs)
         
@@ -47,6 +48,7 @@ class BaseLoop(BaseOOPModule):
         
         self.loop = LOOPS.get(self.args['loop']['type'])
 
+    @BaseOOPModule.track_status
     @abstractmethod
     def run(self):
         pass

@@ -6,6 +6,7 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 @DATASETS.register()
 class BaseDataset(BaseOOPModule):
     def __init__(self, transform=None):
+        super().__init__()
         self.args = None
         
         self._transform = transform
@@ -20,8 +21,6 @@ class BaseDataset(BaseOOPModule):
         self.num_classes = None
         self.classes = None
         
-        self.process = {}
-        
     @property 
     def transform(self):
         return self._transform 
@@ -35,14 +34,17 @@ class BaseDataset(BaseOOPModule):
         if load:
             self._load()
     
+    @BaseOOPModule.track_status
     def _load(self):
         self.load_dataset()
         self.load_sampler()
 
+    @BaseOOPModule.track_status
     @abstractmethod
     def load_dataset(self):
         pass
 
+    @BaseOOPModule.track_status
     def load_sampler(self):
         import torch 
         from visionsuite.engines.classification.utils.registry import SAMPLERS
