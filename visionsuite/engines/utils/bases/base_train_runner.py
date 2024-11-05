@@ -8,7 +8,6 @@ import os.path as osp
 from visionsuite.engines.utils.helpers import yaml2dict, update_dict
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
-from visionsuite.engines.classification.utils.params import TrainParams
 from visionsuite.engines.utils.archives import Archive
 
             

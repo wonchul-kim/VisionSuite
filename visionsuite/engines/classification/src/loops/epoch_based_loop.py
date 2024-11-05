@@ -6,6 +6,8 @@ from visionsuite.engines.classification.src.trainers.build import build_trainer
 from visionsuite.engines.classification.src.validators.build import build_validator
 from visionsuite.engines.classification.utils.registry import LOOPS
 from visionsuite.engines.classification.src.loops.base_loop import BaseLoop
+from visionsuite.engines.classification.utils.results import TrainResults, ValResults
+
 
 @LOOPS.register()
 class EpochBasedLoop(BaseLoop):
@@ -15,8 +17,12 @@ class EpochBasedLoop(BaseLoop):
     def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
         super().build(_model, _dataset, _callbacks=_callbacks, _archive=_archive, *args, **kwargs)
         
+        self.train_results = TrainResults()
+        self.val_results = ValResults()
+        
         self.trainer = build_trainer(**self.args['train']['trainer'])
         self.validator = build_validator(**self.args['val']['validator'])
+        
         
     def run(self):
         super().run()
@@ -26,7 +32,7 @@ class EpochBasedLoop(BaseLoop):
                 self.dataset.train_sampler.set_epoch(epoch)
             self.trainer(self.model.model, self.loss, self.optimizer, self.train_dataloader, 
                         self.args['train']['device'], epoch, self.args, self.callbacks, self.model.model_ema, self.scaler, 
-                        self.args['train']['topk'], self.archive)
+                        self.args['train']['topk'], self.archive, self.train_results)
             self.lr_scheduler.step()
             
             #TODO: MOVE THIS INTO CALLBACK AND ADD BEST ----------------------------------------------------
@@ -55,7 +61,8 @@ class EpochBasedLoop(BaseLoop):
                      self.loss, self.val_dataloader, self.args['train']['device'], epoch, 
                      self.dataset.label2index, self.callbacks, 
                     topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 
-                    archive=self.archive)
+                    archive=self.archive, results=self.val_results)
             self.callbacks.run_callbacks('on_val_end')
             
         self.callbacks.run_callbacks('on_train_end')
+        

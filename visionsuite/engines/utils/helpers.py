@@ -3,6 +3,16 @@ import warnings
 import datetime
 import os.path as osp
 
+def print_class_name_on_instantiation(cls):
+    original_init = cls.__init__
+
+    def new_init(self, *args, **kwargs):
+        print(f"Instantiating class: {cls.__name__}")
+        original_init(self, *args, **kwargs)
+
+    cls.__init__ = new_init
+    return cls
+
 def mkdir(path, make_dirs=False):
     if not osp.exists(path):
         if make_dirs:

@@ -2,6 +2,7 @@ import torch
 import warnings
 import os.path as osp 
 import os
+import time
 
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.functionals import denormalize
@@ -12,13 +13,14 @@ from visionsuite.engines.classification.utils.registry import VALIDATORS
 
 @VALIDATORS.register()
 def base_validator(args, model, criterion, dataloader, device, epoch, label2class, callbacks,
-             print_freq=100, log_suffix="", topk=5, archive=None):
+             print_freq=100, log_suffix="", topk=5, archive=None, results=None):
     if epoch%args['epoch'] == 0:
         model.eval()
         metric_logger = MetricLogger(delimiter="  ")
         header = f"Test: {log_suffix}"
 
         num_processed_samples = 0
+        start_time_epoch = 0
         callbacks.run_callbacks('on_val_epoch_start')
         with torch.inference_mode():
             for image, target in metric_logger.log_every(dataloader, print_freq, header):
@@ -68,4 +70,9 @@ def base_validator(args, model, criterion, dataloader, device, epoch, label2clas
             from visionsuite.engines.classification.utils.vis.vis_val import save_validation
             save_validation(model, dataloader, label2class, epoch, vis_dir, device, denormalize)
         # ------------------------------------------------------------------------------------------
+            
+        results.epoch = int(epoch)
+        results.loss = float(round(metric_logger.meters['loss'].global_avg, 4))
+        results.accuracy = float(round(metric_logger.meters["acc1"].global_avg, 4))
+        results.time_for_a_epoch = float(round(time.time() - start_time_epoch, 3))
         
