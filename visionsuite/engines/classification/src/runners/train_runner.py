@@ -33,13 +33,18 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
         
         model = build_model(self.args)
-        model.build(**self.args['model'], num_classes=dataset.num_classes, 
-                    device=self.args['train']['device'], distributed=self.args['distributed']['use'],
-                    sync_bn=self.args['train']['sync_bn'])
+        model.build(**self.args['model'], 
+                    num_classes=dataset.num_classes, 
+                    train=self.args['train'], 
+                    distributed=self.args['distributed']['use']
+                )
         
         loop = build_loop(**self.args['loop'])
-        loop.build(_model=model, _dataset=dataset, _archive=self._archive, 
-                   **self.args)
+        loop.build(_model=model, 
+                   _dataset=dataset, 
+                   _archive=self._archive, 
+                   **self.args
+                )
         loop.run_loop()
         
         self.run_callbacks('on_run_end')

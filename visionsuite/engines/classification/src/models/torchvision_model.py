@@ -49,23 +49,32 @@ class TorchvisionModel(BaseOOPModule):
            
     @BaseOOPModule.track_status
     def to_device(self):
-        assert_key_dict(self.args, 'device')
-        self._device = self.args['device']
+        assert_key_dict(self.args['train'], 'device')
+        self._device = self.args['train']['device']
         self._model.to(self._device)
 
     @BaseOOPModule.track_status
     def set_dist(self):
         assert_key_dict(self.args, 'distributed')
-        assert_key_dict(self.args, 'sync_bn')
+        assert_key_dict(self.args['train'], 'sync_bn')
 
-        if self.args['distributed'] and self.args['sync_bn']:
+        if self.args['distributed'] and self.args['train']['sync_bn']:
             self._model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(self._model)
             
         self._model_without_ddp = self._model
         if self.args['distributed']:
             assert_key_dict(self.args['distributed'], 'gpu')
             self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['distributed']['gpu']])
+            print(f"Distributed Data Parallel is set")
             self._model_without_ddp = self.model.module
+        else:
+            assert_key_dict(self.args['train'], 'device_ids')
+            if len(self.args['train']['device_ids']) > 1:
+                self._model = torch.nn.parallel.DataParallel(self._model, device_ids=[self.args['train']['device_ids']])
+                self._model_without_ddp = self.model.module
+                print(f"Data Parallel is set")
+                
+                
 
     @BaseOOPModule.track_status
     def set_ema(self):
