@@ -35,7 +35,7 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         model = build_model(self.args)
         model.build(**self.args['model'], num_classes=dataset.num_classes, 
                     device=self.args['train']['device'], distributed=self.args['distributed']['use'],
-                    sync_bn=self.args['train']['sync_bn'], gpu=self.args['distributed']['gpu'])
+                    sync_bn=self.args['train']['sync_bn'])
         
         loop = build_loop(**self.args['loop'])
         loop.build(_model=model, _dataset=dataset, _archive=self._archive, 

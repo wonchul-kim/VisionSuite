@@ -9,9 +9,14 @@ from visionsuite.engines.classification.src.schedulers.build import build_schedu
 from visionsuite.engines.classification.utils.registry import LOOPS
 
 class BaseLoop(BaseOOPModule):
+    
+    required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset']
+    
     def __init__(self):
         super().__init__()
         self.args = None 
+        
+        self.loop = None
         
         self.model = None 
         self.train_dataloader = None 

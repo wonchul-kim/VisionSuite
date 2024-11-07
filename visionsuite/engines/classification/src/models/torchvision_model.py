@@ -63,7 +63,7 @@ class TorchvisionModel(BaseOOPModule):
             
         self._model_without_ddp = self._model
         if self.args['distributed']:
-            assert_key_dict(self.args, 'gpu')
+            assert_key_dict(self.args['distributed'], 'gpu')
             self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['distributed']['gpu']])
             self._model_without_ddp = self.model.module
 
