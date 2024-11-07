@@ -1,3 +1,3 @@
-from .base_validator import base_validator 
+from .base_validator import BaseValidator 
 
-__all__ = ['base_validator']
+__all__ = ['BaseValidator']
