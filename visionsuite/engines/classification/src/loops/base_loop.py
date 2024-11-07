@@ -23,6 +23,16 @@ class BaseLoop(BaseOOPModule):
         
         self.dataset = None
         self.archive = None
+        
+        self._current_epoch = None
+        
+    @property 
+    def current_epoch(self):
+        return self._current_epoch 
+    
+    @current_epoch.setter 
+    def current_epoch(self, val):
+        self._current_epoch = val
             
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(*args, **kwargs)
@@ -40,7 +50,7 @@ class BaseLoop(BaseOOPModule):
         self.scaler = torch.cuda.amp.GradScaler() if self.args['train']['amp'] else None
         self.lr_scheduler = build_scheduler(self.optimizer, self.args['train']['epochs'], 
                                             self.args['scheduler'], self.args['warmup_scheduler'])
-        self.args['start_epoch'] = set_resume(self.args['resume']['use'], self.args['train']['ckpt'], self.model.model_without_ddp, 
+        self._current_epoch = set_resume(self.args['resume']['use'], self.args['train']['ckpt'], self.model.model_without_ddp, 
                                     self.optimizer, self.lr_scheduler, self.scaler, self.args['train']['amp'])
         
         self.loop = LOOPS.get(self.args['loop']['type'])

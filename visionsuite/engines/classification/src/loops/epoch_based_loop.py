@@ -37,7 +37,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
     def run_loop(self):
         super().run_loop()
         self.run_callbacks('on_run_loop_start')
-        for epoch in range(self.args['start_epoch'], self.args['train']['epochs']):
+        for epoch in range(self.current_epoch, self.args['train']['epochs']):
 
             if self.args['distributed']['use']:
                 self.dataset.train_sampler.set_epoch(epoch)
