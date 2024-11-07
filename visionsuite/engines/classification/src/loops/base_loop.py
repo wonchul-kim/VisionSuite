@@ -18,7 +18,7 @@ class BaseLoop(BaseOOPModule):
         self.train_dataloader = None 
         self.val_dataloader = None 
         self.lr_scheduler = None 
-        self.scale = None 
+        self.scaler = None 
         self.loss = None 
         self.optimizer = None
         
