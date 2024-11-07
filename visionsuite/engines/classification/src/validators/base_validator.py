@@ -25,16 +25,16 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.add_callbacks(callbacks)
         
     def build(self, args, model, criterion, dataloader, device, label2class,
-             print_freq=100, log_suffix="", topk=5, archive=None):
+             print_freq=100, topk=5, archive=None):
 
-        self.model = model
+        self.model = model.model_ema if model.model_ema else model.model
         self.criterion = criterion
         self.dataloader = dataloader
         self.device = device
         self.label2class = label2class
         self.args = args
         self.print_freq = print_freq
-        self.log_suffix = log_suffix
+        self.log_suffix = "EMA" if model.model_ema else ""
         self.topk = topk
         self.archive = archive
         self.results = ValResults()

@@ -2,50 +2,9 @@ from .default import get_default_callbacks
 
 class Callbacks:
 
-    def add_integration_callbacks(cls, engine):
+    @classmethod
+    def add_integration_callbacks(cls):
         callbacks_list = []
-
-        # if "Train" in engine.__class__.__name__:
-        #     if engine._task.lower() == "segmentation":
-        #         from .tools.segmentation_cb import callbacks as seg_cb
-
-        #         callbacks_list.extend([seg_cb])
-        #     elif engine._task.lower() == "detection":
-        #         from .tools.detection_cb import callbacks as det_cb
-
-        #         callbacks_list.extend([det_cb])
-        #     elif engine._task.lower() == "obbdetection":
-        #         from .tools.obbdetection_cb import callbacks as obb_det_cb
-
-        #         callbacks_list.extend([obb_det_cb])
-        #     elif engine._task.lower() == "classification":
-        #         from .tools.classification_cb import callbacks as cls_cb
-
-        #         callbacks_list.extend([cls_cb])
-        #     elif engine._task.lower() == "ocr":
-        #         from aivocr.utils.callbacks.train_cb import callbacks as ocr_cb
-
-        #         callbacks_list.extend([ocr_cb])
-        #     else:
-        #         raise NotImplementedError(f"There is no such task: {engine._task}")
-
-        #     if cls.logger is not None:
-        #         cls.logger.info(
-        #             f"Added {engine._task} callbacks are integrated",
-        #             cls.add_integration_callbacks.__name__,
-        #             __class__.__name__,
-        #         )
-
-        # if engine.configs.logging.wb:
-        #     from .tools.wandb_cb import callbacks as wb_cb
-
-        #     callbacks_list.extend([wb_cb])
-        #     if cls.logger is not None:
-        #         cls.logger.info(
-        #             f"Added Wandb callbacks are integrated",
-        #             cls.add_integration_callbacks.__name__,
-        #             __class__.__name__,
-        #         )
  
         for callbacks in callbacks_list:
             for k, v in callbacks.items():

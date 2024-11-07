@@ -27,67 +27,44 @@ def on_run_loop_start(loop, *args, **kwargs):
 def on_run_loop_end(loop, *args, **kwargs):
     pass
 
-### Model -------------------------------------
-def on_set_model(*args, **kwargs):
-    pass
 
 ### Train -------------------------------------
-def on_train_start(*args, **kwargs):
+def on_train_epoch_start(trainer, *args, **kwargs):
     pass
 
-def on_train_end(*args, **kwargs):
+def on_train_epoch_end(trainer, *args, **kwargs):
     pass
 
-def on_train_epoch_start(*args, **kwargs):
+def on_train_batch_start(trainer, *args, **kwargs):
     pass
 
-def on_train_epoch_end(*args, **kwargs):
+def on_train_batch_end(trainer, *args, **kwargs):
     pass
 
-def on_train_batch_start(*args, **kwargs):
+def on_train_step_start(trainer, *args, **kwargs): # iteration for a batch
     pass
 
-def on_train_batch_end(*args, **kwargs):
-    pass
-
-def on_train_step_start(*args, **kwargs): # iteration for a batch
-    pass
-
-def on_train_step_end(*args, **kwargs): # iteration for a batch
+def on_train_step_end(trainer, *args, **kwargs): # iteration for a batch
     pass
 
 ### Val. -------------------------------------
-def on_val_start(*args, **kwargs):
+def on_val_epoch_start(validator, *args, **kwargs):
     pass
 
-def on_val_end(*args, **kwargs):
+def on_val_epoch_end(validator, *args, **kwargs):
     pass
 
-def on_val_epoch_start(*args, **kwargs):
+def on_val_batch_start(validator, *args, **kwargs):
     pass
 
-def on_val_epoch_end(*args, **kwargs):
+def on_val_batch_end(validator, *args, **kwargs):
     pass
 
-def on_val_batch_start(*args, **kwargs):
+def on_val_step_start(validator, *args, **kwargs): # iteration for a batch
     pass
 
-def on_val_batch_end(*args, **kwargs):
+def on_val_step_end(validator, *args, **kwargs): # iteration for a batch
     pass
-
-def on_val_step_start(*args, **kwargs): # iteration for a batch
-    pass
-
-def on_val_step_end(*args, **kwargs): # iteration for a batch
-    pass
-
-### End -------------------------------------
-def on_end_start(*args, **kwargs):
-    pass
-
-def on_end_end(*args, **kwargs):
-    pass
-
 
 
 default_callbacks = {
@@ -103,10 +80,7 @@ default_callbacks = {
     "on_run_loop_start": [on_run_loop_start],
     "on_run_loop_end": [on_run_loop_end],
     
-    "on_set_model": [on_set_model],
-    
-    "on_train_start": [on_train_start],
-    "on_train_end": [on_train_end],
+    ### Trainer -------------------------------------
     "on_train_epoch_start": [on_train_epoch_start],
     "on_train_epoch_end": [on_train_epoch_end],
     "on_train_batch_start": [on_train_epoch_start],
@@ -114,8 +88,7 @@ default_callbacks = {
     "on_train_step_start": [on_train_step_start],
     "on_train_step_end": [on_train_step_end],
 
-    "on_val_start": [on_val_start],
-    "on_val_end": [on_val_end],
+    ### Validator -------------------------------------
     "on_val_epoch_start": [on_val_epoch_start],
     "on_val_epoch_end": [on_val_epoch_end],
     "on_val_batch_start": [on_val_epoch_start],
@@ -123,8 +96,6 @@ default_callbacks = {
     "on_val_step_start": [on_val_step_start],
     "on_val_step_end": [on_val_step_end],
    
-    "on_end_start": [on_end_start],
-    "on_end_end": [on_end_end],
 }
 
 
