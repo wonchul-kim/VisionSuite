@@ -11,6 +11,7 @@ from visionsuite.engines.classification.utils.registry import TRAINERS
 from visionsuite.engines.utils.system.gpu_logger import GPULogger
 from visionsuite.engines.utils.bases import BaseOOPModule
 from visionsuite.engines.utils.callbacks import Callbacks
+from visionsuite.engines.classification.utils.results import TrainResults
 from .callbacks import callbacks
 
 @TRAINERS.register()
@@ -22,7 +23,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.add_callbacks(callbacks)
         
     def build(self, model, criterion, optimizer, dataloader, device, args, 
-                    model_ema=None, scaler=None, topk=5, archive=None, results=None):
+                    model_ema=None, scaler=None, topk=5, archive=None):
         self.model = model
         self.criterion = criterion
         self.optimizer = optimizer
@@ -33,7 +34,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.scaler = scaler
         self.topk = topk
         self.archive = archive
-        self.results = results
+        self.results = TrainResults()
         
     @abstractmethod
     def train(self, epoch):

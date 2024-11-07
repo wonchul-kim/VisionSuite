@@ -12,6 +12,7 @@ from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 from visionsuite.engines.classification.utils.registry import VALIDATORS
 from visionsuite.engines.utils.bases import BaseOOPModule
 from visionsuite.engines.utils.callbacks import Callbacks
+from visionsuite.engines.classification.utils.results import ValResults
 from .callbacks import callbacks
 
 
@@ -24,7 +25,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.add_callbacks(callbacks)
         
     def build(self, args, model, criterion, dataloader, device, label2class,
-             print_freq=100, log_suffix="", topk=5, archive=None, results=None):
+             print_freq=100, log_suffix="", topk=5, archive=None):
 
         self.model = model
         self.criterion = criterion
@@ -36,7 +37,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.log_suffix = log_suffix
         self.topk = topk
         self.archive = archive
-        self.results = results
+        self.results = ValResults()
         
     @abstractmethod
     def val(self, epoch):

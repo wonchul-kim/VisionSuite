@@ -6,7 +6,6 @@ from visionsuite.engines.classification.src.trainers.build import build_trainer
 from visionsuite.engines.classification.src.validators.build import build_validator
 from visionsuite.engines.classification.utils.registry import LOOPS
 from visionsuite.engines.classification.src.loops.base_loop import BaseLoop
-from visionsuite.engines.classification.utils.results import TrainResults, ValResults
 from visionsuite.engines.utils.callbacks import Callbacks
 from .callbacks import callbacks
 
@@ -22,19 +21,16 @@ class EpochBasedLoop(BaseLoop, Callbacks):
         super().build(_model, _dataset, _archive=_archive, *args, **kwargs)
         self.run_callbacks('on_build_start')
 
-        self.train_results = TrainResults()
-        self.val_results = ValResults()
-        
         self.trainer = build_trainer(**self.args['train']['trainer'])()
         self.trainer.build(self.model.model, self.loss, self.optimizer, self.train_dataloader, 
                             self.args['train']['device'], self.args, self.model.model_ema, self.scaler, 
-                            self.args['train']['topk'], self.archive, self.train_results)
+                            self.args['train']['topk'], self.archive)
         self.validator = build_validator(**self.args['val']['validator'])()
         self.validator.build(self.args['val'], self.model.model_ema if self.model.model_ema else self.model.model, 
                      self.loss, self.val_dataloader, self.args['train']['device'],  
                      self.dataset.label2index, 
                     topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 
-                    archive=self.archive, results=self.val_results)
+                    archive=self.archive)
         
         self.run_callbacks('on_build_end')
         
