@@ -8,7 +8,7 @@ class Engine(BaseEngine):
         
     def train(self, cfgs_file, *args, **kwargs):
         
-        runner = RUNNERS.get("TrainRunner", case_sensitive=True)()
+        runner = RUNNERS.get("TrainRunner", case_sensitive=True)('classification')
         assert runner is not None, ValueError(f"runner is None")
         
         runner.train(cfgs_file, *args, **kwargs)

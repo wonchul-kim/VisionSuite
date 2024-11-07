@@ -8,7 +8,6 @@ from visionsuite.engines.classification.src.optimizers.build import build_optimi
 from visionsuite.engines.classification.src.schedulers.build import build_scheduler
 from visionsuite.engines.classification.utils.registry import LOOPS
 
-
 class BaseLoop(BaseOOPModule):
     def __init__(self):
         super().__init__()
@@ -23,15 +22,13 @@ class BaseLoop(BaseOOPModule):
         self.optimizer = None
         
         self.dataset = None
-        self.callbacks = None
         self.archive = None
             
-    def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
+    def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(*args, **kwargs)
         
         self.model = _model
         self.dataset = _dataset
-        self.callbacks = _callbacks
         self.archive = _archive
         
         self.train_dataloader = build_dataloader(self.args, self.dataset, mode='train')
@@ -50,5 +47,5 @@ class BaseLoop(BaseOOPModule):
 
     @BaseOOPModule.track_status
     @abstractmethod
-    def run(self):
+    def run_loop(self):
         pass

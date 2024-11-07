@@ -10,14 +10,18 @@ from visionsuite.engines.classification.utils.metrics.accuracy import get_accura
 from visionsuite.engines.classification.utils.registry import TRAINERS
 from visionsuite.engines.utils.system.gpu_logger import GPULogger
 from visionsuite.engines.utils.bases import BaseOOPModule
+from visionsuite.engines.utils.callbacks import Callbacks
+from .callbacks import callbacks
 
 @TRAINERS.register()
-class BaseTrainer(BaseOOPModule):
+class BaseTrainer(BaseOOPModule, Callbacks):
     def __init__(self):
-        super().__init__()
+        BaseOOPModule.__init__(self)
+        Callbacks.__init__(self)
         
+        self.add_callbacks(callbacks)
         
-    def build(self, model, criterion, optimizer, dataloader, device, args, callbacks,
+    def build(self, model, criterion, optimizer, dataloader, device, args, 
                     model_ema=None, scaler=None, topk=5, archive=None, results=None):
         self.model = model
         self.criterion = criterion
@@ -25,7 +29,6 @@ class BaseTrainer(BaseOOPModule):
         self.dataloader = dataloader
         self.device = device
         self.args = args
-        self.callbacks = callbacks
         self.model_ema = model_ema
         self.scaler = scaler
         self.topk = topk
@@ -33,7 +36,8 @@ class BaseTrainer(BaseOOPModule):
         self.results = results
         
     @abstractmethod
-    def run(self, epoch):
+    def train(self, epoch):
+        self.run_callbacks('on_train_epoch_start')
         self.model.train()
         gpu_logger = GPULogger(self.args['train']['device_ids'])
         metric_logger = MetricLogger(delimiter="  ")
@@ -43,7 +47,7 @@ class BaseTrainer(BaseOOPModule):
         header = f"Epoch: [{epoch}]"
         start_time_epoch = time.time()
         for i, (image, target) in enumerate(metric_logger.log_every(self.dataloader, self.args['train']['print_freq'], header)):
-            self.callbacks.run_callbacks('on_train_batch_start')
+            self.run_callbacks('on_train_batch_start')
             start_time = time.time()
             image, target = image.to(self.device), target.to(self.device)
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
@@ -79,7 +83,7 @@ class BaseTrainer(BaseOOPModule):
             metric_logger.meters["img/s"].update(batch_size / (time.time() - start_time))
             metric_logger.meters['gpu'].update((torch.cuda.memory_allocated() + torch.cuda.memory_reserved()) / 1024**2)
             gpu_logger.update()
-            self.callbacks.run_callbacks('on_train_batch_end')
+            self.run_callbacks('on_train_batch_end')
 
         self.archive.monitor.log({"learning rate": metric_logger.meters['lr'].value})
         self.archive.monitor.log({"train avg loss": metric_logger.meters['loss'].global_avg})
@@ -96,6 +100,10 @@ class BaseTrainer(BaseOOPModule):
         gpu_logger.end()
 
         epoch += 1
+
+        self.run_callbacks('on_train_epoch_end')
+
+
 
 @TRAINERS.register()
 def base_trainer(model, criterion, optimizer, dataloader, device, epoch, args, callbacks,

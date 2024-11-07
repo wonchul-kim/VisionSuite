@@ -7,42 +7,46 @@ from visionsuite.engines.classification.src.validators.build import build_valida
 from visionsuite.engines.classification.utils.registry import LOOPS
 from visionsuite.engines.classification.src.loops.base_loop import BaseLoop
 from visionsuite.engines.classification.utils.results import TrainResults, ValResults
-
+from visionsuite.engines.utils.callbacks import Callbacks
+from .callbacks import callbacks
 
 @LOOPS.register()
-class EpochBasedLoop(BaseLoop):
+class EpochBasedLoop(BaseLoop, Callbacks):
     def __init__(self):
-        super().__init__()
+        BaseLoop.__init__(self)
+        Callbacks.__init__(self)
         
-    def build(self, _model, _dataset, _callbacks=None, _archive=None, *args, **kwargs):
-        super().build(_model, _dataset, _callbacks=_callbacks, _archive=_archive, *args, **kwargs)
-        
+        self.add_callbacks(callbacks)
+
+    def build(self, _model, _dataset, _archive=None, *args, **kwargs):
+        super().build(_model, _dataset, _archive=_archive, *args, **kwargs)
+        self.run_callbacks('on_build_start')
+
         self.train_results = TrainResults()
         self.val_results = ValResults()
         
         self.trainer = build_trainer(**self.args['train']['trainer'])()
         self.trainer.build(self.model.model, self.loss, self.optimizer, self.train_dataloader, 
-                            self.args['train']['device'], self.args, self.callbacks, self.model.model_ema, self.scaler, 
+                            self.args['train']['device'], self.args, self.model.model_ema, self.scaler, 
                             self.args['train']['topk'], self.archive, self.train_results)
         self.validator = build_validator(**self.args['val']['validator'])()
         self.validator.build(self.args['val'], self.model.model_ema if self.model.model_ema else self.model.model, 
                      self.loss, self.val_dataloader, self.args['train']['device'],  
-                     self.dataset.label2index, self.callbacks, 
+                     self.dataset.label2index, 
                     topk=self.args['train']['topk'], log_suffix="EMA" if self.args['model']['ema']['use'] else "", 
                     archive=self.archive, results=self.val_results)
         
-    def run(self):
-        super().run()
-        self.callbacks.run_callbacks('on_train_start')
+        self.run_callbacks('on_build_end')
+        
+    def run_loop(self):
+        super().run_loop()
+        self.run_callbacks('on_run_loop_start')
         for epoch in range(self.args['start_epoch'], self.args['train']['epochs']):
-            self.callbacks.run_callbacks('on_train_epoch_start')
 
             if self.args['distributed']['use']:
                 self.dataset.train_sampler.set_epoch(epoch)
-            self.trainer.run(epoch)
+            self.trainer.train(epoch)
             self.lr_scheduler.step()
-
-            self.callbacks.run_callbacks('on_train_epoch_end')
 
             #TODO: MOVE THIS INTO CALLBACK AND ADD BEST ----------------------------------------------------
             if self.archive.weights_dir:
@@ -65,9 +69,6 @@ class EpochBasedLoop(BaseLoop):
                     save_on_master(checkpoint, osp.join(self.archive.weights_dir, f"model_{epoch}.pth"))
             # ----------------------------------------------------------------------------------------------
 
-            self.callbacks.run_callbacks('on_val_start')
-            self.validator.run(epoch)
-            self.callbacks.run_callbacks('on_val_end')
+            self.validator.val(epoch)
             
-        self.callbacks.run_callbacks('on_train_end')
-        
+        self.run_callbacks('on_run_loop_end')

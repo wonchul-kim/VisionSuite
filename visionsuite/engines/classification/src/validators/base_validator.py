@@ -11,14 +11,19 @@ from visionsuite.engines.classification.utils.metrics.accuracy import get_accura
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 from visionsuite.engines.classification.utils.registry import VALIDATORS
 from visionsuite.engines.utils.bases import BaseOOPModule
+from visionsuite.engines.utils.callbacks import Callbacks
+from .callbacks import callbacks
 
 
 @VALIDATORS.register()
-class BaseValidator(BaseOOPModule):
+class BaseValidator(BaseOOPModule, Callbacks):
     def __init__(self):
-        super().__init__()
+        BaseOOPModule.__init__(self)
+        Callbacks.__init__(self)
         
-    def build(self, args, model, criterion, dataloader, device, label2class, callbacks,
+        self.add_callbacks(callbacks)
+        
+    def build(self, args, model, criterion, dataloader, device, label2class,
              print_freq=100, log_suffix="", topk=5, archive=None, results=None):
 
         self.model = model
@@ -26,7 +31,6 @@ class BaseValidator(BaseOOPModule):
         self.dataloader = dataloader
         self.device = device
         self.label2class = label2class
-        self.callbacks = callbacks
         self.args = args
         self.print_freq = print_freq
         self.log_suffix = log_suffix
@@ -35,7 +39,7 @@ class BaseValidator(BaseOOPModule):
         self.results = results
         
     @abstractmethod
-    def run(self, epoch):
+    def val(self, epoch):
         if epoch%self.args['epoch'] == 0:
             self.model.eval()
             metric_logger = MetricLogger(delimiter="  ")
@@ -43,10 +47,10 @@ class BaseValidator(BaseOOPModule):
 
             num_processed_samples = 0
             start_time_epoch = 0
-            self.callbacks.run_callbacks('on_val_epoch_start')
+            self.run_callbacks('on_val_epoch_start')
             with torch.inference_mode():
                 for image, target in metric_logger.log_every(self.dataloader, self.print_freq, header):
-                    self.callbacks.run_callbacks('on_val_batch_start')
+                    self.run_callbacks('on_val_batch_start')
                     image = image.to(self.device, non_blocking=True)
                     target = target.to(self.device, non_blocking=True)
                     output = self.model(image)
@@ -60,11 +64,9 @@ class BaseValidator(BaseOOPModule):
                     metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
                     metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
                     num_processed_samples += batch_size
-                    self.callbacks.run_callbacks('on_val_batch_start')
+                    self.run_callbacks('on_val_batch_start')
                     
             # gather the stats from all processes
-            self.callbacks.run_callbacks('on_val_epoch_end')
-
             num_processed_samples = reduce_across_processes(num_processed_samples)
             if (
                 hasattr(self.dataloader.dataset, "__len__")
@@ -98,6 +100,7 @@ class BaseValidator(BaseOOPModule):
             self.results.accuracy = float(round(metric_logger.meters["acc1"].global_avg, 4))
             self.results.time_for_a_epoch = float(round(time.time() - start_time_epoch, 3))
         
+            self.run_callbacks('on_val_epoch_end')
 
 
 @VALIDATORS.register()

@@ -1,13 +1,30 @@
 from collections import defaultdict
 from copy import deepcopy
 
-def on_set_configs(*args, **kwargs):
+### TrainRunner -------------------------------------
+def on_set_configs(runner, *args, **kwargs):
     pass
 
-def on_set_variables(*args, **kwargs):
+def on_set_variables(runner, *args, **kwargs):
     pass
 
-def on_set_dataset(*args, **kwargs):
+def on_run_start(runner, *args, **kwargs):
+    pass
+
+def on_run_end(runner, *args, **kwargs):
+    pass
+
+### Loop ---------------------------------------------
+def on_build_start(loop, *args, **kwargs):
+    pass
+
+def on_build_end(loop, *args, **kwargs):
+    pass
+
+def on_run_loop_start(loop, *args, **kwargs):
+    pass
+
+def on_run_loop_end(loop, *args, **kwargs):
     pass
 
 ### Model -------------------------------------
@@ -74,9 +91,17 @@ def on_end_end(*args, **kwargs):
 
 
 default_callbacks = {
+    ### TrainRunner -------------------------------
     "on_set_configs": [on_set_configs],
     "on_set_variables": [on_set_variables],
-    "on_set_dataset": [on_set_dataset],
+    "on_run_start": [on_run_start],
+    "on_run_end": [on_run_end],
+    
+    ### Loop -------------------------------
+    "on_build_start": [on_build_start],
+    "on_build_end": [on_build_end],
+    "on_run_loop_start": [on_run_loop_start],
+    "on_run_loop_end": [on_run_loop_end],
     
     "on_set_model": [on_set_model],
     

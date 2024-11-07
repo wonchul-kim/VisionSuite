@@ -100,4 +100,4 @@ class Callbacks:
 
     def run_callbacks(self, event: str, *args, **kwargs):
         for callback in self._callbacks.get(event, []):
-            callback(*args, **kwargs)
+            callback(self, *args, **kwargs)

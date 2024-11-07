@@ -9,12 +9,9 @@ from visionsuite.engines.utils.helpers import yaml2dict, update_dict
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
 from visionsuite.engines.utils.archives import Archive
-
             
 class BaseTrainRunner:
     def __init__(self, task):
-        super().__init__()
-        
         self._task = task
         self.pipelines = {}
         
