@@ -42,7 +42,6 @@ class EpochBasedLoop(BaseLoop, Callbacks):
             if self.args['distributed']['use']:
                 self.dataset.train_sampler.set_epoch(epoch)
             self.trainer.train(epoch)
-
             self.validator.val(epoch)
             
         self.run_callbacks('on_run_loop_end')

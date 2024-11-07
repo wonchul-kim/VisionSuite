@@ -42,9 +42,7 @@ def on_train_epoch_end(trainer, *args, **kwargs):
         trainer.results.cpu_usage = float(round(psutil.virtual_memory().used / 1024 / 1024 / 1024, 4))
         trainer.results.gpu_usage = trainer.gpu_logger.mean()
         trainer.results.time_for_a_epoch = float(round(time.time() - kwargs['start_time_epoch'], 3))
-        
-        trainer.gpu_logger.end()
-  
+          
     _save_model()
     _save_monitor()
     _save_results()

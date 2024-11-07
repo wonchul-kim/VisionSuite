@@ -6,7 +6,6 @@ import time
 from abc import abstractmethod
 
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
-from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 from visionsuite.engines.classification.utils.registry import VALIDATORS
@@ -37,20 +36,21 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.log_suffix = "EMA" if model.model_ema else ""
         self.topk = topk
         self.archive = archive
+        
         self.results = ValResults()
+        self.metric_logger = MetricLogger(delimiter="  ")
+        
         
     @abstractmethod
     def val(self, epoch):
         if epoch%self.args['epoch'] == 0:
             self.model.eval()
-            metric_logger = MetricLogger(delimiter="  ")
             header = f"Test: {self.log_suffix}"
-
             num_processed_samples = 0
             start_time_epoch = 0
             self.run_callbacks('on_val_epoch_start')
             with torch.inference_mode():
-                for image, target in metric_logger.log_every(self.dataloader, self.print_freq, header):
+                for image, target in self.metric_logger.log_every(self.dataloader, self.print_freq, header):
                     self.run_callbacks('on_val_batch_start')
                     image = image.to(self.device, non_blocking=True)
                     target = target.to(self.device, non_blocking=True)
@@ -61,9 +61,9 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     # FIXME need to take into account that the datasets
                     # could have been padded in distributed setup
                     batch_size = image.shape[0]
-                    metric_logger.update(loss=loss.item())
-                    metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
-                    metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
+                    self.metric_logger.update(loss=loss.item())
+                    self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
+                    self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
                     num_processed_samples += batch_size
                     self.run_callbacks('on_val_batch_start')
                     
@@ -82,26 +82,12 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     "Setting the world size to 1 is always a safe bet."
                 )
 
-            metric_logger.synchronize_between_processes()
 
-            print(f"{header} Acc@1 {metric_logger.acc1.global_avg:.3f} Acc@5 {metric_logger.acc5.global_avg:.3f}")
+            print(f"{header} Acc@1 {self.metric_logger.acc1.global_avg:.3f} Acc@5 {self.metric_logger.acc5.global_avg:.3f}")
             
-            #TODO: MOVE THIS INTO CALLBACK ------------------------------------------------------------
-            if self.archive.args['save_val']['use'] and osp.exists(self.archive.val_dir):
-                vis_dir = osp.join(self.archive.val_dir, str(epoch))
-                if not osp.exists(vis_dir):
-                    os.mkdir(vis_dir)
-                    
-                from visionsuite.engines.classification.utils.vis.vis_val import save_validation
-                save_validation(self.model, self.dataloader, self.label2class, epoch, vis_dir, self.device, denormalize)
-            # ------------------------------------------------------------------------------------------
-                
-            self.results.epoch = int(epoch)
-            self.results.loss = float(round(metric_logger.meters['loss'].global_avg, 4))
-            self.results.accuracy = float(round(metric_logger.meters["acc1"].global_avg, 4))
-            self.results.time_for_a_epoch = float(round(time.time() - start_time_epoch, 3))
-        
-            self.run_callbacks('on_val_epoch_end')
+            
+            self.run_callbacks('on_val_epoch_end', epoch=epoch, 
+                               start_time_epoch=start_time_epoch)
 
 
 @VALIDATORS.register()
