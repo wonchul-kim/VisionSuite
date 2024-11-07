@@ -1,7 +1,3 @@
-import os.path as osp
-
-from visionsuite.engines.utils.torch_utils.utils import save_on_master
-
 from visionsuite.engines.classification.src.trainers.build import build_trainer
 from visionsuite.engines.classification.src.validators.build import build_validator
 from visionsuite.engines.classification.utils.registry import LOOPS
