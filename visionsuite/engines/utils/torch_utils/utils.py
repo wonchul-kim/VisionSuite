@@ -1,6 +1,13 @@
 import torch
 from .dist import is_main_process
 
+def load_ckpt(ckpt, map_location='cpu', weights_only=False):
+    try:
+        return torch.load(ckpt, map_location=map_location, weights_only=weights_only)
+    except Exception as error:
+        raise Exception(f"There has been error when loading checkpoint({ckpt}): {error}")
+
+
 def get_device(device):
     return torch.device(device)
 

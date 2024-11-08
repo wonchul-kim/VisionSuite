@@ -1,11 +1,11 @@
-import torch 
+import os.path as osp
 from abc import abstractmethod
 from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
-from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.classification.src.dataloaders.build import build_dataloader
 from visionsuite.engines.classification.src.losses.build import build_loss
 from visionsuite.engines.classification.src.optimizers.build import build_optimizer
 from visionsuite.engines.classification.src.schedulers.build import build_scheduler
+from visionsuite.engines.utils.torch_utils.utils import load_ckpt
 from visionsuite.engines.classification.utils.registry import LOOPS
 
 class BaseLoop(BaseOOPModule):
@@ -56,12 +56,36 @@ class BaseLoop(BaseOOPModule):
         self.optimizer = build_optimizer(self.model.model, self.args['optimizer'])
         self.lr_scheduler = build_scheduler(self.optimizer, self.args['train']['epochs'], 
                                             self.args['scheduler'], self.args['warmup_scheduler'])
-        self._start_epoch = set_resume(self.args['resume']['use'], self.args['train']['ckpt'], self.model.model_without_ddp, 
-                                    self.optimizer, self.lr_scheduler, self.scaler, self.args['train']['amp'])
         
+        self._set_resume()
         self.loop = LOOPS.get(self.args['loop']['type'])
 
     @BaseOOPModule.track_status
     @abstractmethod
     def run_loop(self):
         pass
+    
+    def _set_resume(self):
+        if self.args['resume']['use'] and self.args['train']['ckpt']:
+            assert osp.exists(self.args['train']['ckpt']), ValueError(f"There is no such checkpoint: {self.args['train']['ckpt']}")
+            ckpt = load_ckpt(self.args['train']['ckpt'])
+            
+            self.model.model_without_ddp.load_state_dict(ckpt['model'], strict=True)
+            
+            attributes = ['optimizer', 'lr_scheduler', 'epoch']
+            if self.args['train']['amp']:
+                attributes.append('scaler')
+            
+            for attribute in attributes:
+                if self.args['resume'][attribute]:
+                    if attribute in ckpt:
+                        if attribute == 'epoch':
+                            getattr(self, 'start_epoch').load_state_dict(ckpt[attribute])
+                        else:
+                            getattr(self, attribute).load_state_dict(ckpt[attribute])
+                    else:
+                        raise AttributeError(f"There is no {attribute} in ckpt({self.args['train']['ckpt']})")
+                    
+        else:
+            self._start_epoch = 1
+            
