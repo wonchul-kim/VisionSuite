@@ -1,6 +1,5 @@
 # etc.
 logs
-results 
 *.out 
 tmp
 

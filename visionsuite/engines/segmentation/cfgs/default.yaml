@@ -1,35 +1,71 @@
-optimizer: SGD
-output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch
-data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset
-# data_path: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/tenneco/split_patch_mask_dataset
-dataset: mask
-model: deeplabv3_resnet50
-aux_loss: True
-device_ids: 0
-device: cuda
-batch_size: 2
-epochs: 150
-workers: 16
-lr: 0.0001
-momentum: 0.9
-weight_decay: 0.0001
-lr_warmup_epochs: 0
-lr_warmup_method: linear
-lr_warmup_decay: 0.01
-print_freq: 10
-# ckpt: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed_deeplabv3_resnet50_20_22_21/model_99.pth
-# resume: True
-ckpt: null
-resume: False
-start_epoch: 0
-use_deterministic_algorithms: False
 
-# distributed training parameters
-world_size: 1
-dist_url: env://
+optimizer:
+  type: SGD
 
-weights: null
-weights_backbone: ResNet50_Weights.IMAGENET1K_V1
-amp: False
-backend: PIL
-use_v2: False
+dataset: 
+  type: mask
+
+model:
+  type: deeplabv3_resnet50
+
+
+train: 
+  trainer: 
+    type: BaseTrainer   
+  aux_loss: True
+  device_ids: 0
+  device: cuda
+  batch_size: 2
+  epochs: 150
+  workers: 16
+  print_freq: 10
+  start_epoch: 0
+  # ckpt: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/dlv3_scratch_tear_stabbed_deeplabv3_resnet50_20_22_21/model_99.pth
+  # resume: True
+  ckpt: null
+  use_deterministic_algorithms: False
+
+  weights: null
+  weights_backbone: ResNet50_Weights.IMAGENET1K_V1
+  amp: False
+
+scheduler:
+  type: 
+  lr: 0.0001
+  momentum: 0.9
+  weight_decay: 0.0001
+
+warmup_scheduler:
+  lr_warmup_epochs: 0
+  warmup_type: linear
+  lr_warmup_decay: 0.01
+  
+
+resume: 
+  use: False
+
+
+distributed:
+  # distributed training parameters
+  world_size: 1
+  dist_url: env://
+
+
+archive:
+  save_model:
+    last: True 
+    best: 
+      loss: True 
+      acc: True
+    freq_epoch: 10
+
+  monitor:
+    use: True
+
+  save_val:
+    use: True
+
+augment:
+  backend: PIL
+  use_v2: False
+

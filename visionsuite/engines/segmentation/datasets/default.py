@@ -13,10 +13,10 @@ def get_dataset(args, is_train):
         return torchvision.datasets.VOCSegmentation(*args, **kwargs)
 
     paths = {
-        "voc": (args.data_path, voc, 21),
-        "voc_aug": (args.data_path, sbd, 21),
-        "coco": (args.data_path, get_coco, 21),
-        "mask": (args.data_path, get_mask, 4),
+        "voc": (args.input_dir, voc, 21),
+        "voc_aug": (args.input_dir, sbd, 21),
+        "coco": (args.input_dir, get_coco, 21),
+        "mask": (args.input_dir, get_mask, 4),
     }
     p, ds_fn, num_classes = paths[args.dataset]
 
