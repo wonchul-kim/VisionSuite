@@ -6,7 +6,6 @@ from abc import abstractmethod
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
-from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.classification.utils.registry import TRAINERS
 from visionsuite.engines.utils.system.gpu_logger import GPULogger
 from visionsuite.engines.utils.bases import BaseOOPModule
