@@ -6,6 +6,7 @@ from abc import abstractmethod
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
 from visionsuite.engines.classification.utils.metrics.accuracy import get_accuracies
+from visionsuite.engines.utils.torch_utils.resume import set_resume
 from visionsuite.engines.classification.utils.registry import TRAINERS
 from visionsuite.engines.utils.system.gpu_logger import GPULogger
 from visionsuite.engines.utils.bases import BaseOOPModule
@@ -24,9 +25,11 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         
         self.add_callbacks(callbacks)
         
-    def build(self, model, loss, optimizer, lr_scheduler, dataloader, args, archive=None):
+    def build(self, model, loss, optimizer, lr_scheduler, dataloader, args, scaler=None, archive=None):
         
         self.run_callbacks('on_build_trainer_start')
+        
+        self.epoch = None
         
         self.model = model
         self.loss = loss
@@ -34,19 +37,20 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.lr_scheduler = lr_scheduler
         self.dataloader = dataloader
         self.args = args
+        self.scaler = scaler
         self.archive = archive
         
         self.results = TrainResults()
         self.metric_logger = MetricLogger(delimiter="  ")
         self.gpu_logger = GPULogger(self.args['device_ids'])
 
-        self.scaler = torch.cuda.amp.GradScaler() if self.args['amp'] else None
         
         self.run_callbacks('on_build_trainer_end')
 
     @abstractmethod
     def train(self, epoch):
         self.run_callbacks('on_train_epoch_start')
+        self.epoch = epoch
         self.model.model.train()
         self.metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
         self.metric_logger.add_meter("img/s", SmoothedValue(window_size=10, fmt="{value}"))

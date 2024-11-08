@@ -11,7 +11,7 @@ from visionsuite.engines.classification.utils.registry import LOOPS
 class BaseLoop(BaseOOPModule):
     
     required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset',
-                           'trainer', 'current_epoch']
+                           'trainer', 'start_epoch']
     
     def __init__(self):
         super().__init__()
@@ -25,21 +25,22 @@ class BaseLoop(BaseOOPModule):
         self.lr_scheduler = None 
         self.loss = None 
         self.optimizer = None
+        self.scaler = None 
         
         self.dataset = None
         self.archive = None
         
-        self._current_epoch = None
+        self._start_epoch = None
         self.trainer = None 
         self.validator = None
         
     @property 
-    def current_epoch(self):
-        return self._current_epoch 
+    def start_epoch(self):
+        return self._start_epoch 
     
-    @current_epoch.setter 
-    def current_epoch(self, val):
-        self._current_epoch = val
+    @start_epoch.setter 
+    def start_epoch(self, val):
+        self._start_epoch = val
             
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(*args, **kwargs)
@@ -55,9 +56,8 @@ class BaseLoop(BaseOOPModule):
         self.optimizer = build_optimizer(self.model.model, self.args['optimizer'])
         self.lr_scheduler = build_scheduler(self.optimizer, self.args['train']['epochs'], 
                                             self.args['scheduler'], self.args['warmup_scheduler'])
-        self._current_epoch = 1
-        # set_resume(self.args['resume']['use'], self.args['train']['ckpt'], self.model.model_without_ddp, 
-        #                             self.optimizer, self.lr_scheduler, self.scaler, self.args['train']['amp'])
+        self._start_epoch = set_resume(self.args['resume']['use'], self.args['train']['ckpt'], self.model.model_without_ddp, 
+                                    self.optimizer, self.lr_scheduler, self.scaler, self.args['train']['amp'])
         
         self.loop = LOOPS.get(self.args['loop']['type'])
 

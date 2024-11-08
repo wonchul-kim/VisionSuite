@@ -20,7 +20,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
         self.trainer = build_trainer(**self.args['train']['trainer'])()
         self.trainer.build(model=self.model, loss=self.loss, optimizer=self.optimizer, 
                            lr_scheduler=self.lr_scheduler, dataloader=self.train_dataloader, 
-                           args=self.args['train'],
+                           args=self.args['train'], scaler=self.scaler,
                            archive=self.archive)
         self.validator = build_validator(**self.args['val']['validator'])()
         self.validator.build(model=self.model, loss=self.loss, dataloader=self.val_dataloader,
@@ -33,7 +33,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
     def run_loop(self):
         super().run_loop()
         self.run_callbacks('on_run_loop_start')
-        for epoch in range(self.current_epoch, self.args['train']['epochs']):
+        for epoch in range(self.start_epoch, self.args['train']['epochs']):
 
             if self.args['distributed']['use']:
                 self.dataset.train_sampler.set_epoch(epoch)

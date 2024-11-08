@@ -26,7 +26,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
     def build(self, model, loss, dataloader, args, device, label2index, archive=None, print_freq=100, topk=3):
 
         self.run_callbacks('on_build_validator_start')
-        
+        self.epoch = None
         self.model = model.model_ema if model.model_ema else model.model
         self.loss = loss
         self.dataloader = dataloader
@@ -45,6 +45,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
     @abstractmethod
     def val(self, epoch):
+        self.epoch = epoch
         if epoch%self.args['epoch'] == 0:
             self.model.eval()
             header = f"Test: {self.log_suffix}"
