@@ -3,7 +3,7 @@ import torchvision
 
 
 from visionsuite.engines.utils.torch_utils.ema import ExponentialMovingAverage
-from visionsuite.engines.utils.registry import MODELS
+from visionsuite.engines.classification.utils.registry import MODELS
 from visionsuite.engines.utils.helpers import assert_key_dict
 from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
