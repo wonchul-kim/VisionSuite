@@ -24,8 +24,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         
         self.add_callbacks(callbacks)
         
-    def build(self, model, loss, optimizer, lr_scheduler, dataloader, args,
-                scaler=None, topk=3, archive=None):
+    def build(self, model, loss, optimizer, lr_scheduler, dataloader, args, archive=None):
         
         self.run_callbacks('on_build_trainer_start')
         
@@ -35,9 +34,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.lr_scheduler = lr_scheduler
         self.dataloader = dataloader
         self.args = args
-        self.topk = topk
         self.archive = archive
-        self.device = args['device']
         
         self.results = TrainResults()
         self.metric_logger = MetricLogger(delimiter="  ")
@@ -59,7 +56,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         for i, (image, target) in enumerate(self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header)):
             self.run_callbacks('on_train_batch_start')
             start_time = time.time()
-            image, target = image.to(self.device), target.to(self.device)
+            image, target = image.to(self.args['device']), target.to(self.args['device'])
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 output = self.model.model(image)
                 loss = self.loss(output, target)
@@ -85,7 +82,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
                     # Reset ema buffer to keep copying weights during warmup period
                     self.model.model_ema.n_averaged.fill_(0)
 
-            acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
+            acc1, acc5 = get_accuracies(output, target, topk=(1, self.args['topk']))
             batch_size = image.shape[0]
             self.metric_logger.update(loss=loss.item(), lr=self.optimizer.param_groups[0]["lr"])
             self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)

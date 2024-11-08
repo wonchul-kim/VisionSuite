@@ -16,7 +16,7 @@ def on_val_epoch_end(validator, *args, **kwargs):
             if not osp.exists(vis_dir):
                 mkdir(vis_dir)
                 
-            save_validation(validator.model, validator.dataloader, validator.label2class, kwargs['epoch'], vis_dir, validator.device, denormalize)
+            save_validation(validator.model, validator.dataloader, validator.label2index, kwargs['epoch'], vis_dir, validator.device, denormalize)
 
     def _save_results():
         validator.results.epoch = int(kwargs['epoch'])

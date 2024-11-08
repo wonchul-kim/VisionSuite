@@ -23,11 +23,10 @@ class EpochBasedLoop(BaseLoop, Callbacks):
                            args=self.args['train'],
                            archive=self.archive)
         self.validator = build_validator(**self.args['val']['validator'])()
-        self.validator.build(self.args['val'], self.model, 
-                     self.loss, self.val_dataloader, self.args['train']['device'],  
-                     self.dataset.label2index, 
-                    topk=self.args['train']['topk'], 
-                    archive=self.archive)
+        self.validator.build(model=self.model, loss=self.loss, dataloader=self.val_dataloader,
+                             args=self.args['val'], label2index=self.dataset.label2index, 
+                             device=self.args['train']['device'], topk=self.args['train']['topk'],
+                             archive=self.archive)
         
         self.run_callbacks('on_build_loop_end')
         

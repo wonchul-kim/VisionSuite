@@ -20,19 +20,18 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
         self.add_callbacks(callbacks)
         
-    def build(self, args, model, criterion, dataloader, device, label2class,
-             print_freq=100, topk=5, archive=None):
+    def build(self, model, loss, dataloader, args, device, label2index, archive=None, print_freq=100, topk=3):
 
         self.model = model.model_ema if model.model_ema else model.model
-        self.criterion = criterion
+        self.loss = loss
         self.dataloader = dataloader
-        self.device = device
-        self.label2class = label2class
+        self.label2index = label2index
         self.args = args
-        self.print_freq = print_freq
         self.log_suffix = "EMA" if model.model_ema else ""
-        self.topk = topk
         self.archive = archive
+        self.device = device
+        self.print_freq = print_freq
+        self.topk = topk
         
         self.results = ValResults()
         self.metric_logger = MetricLogger(delimiter="  ")
@@ -52,7 +51,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     image = image.to(self.device, non_blocking=True)
                     target = target.to(self.device, non_blocking=True)
                     output = self.model(image)
-                    loss = self.criterion(output, target)
+                    loss = self.loss(output, target)
 
                     acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
                     # FIXME need to take into account that the datasets
