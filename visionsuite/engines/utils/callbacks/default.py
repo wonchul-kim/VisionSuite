@@ -54,6 +54,12 @@ def on_train_step_end(trainer, *args, **kwargs): # iteration for a batch
     pass
 
 ### Val. -------------------------------------
+def on_build_validator_start(validator, *args, **kwargs):
+    pass
+
+def on_build_validator_end(validator, *args, **kwargs):
+    pass
+
 def on_val_epoch_start(validator, *args, **kwargs):
     pass
 
@@ -97,6 +103,8 @@ default_callbacks = {
     "on_train_step_end": [on_train_step_end],
 
     ### Validator -------------------------------------
+    "on_build_validator_start": [on_build_validator_start],
+    "on_build_validator_end": [on_build_validator_end],
     "on_val_epoch_start": [on_val_epoch_start],
     "on_val_epoch_end": [on_val_epoch_end],
     "on_val_batch_start": [on_val_epoch_start],

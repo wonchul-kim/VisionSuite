@@ -57,16 +57,9 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     image = image.to(self.device, non_blocking=True)
                     target = target.to(self.device, non_blocking=True)
                     output = self.model(image)
-                    loss = self.loss(output, target)
 
-                    acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
-                    # FIXME need to take into account that the datasets
-                    # could have been padded in distributed setup
-                    batch_size = image.shape[0]
-                    self.metric_logger.update(loss=loss.item())
-                    self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
-                    self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
-                    num_processed_samples += batch_size
+                    self._update_logger(output, target, batch_size=image.shape[0])
+                    num_processed_samples += image.shape[0]
                     self.run_callbacks('on_val_batch_start')
                     
             # gather the stats from all processes
@@ -90,3 +83,13 @@ class BaseValidator(BaseOOPModule, Callbacks):
             
             self.run_callbacks('on_val_epoch_end', epoch=epoch, 
                                start_time_epoch=start_time_epoch)
+
+    def _update_logger(self, output, target, batch_size):
+        if self.metric_logger is not None:
+            loss = self.loss(output, target)
+            acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
+            # FIXME need to take into account that the datasets
+            # could have been padded in distributed setup
+            self.metric_logger.update(loss=loss.item())
+            self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
+            self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
