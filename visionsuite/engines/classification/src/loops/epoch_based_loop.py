@@ -18,9 +18,10 @@ class EpochBasedLoop(BaseLoop, Callbacks):
         self.run_callbacks('on_build_loop_start')
 
         self.trainer = build_trainer(**self.args['train']['trainer'])()
-        self.trainer.build(self.model, self.loss, self.optimizer, self.lr_scheduler, self.train_dataloader, 
-                            self.args['train']['device'], self.args, self.scaler, 
-                            self.args['train']['topk'], self.archive)
+        self.trainer.build(model=self.model, loss=self.loss, optimizer=self.optimizer, 
+                           lr_scheduler=self.lr_scheduler, dataloader=self.train_dataloader, 
+                           args=self.args['train'],
+                           archive=self.archive)
         self.validator = build_validator(**self.args['val']['validator'])()
         self.validator.build(self.args['val'], self.model, 
                      self.loss, self.val_dataloader, self.args['train']['device'],  

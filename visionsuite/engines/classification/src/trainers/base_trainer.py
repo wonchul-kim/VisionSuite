@@ -15,30 +15,37 @@ from .callbacks import callbacks
 
 @TRAINERS.register()
 class BaseTrainer(BaseOOPModule, Callbacks):
+    
+    required_attributes = []
+    
     def __init__(self):
         BaseOOPModule.__init__(self)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)
         
-    def build(self, model, criterion, optimizer, lr_scheduler, dataloader, device, args, 
-                scaler=None, topk=5, archive=None):
+    def build(self, model, loss, optimizer, lr_scheduler, dataloader, args,
+                scaler=None, topk=3, archive=None):
+        
+        self.run_callbacks('on_build_trainer_start')
+        
         self.model = model
-        self.criterion = criterion
+        self.loss = loss
         self.optimizer = optimizer
+        self.lr_scheduler = lr_scheduler
         self.dataloader = dataloader
-        self.device = device
         self.args = args
-        self.scaler = scaler
         self.topk = topk
         self.archive = archive
-        self.lr_scheduler = lr_scheduler
+        self.device = args['device']
         
         self.results = TrainResults()
         self.metric_logger = MetricLogger(delimiter="  ")
-        self.gpu_logger = GPULogger(self.args['train']['device_ids'])
+        self.gpu_logger = GPULogger(self.args['device_ids'])
 
-        self.run_callbacks('on_build_trainer')
+        self.scaler = torch.cuda.amp.GradScaler() if self.args['amp'] else None
+        
+        self.run_callbacks('on_build_trainer_end')
 
     @abstractmethod
     def train(self, epoch):
@@ -49,32 +56,32 @@ class BaseTrainer(BaseOOPModule, Callbacks):
 
         header = f"Epoch: [{epoch}]"
         start_time_epoch = time.time()
-        for i, (image, target) in enumerate(self.metric_logger.log_every(self.dataloader, self.args['train']['print_freq'], header)):
+        for i, (image, target) in enumerate(self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header)):
             self.run_callbacks('on_train_batch_start')
             start_time = time.time()
             image, target = image.to(self.device), target.to(self.device)
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 output = self.model.model(image)
-                loss = self.criterion(output, target)
+                loss = self.loss(output, target)
 
             self.optimizer.zero_grad()
             if self.scaler is not None:
                 self.scaler.scale(loss).backward()
-                if self.args['train']['clip_grad_norm'] is not None:
+                if self.args['clip_grad_norm'] is not None:
                     # we should unscale the gradients of optimizer's assigned params if do gradient clipping
                     self.scaler.unscale_(self.optimizer)
-                    nn.utils.clip_grad_norm_(self.model.model.parameters(), self.args['train']['clip_grad_norm'])
+                    nn.utils.clip_grad_norm_(self.model.model.parameters(), self.args['clip_grad_norm'])
                 self.scaler.step(self.optimizer)
                 self.scaler.update()
             else:
                 loss.backward()
-                if self.args['train']['clip_grad_norm'] is not None:
-                    nn.utils.clip_grad_norm_(self.model.model.parameters(), self.args['train']['clip_grad_norm'])
+                if self.args['clip_grad_norm'] is not None:
+                    nn.utils.clip_grad_norm_(self.model.model.parameters(), self.args['clip_grad_norm'])
                 self.optimizer.step()
 
-            if self.model.model_ema and i % self.args['ema']['steps'] == 0:
+            if self.model.model_ema and i % self.model.args['ema']['steps'] == 0:
                 self.model.model_ema.update_parameters(self.model.model)
-                if epoch < self.args['warmup_scheduler']['total_iters']:
+                if epoch < self.model.args['warmup_scheduler']['total_iters']:
                     # Reset ema buffer to keep copying weights during warmup period
                     self.model.model_ema.n_averaged.fill_(0)
 

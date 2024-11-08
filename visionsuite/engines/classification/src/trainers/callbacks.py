@@ -5,22 +5,10 @@ import time
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
 def on_build_trainer_start(trainer, *args, **kwargs):
-    assert trainer is not None, ValueError(f"trainer is None")
-    
-    for attribute_name in trainer.required_attributes:
-        assert hasattr(trainer, attribute_name), ValueError(f'{attribute_name} must be assgined in trainer class')
-        
-    assert trainer.current_epoch is not None, ValueError(f"Current epoch is None")
+    pass        
      
 def on_build_trainer_end(trainer, *args, **kwargs):
-    assert trainer is not None, ValueError(f"trainer is None")
-    
-    for attribute_name in trainer.required_attributes:
-        assert hasattr(trainer, attribute_name), ValueError(f'{attribute_name} must be assgined in trainer class')
-        
-    assert trainer.current_epoch is not None, ValueError(f"Current epoch is None")
-     
-
+    pass     
 
 def on_train_epoch_start(trainer, *args, **kwargs):
     pass 
