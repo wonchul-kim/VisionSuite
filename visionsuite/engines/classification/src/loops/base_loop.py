@@ -10,7 +10,8 @@ from visionsuite.engines.classification.utils.registry import LOOPS
 
 class BaseLoop(BaseOOPModule):
     
-    required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset']
+    required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset',
+                           'trainer', 'current_epoch']
     
     def __init__(self):
         super().__init__()
@@ -30,6 +31,8 @@ class BaseLoop(BaseOOPModule):
         self.archive = None
         
         self._current_epoch = None
+        self.trainer = None 
+        self.validator = None
         
     @property 
     def current_epoch(self):

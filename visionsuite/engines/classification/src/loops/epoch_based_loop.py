@@ -15,7 +15,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
 
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(_model, _dataset, _archive=_archive, *args, **kwargs)
-        self.run_callbacks('on_build_start')
+        self.run_callbacks('on_build_loop_start')
 
         self.trainer = build_trainer(**self.args['train']['trainer'])()
         self.trainer.build(self.model, self.loss, self.optimizer, self.lr_scheduler, self.train_dataloader, 
@@ -28,7 +28,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
                     topk=self.args['train']['topk'], 
                     archive=self.archive)
         
-        self.run_callbacks('on_build_end')
+        self.run_callbacks('on_build_loop_end')
         
     def run_loop(self):
         super().run_loop()

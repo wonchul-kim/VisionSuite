@@ -15,10 +15,10 @@ def on_run_end(runner, *args, **kwargs):
     pass
 
 ### Loop ---------------------------------------------
-def on_build_start(loop, *args, **kwargs):
+def on_build_loop_start(loop, *args, **kwargs):
     pass
 
-def on_build_end(loop, *args, **kwargs):
+def on_build_loop_end(loop, *args, **kwargs):
     pass
 
 def on_run_loop_start(loop, *args, **kwargs):
@@ -29,6 +29,12 @@ def on_run_loop_end(loop, *args, **kwargs):
 
 
 ### Train -------------------------------------
+def on_build_trainer_start(trainer, *args, **kwargs):
+    pass
+
+def on_build_trainer_end(trainer, *args, **kwargs):
+    pass
+
 def on_train_epoch_start(trainer, *args, **kwargs):
     pass
 
@@ -75,12 +81,14 @@ default_callbacks = {
     "on_run_end": [on_run_end],
     
     ### Loop -------------------------------
-    "on_build_start": [on_build_start],
-    "on_build_end": [on_build_end],
+    "on_build_loop_start": [on_build_loop_start],
+    "on_build_loop_end": [on_build_loop_end],
     "on_run_loop_start": [on_run_loop_start],
     "on_run_loop_end": [on_run_loop_end],
     
     ### Trainer -------------------------------------
+    "on_build_trainer_start": [on_build_trainer_start],
+    "on_build_trainer_end": [on_build_trainer_end],
     "on_train_epoch_start": [on_train_epoch_start],
     "on_train_epoch_end": [on_train_epoch_end],
     "on_train_batch_start": [on_train_epoch_start],

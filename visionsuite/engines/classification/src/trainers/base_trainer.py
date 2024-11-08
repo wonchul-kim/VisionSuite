@@ -38,6 +38,8 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.metric_logger = MetricLogger(delimiter="  ")
         self.gpu_logger = GPULogger(self.args['train']['device_ids'])
 
+        self.run_callbacks('on_build_trainer')
+
     @abstractmethod
     def train(self, epoch):
         self.run_callbacks('on_train_epoch_start')
