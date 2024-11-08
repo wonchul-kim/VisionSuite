@@ -4,6 +4,16 @@ from visionsuite.engines.utils.helpers import mkdir
 from visionsuite.engines.utils.functionals import denormalize
 from visionsuite.engines.classification.utils.vis.vis_val import save_validation
 
+def on_build_validator_start(validator, *args, **kwargs):
+    pass
+
+def on_build_validator_end(validator, *args, **kwargs):
+    
+    for attribute_name in validator.required_attributes:
+        assert hasattr(validator, attribute_name), ValueError(f'{attribute_name} must be assgined in validator class')
+        assert getattr(validator, attribute_name) is not None, ValueError(f"{attribute_name} is None for validator")
+    
+
 def on_val_epoch_start(validator, *args, **kwargs):
     pass
 
@@ -41,6 +51,8 @@ def on_val_step_end(validator, *args, **kwargs): # iteration for a batch
     pass
 
 callbacks = {
+    "on_build_validator_start": [on_build_validator_start],
+    "on_build_validator_end": [on_build_validator_end],
     "on_val_epoch_start": [on_val_epoch_start],
     "on_val_epoch_end": [on_val_epoch_end],
     "on_val_batch_start": [on_val_batch_start],

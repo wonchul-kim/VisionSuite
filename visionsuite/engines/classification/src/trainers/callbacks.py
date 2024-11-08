@@ -8,7 +8,10 @@ def on_build_trainer_start(trainer, *args, **kwargs):
     pass        
      
 def on_build_trainer_end(trainer, *args, **kwargs):
-    pass     
+    
+    for attribute_name in trainer.required_attributes:
+        assert hasattr(trainer, attribute_name), ValueError(f'{attribute_name} must be assgined in trainer class')
+        assert getattr(trainer, attribute_name) is not None, ValueError(f"{attribute_name} is None for trainer")
 
 def on_train_epoch_start(trainer, *args, **kwargs):
     pass 

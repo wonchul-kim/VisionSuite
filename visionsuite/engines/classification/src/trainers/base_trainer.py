@@ -16,7 +16,7 @@ from .callbacks import callbacks
 @TRAINERS.register()
 class BaseTrainer(BaseOOPModule, Callbacks):
     
-    required_attributes = []
+    required_attributes = ['model', 'loss', 'dataloader']
     
     def __init__(self):
         BaseOOPModule.__init__(self)

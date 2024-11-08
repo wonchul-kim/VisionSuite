@@ -14,6 +14,9 @@ from .callbacks import callbacks
 
 @VALIDATORS.register()
 class BaseValidator(BaseOOPModule, Callbacks):
+    
+    required_attributes = ['model', 'dataloader']
+    
     def __init__(self):
         BaseOOPModule.__init__(self)
         Callbacks.__init__(self)
@@ -22,6 +25,8 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
     def build(self, model, loss, dataloader, args, device, label2index, archive=None, print_freq=100, topk=3):
 
+        self.run_callbacks('on_build_validator_start')
+        
         self.model = model.model_ema if model.model_ema else model.model
         self.loss = loss
         self.dataloader = dataloader
@@ -36,6 +41,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.results = ValResults()
         self.metric_logger = MetricLogger(delimiter="  ")
         
+        self.run_callbacks('on_build_validator_end')
         
     @abstractmethod
     def val(self, epoch):
