@@ -19,13 +19,15 @@ class TorchvisionModel(BaseOOPModule):
         self._model_without_ddp = None
         self._model_ema = None
         self._model = None 
+        self._params_to_optimize = None
                
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
         
-        self.load_model() 
-        self.to_device()
-        self.set_dist()
+        self._load_model() 
+        self._to_device()
+        self._set_dist()
+        self._set_params_to_optimize()
         
     @property
     def model(self):
@@ -39,8 +41,12 @@ class TorchvisionModel(BaseOOPModule):
     def model_ema(self):
         return self._model_ema
     
+    @property
+    def params_to_optimize(self):
+        return self._params_to_optimize
+    
     @BaseOOPModule.track_status
-    def load_model(self):
+    def _load_model(self):
         try:
             self._model = torchvision.models.get_model(
                                     self.args['model_name'],
@@ -55,13 +61,13 @@ class TorchvisionModel(BaseOOPModule):
             raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
            
     @BaseOOPModule.track_status
-    def to_device(self):
+    def _to_device(self):
         assert_key_dict(self.args['train'], 'device')
         self._device = self.args['train']['device']
         self._model.to(self._device)
 
     @BaseOOPModule.track_status
-    def set_dist(self):
+    def _set_dist(self):
         assert_key_dict(self.args, 'distributed')
         assert_key_dict(self.args['train'], 'sync_bn')
 
@@ -82,3 +88,13 @@ class TorchvisionModel(BaseOOPModule):
                 print(f"Data Parallel is set")
                 
                 
+    def _set_params_to_optimize(self):
+        self._params_to_optimize = [
+            {"params": [p for p in self._model_without_ddp.backbone.parameters() if p.requires_grad]},
+            {"params": [p for p in self._model_without_ddp.classifier.parameters() if p.requires_grad]},
+        ]
+        
+    def apply_aux_loss_to_params_to_optimize(self, lr):
+        if self.args['aux_loss']:
+            params = [p for p in self._model_without_ddp.aux_classifier.parameters() if p.requires_grad]
+            self._params_to_optimize.append({"params": params, "lr": lr * 10})

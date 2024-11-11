@@ -11,7 +11,7 @@
 # from visionsuite.engines.segmentation.losses.default import criterion
 # from visionsuite.engines.utils.torch_utils.utils import save_on_master
 # from visionsuite.engines.utils.loggers.monitor import Monitor
-from visionsuite.engines.classification.src.loops.build import build_loop
+from visionsuite.engines.segmentation.src.loops.build import build_loop
 from visionsuite.engines.segmentation.src.datasets.build import build_dataset
 from visionsuite.engines.segmentation.src.models.build import build_model
 from visionsuite.engines.segmentation.utils.registry import RUNNERS
@@ -73,7 +73,11 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         )
         
         loop = build_loop(**self.args['loop'])
-
+        loop.build(_model=model, 
+                   _dataset=dataset, 
+                   _archive=self._archive, 
+                   **self.args
+                )
         
         # dataset, num_classes = get_dataset(self.args, is_train=True)
         # dataset_test, _ = get_dataset(self.args, is_train=False)
