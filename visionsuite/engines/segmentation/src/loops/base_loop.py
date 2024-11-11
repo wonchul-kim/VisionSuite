@@ -56,7 +56,10 @@ class BaseLoop(BaseOOPModule):
         
         self.loss = build_loss(**self.args['loss'])
         self.optimizer = build_optimizer(model=self.model, **self.args['optimizer'])
-        self.lr_scheduler = build_scheduler(optimizer=self.optimizer, epochs=self.args['train']['epochs'], **self.args['scheduler'])
+        self.lr_scheduler = build_scheduler(optimizer=self.optimizer, 
+                                            epochs=self.args['train']['epochs'], 
+                                            iters_per_epoch=len(self.train_dataloader),
+                                            **self.args['scheduler'])
         
         self._set_resume()
         self.loop = LOOPS.get(self.args['loop']['type'])
