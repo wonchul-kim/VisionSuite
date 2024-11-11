@@ -21,7 +21,7 @@ def on_val_epoch_end(validator, *args, **kwargs):
     validator.metric_logger.synchronize_between_processes()
 
     def _save_val():
-        if validator.archive.args['save_val']['use'] and osp.exists(validator.archive.val_dir):
+        if validator.archive.args['val']['save_freq_epoch']%kwargs['epoch'] == 0 and osp.exists(validator.archive.val_dir):
             vis_dir = osp.join(validator.archive.val_dir, str(kwargs['epoch']))
             if not osp.exists(vis_dir):
                 mkdir(vis_dir)

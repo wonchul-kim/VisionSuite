@@ -128,6 +128,8 @@ archive:
 
   monitor:
     use: true
+    save_freq_epoch: 10
 
   val:
-    use: true
+    save_freq_epoch: 10
+
