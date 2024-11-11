@@ -1,3 +1,6 @@
-input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset
-output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch
+dataset:
+  input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset
+
+archive:
+  output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch
   

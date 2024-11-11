@@ -31,8 +31,13 @@ class BaseDataset(BaseOOPModule):
         
     def build(self, load=True, *args, **kwargs):
         super().build(*args, **kwargs)
+        
+        if 'classes' in kwargs:
+            self.classes = kwargs['classes']
+            
         if load:
             self._load()
+    
     
     @BaseOOPModule.track_status
     def _load(self):
