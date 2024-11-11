@@ -1,6 +1,7 @@
 from visionsuite.engines.classification.utils.registry import MODELS
 
-def build_model(args):
-    model = MODELS.get(f"{args['model']['backend'].capitalize()}Model")()
+def build_model(**config):
+    model = MODELS.get(config['type'], 
+                       case_sensitive=config['case_sensitive'])()
     
     return model

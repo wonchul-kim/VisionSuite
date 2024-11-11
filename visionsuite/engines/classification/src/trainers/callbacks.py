@@ -31,10 +31,10 @@ def on_train_epoch_end(trainer, *args, **kwargs):
             if trainer.scaler:
                 checkpoint["scaler"] = trainer.scaler.state_dict()
             
-            if trainer.archive.args['save_model']['last']:
+            if trainer.archive.args['model']['save_last']:
                 save_on_master(checkpoint, osp.join(trainer.archive.weights_dir, "last.pth"))    
                 
-            if kwargs['epoch']%trainer.archive.args['save_model']['freq_epoch'] == 0:
+            if kwargs['epoch']%trainer.archive.args['model']['save_freq_epoch'] == 0:
                 save_on_master(checkpoint, osp.join(trainer.archive.weights_dir, f"model_{kwargs['epoch']}.pth"))
     
     def _save_monitor():

@@ -20,13 +20,13 @@ class EpochBasedLoop(BaseLoop, Callbacks):
         self.trainer = build_trainer(**self.args['train']['trainer'])()
         self.trainer.build(model=self.model, loss=self.loss, optimizer=self.optimizer, 
                            lr_scheduler=self.lr_scheduler, dataloader=self.train_dataloader, 
-                           args=self.args['train'], scaler=self.scaler,
-                           archive=self.archive)
+                           scaler=self.scaler, archive=self.archive,
+                           **self.args['train'])
         self.validator = build_validator(**self.args['val']['validator'])()
         self.validator.build(model=self.model, loss=self.loss, dataloader=self.val_dataloader,
-                             args=self.args['val'], label2index=self.dataset.label2index, 
+                             label2index=self.dataset.label2index, 
                              device=self.args['train']['device'], topk=self.args['train']['topk'],
-                             archive=self.archive)
+                             archive=self.archive, **self.args['val'])
         
         self.run_callbacks('on_build_loop_end')
         

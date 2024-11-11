@@ -29,10 +29,11 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                 
         self.run_callbacks('on_run_start')
 
-        dataset = build_dataset(**self.args)
+        # TODO: Define transform
+        dataset = build_dataset(**self.args['dataset'], transform=None)
         dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
         
-        model = build_model(self.args)
+        model = build_model(**self.args['model'])
         model.build(**self.args['model'], 
                     num_classes=dataset.num_classes, 
                     train=self.args['train'], 

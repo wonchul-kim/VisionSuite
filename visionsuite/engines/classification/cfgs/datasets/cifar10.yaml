@@ -6,14 +6,3 @@ dataset:
   
 archive: 
   output_dir: /HDD/_projects/benchmark/classification/rps/outputs
-
-model:
-  type: "resnet"
-  backbone: '18'
-
-train:
-  device_ids: 0
-  batch_size: 8
-  epochs: 90
-
-  amp: True

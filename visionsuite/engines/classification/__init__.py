@@ -8,6 +8,7 @@ class Engine(BaseEngine):
         
     def train(self, cfgs_file, *args, **kwargs):
         
+        # TODO: need to assign by yaml file
         runner = RUNNERS.get("TrainRunner", case_sensitive=True)('classification')
         assert runner is not None, ValueError(f"runner is None")
         

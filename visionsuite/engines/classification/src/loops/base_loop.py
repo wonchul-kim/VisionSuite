@@ -41,7 +41,7 @@ class BaseLoop(BaseOOPModule):
     @start_epoch.setter 
     def start_epoch(self, val):
         self._start_epoch = val
-            
+
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(*args, **kwargs)
         
@@ -49,13 +49,14 @@ class BaseLoop(BaseOOPModule):
         self.dataset = _dataset
         self.archive = _archive
         
-        self.train_dataloader = build_dataloader(self.args, self.dataset, mode='train')
-        self.val_dataloader = build_dataloader(self.args, self.dataset, mode='val')
+        self.train_dataloader = build_dataloader(dataset=self.dataset, mode='train', 
+                                                 **self.args['dataloader'], augment=self.args['augment'])
+        self.val_dataloader = build_dataloader(dataset=self.dataset, mode='val', 
+                                                 **self.args['dataloader'], augment=self.args['augment'])
         
-        self.loss = build_loss(self.args['loss'])
-        self.optimizer = build_optimizer(self.model.model, self.args['optimizer'])
-        self.lr_scheduler = build_scheduler(self.optimizer, self.args['train']['epochs'], 
-                                            self.args['scheduler'], self.args['warmup_scheduler'])
+        self.loss = build_loss(**self.args['loss'])
+        self.optimizer = build_optimizer(model=self.model.model, **self.args['optimizer'])
+        self.lr_scheduler = build_scheduler(optimizer=self.optimizer, epochs=self.args['train']['epochs'], **self.args['scheduler'])
         
         self._set_resume()
         self.loop = LOOPS.get(self.args['loop']['type'])

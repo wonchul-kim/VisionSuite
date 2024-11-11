@@ -23,7 +23,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
         self.add_callbacks(callbacks)
         
-    def build(self, model, loss, dataloader, args, device, label2index, archive=None, print_freq=100, topk=3):
+    def build(self, model, loss, dataloader, device, label2index, archive=None, print_freq=100, topk=3, **args):
 
         self.run_callbacks('on_build_validator_start')
         self.epoch = None
@@ -48,7 +48,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.epoch = epoch
         if epoch%self.args['epoch'] == 0:
             self.model.eval()
-            header = f"Test: {self.log_suffix}"
+            header = f"Val.: {self.log_suffix}"
             num_processed_samples = 0
             start_time_epoch = 0
             self.run_callbacks('on_val_epoch_start')

@@ -35,10 +35,10 @@ scheduler:
   momentum: 0.9
   weight_decay: 0.0001
 
-warmup_scheduler:
-  lr_warmup_epochs: 0
-  warmup_type: linear
-  lr_warmup_decay: 0.01
+  warmup_scheduler:
+    lr_warmup_epochs: 0
+    type: linear
+    lr_warmup_decay: 0.01
   
 
 resume: 

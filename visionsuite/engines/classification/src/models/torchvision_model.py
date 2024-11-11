@@ -10,6 +10,9 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
         
 @MODELS.register()
 class TorchvisionModel(BaseOOPModule):
+    """
+    - weights can be referred by https://pytorch.org/vision/main/models.html
+    """
     def __init__(self):
         super().__init__()
         self.args = None
@@ -40,10 +43,19 @@ class TorchvisionModel(BaseOOPModule):
     
     @BaseOOPModule.track_status
     def load_model(self):
+        # TODO: NOT include top to specify weights to change num_classes
         try:
-            self._model = torchvision.models.get_model(name=self.args['type'] + self.args['backbone'], 
-                                                       num_classes=self.args['num_classes'], 
+            if self.args['weights']:
+                self._model = torchvision.models.get_model(name=self.args['model_name'] + self.args['backbone'], 
                                                        weights=self.args['weights'])
+                print(f"LOADED weights: {self.args['weights']}")
+                self._model.fc = torch.nn.Linear(self._model.fc.in_features, self.args['num_classes'])
+                print(f"CHANGED fc for num_classes({self.args['num_classes']})")
+            else:
+                self._model = torchvision.models.get_model(name=self.args['model_name'] + self.args['backbone'], 
+                                                       num_classes=self.args['num_classes'])
+                
+            print(f"LOADED model: {self.args['model_name']}")
         except Exception as error:
             raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
            

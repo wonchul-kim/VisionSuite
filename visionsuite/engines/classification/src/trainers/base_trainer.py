@@ -24,7 +24,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         
         self.add_callbacks(callbacks)
         
-    def build(self, model, loss, optimizer, lr_scheduler, dataloader, args, scaler=None, archive=None):
+    def build(self, model, loss, optimizer, lr_scheduler, dataloader, scaler=None, archive=None, **args):
         
         self.run_callbacks('on_build_trainer_start')
         

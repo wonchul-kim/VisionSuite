@@ -21,8 +21,8 @@ class DirectoryDataset(BaseDataset):
     def load_dataset(self, train_folder_name='train', val_folder_name='val'):
         super().load_dataset()
         
-        self.train_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
-        self.val_dataset =  DATASETS.get(self.args['load_method'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)
+        self.train_dataset =  DATASETS.get(self.args['load_dataset']['type'], case_sensitive=self.args['load_dataset']['case_sensitive'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
+        self.val_dataset =  DATASETS.get(self.args['load_dataset']['type'], case_sensitive=self.args['load_dataset']['case_sensitive'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)
 
         self.label2index = {index: label for index, label in enumerate(self.train_dataset.classes)}
         self.index2label = {label: index for index, label in enumerate(self.train_dataset.classes)}
