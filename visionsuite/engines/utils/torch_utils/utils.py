@@ -32,18 +32,21 @@ def cat_list(images, fill_value=0):
 
 
 def collate_fn(batch):
-    # if len(*batch) == 2:
-    #     images, targets = list(zip(*batch))
-    # elif len(*batch) == 3:
-    #     images, targets, filenames = list(zip(*batch))
-    # else:
-    #     raise RuntimeError(f"You need to add output arguments at dataset. There are {len(*batch)} outputs")
-    images, targets, filenames = list(zip(*batch))
-    
-    batched_imgs = cat_list(images, fill_value=0)
-    batched_targets = cat_list(targets, fill_value=255)
-    return batched_imgs, batched_targets, filenames
-
+    if len(batch) == 3:
+        images, targets, filenames = list(zip(*batch))
+        
+        batched_imgs = cat_list(images, fill_value=0)
+        batched_targets = cat_list(targets, fill_value=255)
+        return batched_imgs, batched_targets, filenames
+    elif len(batch) == 2:
+        images, targets = list(zip(*batch))
+        
+        batched_imgs = cat_list(images, fill_value=0)
+        batched_targets = cat_list(targets, fill_value=255)
+        return batched_imgs, batched_targets
+    else:
+        raise RuntimeError(f"You need to add output arguments at dataset. There are {len(*batch)} outputs")
+        
 
 def save_on_master(*args, **kwargs):
     if is_main_process():

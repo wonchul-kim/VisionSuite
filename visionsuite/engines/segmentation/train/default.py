@@ -1,5 +1,4 @@
 import torch
-import visionsuite.engines.utils.torch_utils as torch_utils
 from visionsuite.engines.utils.metrics.smoothed_value import SmoothedValue
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 
@@ -9,8 +8,8 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, devi
     metric_logger = MetricLogger(delimiter="  ")
     metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
     header = f"Epoch: [{epoch}]"
-    for image, target, filename in metric_logger.log_every(data_loader, print_freq, header):
-        image, target = image.to(device), target.to(device)
+    for batch in metric_logger.log_every(data_loader, print_freq, header):
+        image, target = batch[0].to(device), batch[1].to(device)
         with torch.cuda.amp.autocast(enabled=scaler is not None):
             output = model(image) # 'out': (bs num_classes(including bg) h w)
             loss = criterion(output, target)

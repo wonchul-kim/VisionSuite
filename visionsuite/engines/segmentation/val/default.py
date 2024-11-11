@@ -11,8 +11,8 @@ def evaluate(model, data_loader, device, num_classes):
     header = "Test:"
     num_processed_samples = 0
     with torch.inference_mode():
-        for image, target, filename in metric_logger.log_every(data_loader, 100, header):
-            image, target = image.to(device), target.to(device)
+        for batch in metric_logger.log_every(data_loader, 100, header):
+            image, target = batch[0].to(device), batch[1].to(device)
             output = model(image)
             if not isinstance(output, torch.Tensor):
                 output = output["out"]
