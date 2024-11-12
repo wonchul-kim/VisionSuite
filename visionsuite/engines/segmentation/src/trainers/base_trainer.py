@@ -79,8 +79,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.model.model.train()
         self.metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
         header = f"Epoch: [{epoch}]"
-        # for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
-        for batch in self.dataloader:
+        for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
             start_time = time.time()
             image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
@@ -96,7 +95,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
                 loss.backward()
                 self.optimizer.step()
             self.lr_scheduler.step()
-            # self._update_logger(output, target, loss, start_time, batch_size=image.shape[0])
+            self._update_logger(output, target, loss, start_time, batch_size=image.shape[0])
 
                 
     def _update_logger(self, output, target, loss, start_time, batch_size):
