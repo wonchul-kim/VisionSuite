@@ -30,7 +30,7 @@ dataloader:
   case_sensitive: false
 
   train:
-    batch_size: 32
+    batch_size: 4
     workers: 16
 
   val:

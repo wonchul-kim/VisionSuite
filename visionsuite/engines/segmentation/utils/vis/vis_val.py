@@ -2,13 +2,14 @@ import cv2
 import numpy as np
 import os.path as osp 
 import torch 
+import imgviz
 
 RGBs = [[255, 0, 0], [0, 255, 0], [0, 0, 255], \
         [255, 255, 0], [255, 0, 255], [0, 255, 255], \
         [255, 136, 0], [136, 0, 255], [255, 51, 153]]
         
 def save_validation(model, device, dataset, num_classes, epoch, output_dir, denormalize=False, input_channel=3, \
-                        image_channel_order='bgr', validation_image_idxes_list=[]):
+                        image_channel_order='bgr', validation_image_idxes_list=[], color_map=imgviz.label_colormap(50)):
     model.eval()
     origin = 25,25
     font = cv2.FONT_HERSHEY_SIMPLEX
@@ -44,8 +45,8 @@ def save_validation(model, device, dataset, num_classes, epoch, output_dir, deno
         image = image.transpose((1, 2, 0))
         if denormalize:
             image = denormalize(image)
-        image = image.astype(np.uint8)
-        mask = cv2.cvtColor(mask.numpy().astype(np.uint8)*(255//num_classes), cv2.COLOR_GRAY2BGR)
+        # image = image.astype(np.uint8)
+        mask = color_map[mask.numpy().astype(np.uint8)].astype(np.uint8)
         if input_channel == 3:
             if image_channel_order == 'rgb':
                 image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
@@ -54,11 +55,9 @@ def save_validation(model, device, dataset, num_classes, epoch, output_dir, deno
             else:
                 raise ValueError(f"There is no such image_channel_order({image_channel_order})")
 
-            preds *= 255//num_classes
-            preds = cv2.cvtColor(preds.astype(np.uint8), cv2.COLOR_GRAY2BGR)
+            preds = color_map[preds.astype(np.uint8)].astype(np.uint8)
         elif input_channel == 1:
-            preds *= 255//num_classes
-            preds = preds.astype(np.uint8)
+            preds = color_map[preds.astype(np.uint8)].astype(np.uint8)
 
         else:
             raise NotImplementedError(f"There is not yet training for input_channel ({input_channel})")
