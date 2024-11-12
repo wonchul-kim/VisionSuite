@@ -1,16 +1,3 @@
-# import os
-
-# import torch
-# from visionsuite.engines.segmentation.train.default import train_one_epoch
-# from visionsuite.engines.segmentation.val.default import evaluate
-# from visionsuite.engines.segmentation.optimizers.default import get_optimizer
-# from visionsuite.engines.segmentation.schedulers.default import get_scheduler
-# from visionsuite.engines.segmentation.models.default import get_model
-# from visionsuite.engines.segmentation.src.datasets.build import get_dataset
-# from visionsuite.engines.segmentation.src.dataloaders.build import get_dataloader
-# from visionsuite.engines.segmentation.losses.default import criterion
-# from visionsuite.engines.utils.torch_utils.utils import save_on_master
-# from visionsuite.engines.utils.loggers.monitor import Monitor
 from visionsuite.engines.segmentation.src.loops.build import build_loop
 from visionsuite.engines.segmentation.src.datasets.build import build_dataset
 from visionsuite.engines.segmentation.src.models.build import build_model

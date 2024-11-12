@@ -48,11 +48,11 @@ dataloader:
   case_sensitive: false
 
   train:
-    batch_size: 4
+    batch_size: 2
     workers: 16
 
   val:
-    batch_size: 4
+    batch_size: 2
     workers: 16
 
 model: 

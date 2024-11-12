@@ -89,40 +89,40 @@ class BaseValidator(BaseOOPModule, Callbacks):
 
     @abstractmethod
     def val(self, epoch):
-        self.model.model.eval()
-        confmat = ConfusionMatrix(len(self.label2index))
-        header = "Test:"
-        num_processed_samples = 0
-        with torch.inference_mode():
-            for batch in self.metric_logger.log_every(self.data_loader, 100, header):
-                image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
-                output = self.model.model(image)
-                if not isinstance(output, torch.Tensor):
-                    output = output["out"]
+        self.epoch = epoch 
+        if epoch%self.args['epoch'] == 0:
+            self.model.eval()
+            confmat = ConfusionMatrix(len(self.label2index))
+            header = "Val:"
+            num_processed_samples = 0
+            with torch.inference_mode():
+                for batch in self.metric_logger.log_every(self.dataloader, 100, header):
+                    image, target = batch[0].to(self.device), batch[1].to(self.device)
+                    output = self.model(image)
+                    if not isinstance(output, torch.Tensor):
+                        output = output["out"]
 
-                confmat.update(target.flatten(), output.argmax(1).flatten())
-                # FIXME need to take into account that the datasets
-                # could have been padded in distributed setup
-                num_processed_samples += image.shape[0]
-                self._update_logger(output, target, batch_size=image.shape[0])
+                    confmat.update(target.flatten(), output.argmax(1).flatten())
+                    # FIXME need to take into account that the datasets
+                    # could have been padded in distributed setup
+                    num_processed_samples += image.shape[0]
+                    self._update_logger(output, target, batch_size=image.shape[0])
 
-            confmat.reduce_from_all_processes()
+                confmat.reduce_from_all_processes()
 
-        num_processed_samples = reduce_across_processes(num_processed_samples)
-        if (
-            hasattr(self.data_loader.dataset, "__len__")
-            and len(self.data_loader.dataset) != num_processed_samples
-            and torch.distributed.get_rank() == 0
-        ):
-            # See FIXME above
-            warnings.warn(
-                f"It looks like the dataset has {len(self.data_loader.dataset)} samples, but {num_processed_samples} "
-                "samples were used for the validation, which might bias the results. "
-                "Try adjusting the batch size and / or the world size. "
-                "Setting the world size to 1 is always a safe bet."
-            )
-
-        return confmat, metric_logger
+            num_processed_samples = reduce_across_processes(num_processed_samples)
+            if (
+                hasattr(self.dataloader.dataset, "__len__")
+                and len(self.dataloader.dataset) != num_processed_samples
+                and torch.distributed.get_rank() == 0
+            ):
+                # See FIXME above
+                warnings.warn(
+                    f"It looks like the dataset has {len(self.dataloader.dataset)} samples, but {num_processed_samples} "
+                    "samples were used for the validation, which might bias the results. "
+                    "Try adjusting the batch size and / or the world size. "
+                    "Setting the world size to 1 is always a safe bet."
+                )
 
     def _update_logger(self, output, target, batch_size):
         if self.metric_logger is not None:

@@ -79,23 +79,24 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.model.model.train()
         self.metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
         header = f"Epoch: [{epoch}]"
-        for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
+        # for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
+        for batch in self.dataloader:
             start_time = time.time()
             image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 output = self.model.model(image) # 'out': (bs num_classes(including bg) h w)
-                loss = self.loss(output, target)
+            #     loss = self.loss(output, target)
 
-            self.optimizer.zero_grad()
-            if self.scaler is not None:
-                self.scaler.scale(loss).backward()
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
-            else:
-                loss.backward()
-                self.optimizer.step()
+            # self.optimizer.zero_grad()
+            # if self.scaler is not None:
+            #     self.scaler.scale(loss).backward()
+            #     self.scaler.step(self.optimizer)
+            #     self.scaler.update()
+            # else:
+            #     loss.backward()
+            #     self.optimizer.step()
             self.lr_scheduler.step()
-            self._update_logger(output, target, loss, start_time, batch_size = image.shape[0])
+            # self._update_logger(output, target, loss, start_time, batch_size = image.shape[0])
 
                 
     def _update_logger(self, output, target, loss, start_time, batch_size):
