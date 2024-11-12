@@ -1,6 +1,7 @@
 import torch
 import warnings
 from abc import abstractmethod
+import time 
 
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
@@ -8,7 +9,8 @@ from visionsuite.engines.segmentation.utils.registry import VALIDATORS
 from visionsuite.engines.utils.bases import BaseOOPModule
 from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.segmentation.utils.results import ValResults
-# from .callbacks import callbacks
+from .callbacks import callbacks
+
 import torch
 import warnings
 from visionsuite.engines.segmentation.utils.metrics.confusion_matrix import ConfusionMatrix
@@ -24,7 +26,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         BaseOOPModule.__init__(self)
         Callbacks.__init__(self)
         
-        # self.add_callbacks(callbacks)
+        self.add_callbacks(callbacks)
         
     def build(self, model, loss, dataloader, device, label2index, archive=None, print_freq=100, **args):
 
@@ -45,58 +47,19 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
         self.run_callbacks('on_build_validator_end')
         
-    # @abstractmethod
-    # def val(self, epoch):
-    #     self.epoch = epoch
-    #     if epoch%self.args['epoch'] == 0:
-    #         self.model.eval()
-    #         header = f"Val.: {self.log_suffix}"
-    #         num_processed_samples = 0
-    #         start_time_epoch = 0
-    #         self.run_callbacks('on_val_epoch_start')
-    #         with torch.inference_mode():
-    #             for image, target in self.metric_logger.log_every(self.dataloader, self.print_freq, header):
-    #                 self.run_callbacks('on_val_batch_start')
-    #                 image = image.to(self.device, non_blocking=True)
-    #                 target = target.to(self.device, non_blocking=True)
-    #                 output = self.model(image)
-
-    #                 self._update_logger(output, target, batch_size=image.shape[0])
-    #                 num_processed_samples += image.shape[0]
-    #                 self.run_callbacks('on_val_batch_start')
-                    
-    #         # gather the stats from all processes
-    #         num_processed_samples = reduce_across_processes(num_processed_samples)
-    #         if (
-    #             hasattr(self.dataloader.dataset, "__len__")
-    #             and len(self.dataloader.dataset) != num_processed_samples
-    #             and torch.distributed.get_rank() == 0
-    #         ):
-    #             # See FIXME above
-    #             warnings.warn(
-    #                 f"It looks like the dataset has {len(self.dataloader.dataset)} samples, but {num_processed_samples} "
-    #                 "samples were used for the validation, which might bias the results. "
-    #                 "Try adjusting the batch size and / or the world size. "
-    #                 "Setting the world size to 1 is always a safe bet."
-    #             )
-
-
-    #         print(f"{header} Acc@1 {self.metric_logger.acc1.global_avg:.3f} Acc@5 {self.metric_logger.acc5.global_avg:.3f}")
-            
-            
-    #         self.run_callbacks('on_val_epoch_end', epoch=epoch, 
-    #                            start_time_epoch=start_time_epoch)
-
     @abstractmethod
     def val(self, epoch):
         self.epoch = epoch 
         if epoch%self.args['epoch'] == 0:
+            self.run_callbacks('on_val_epoch_start')
+            start_time_epoch = time.time()
             self.model.eval()
             confmat = ConfusionMatrix(len(self.label2index))
             header = "Val:"
             num_processed_samples = 0
             with torch.inference_mode():
                 for batch in self.metric_logger.log_every(self.dataloader, 100, header):
+                    self.run_callbacks('on_val_batch_start')
                     image, target = batch[0].to(self.device), batch[1].to(self.device)
                     output = self.model(image)
                     if not isinstance(output, torch.Tensor):
@@ -108,6 +71,8 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     num_processed_samples += image.shape[0]
                     self._update_logger(output, target, batch_size=image.shape[0])
 
+                    self.run_callbacks('on_val_batch_start')
+                    
                 confmat.reduce_from_all_processes()
 
             num_processed_samples = reduce_across_processes(num_processed_samples)
@@ -123,6 +88,9 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     "Try adjusting the batch size and / or the world size. "
                     "Setting the world size to 1 is always a safe bet."
                 )
+                
+            self.run_callbacks('on_val_epoch_end', epoch=epoch, 
+                               start_time_epoch=start_time_epoch)
 
     def _update_logger(self, output, target, batch_size):
         if self.metric_logger is not None:

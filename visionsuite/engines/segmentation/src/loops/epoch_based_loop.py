@@ -3,7 +3,7 @@ from visionsuite.engines.segmentation.src.validators.build import build_validato
 from visionsuite.engines.segmentation.utils.registry import LOOPS
 from visionsuite.engines.segmentation.src.loops.base_loop import BaseLoop
 from visionsuite.engines.utils.callbacks import Callbacks
-# from .callbacks import callbacks
+from .callbacks import callbacks
 
 @LOOPS.register()
 class EpochBasedLoop(BaseLoop, Callbacks):
@@ -11,7 +11,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
         BaseLoop.__init__(self)
         Callbacks.__init__(self)
         
-        # self.add_callbacks(callbacks)
+        self.add_callbacks(callbacks)
 
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(_model, _dataset, _archive=_archive, *args, **kwargs)

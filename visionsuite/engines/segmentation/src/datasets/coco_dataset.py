@@ -124,7 +124,8 @@ def get_dataset(root, image_set, transforms, use_v2=False):
                 "val": ("val2017", os.path.join("annotations", "instances_val2017.json")),
                 # "train": ("val2017", os.path.join("annotations", "instances_val2017.json"))
             }
-    CAT_LIST = [0, 5, 2, 16, 9, 44, 6, 3, 17, 62, 21, 67, 18, 19, 4, 1, 64, 20, 63, 7, 72]
+    # CAT_LIST = [0, 5, 2, 16, 9, 44, 6, 3, 17, 62, 21, 67, 18, 19, 4, 1, 64, 20, 63, 7, 72]
+    CAT_LIST = [0, 5, 2]
 
     img_folder, ann_file = PATHS[image_set]
     img_folder = os.path.join(root, img_folder)
@@ -148,7 +149,7 @@ def get_dataset(root, image_set, transforms, use_v2=False):
     if image_set == "train":
         dataset = _coco_remove_images_without_annotations(dataset, CAT_LIST)
 
-    return dataset
+    return dataset, CAT_LIST
 
 @DATASETS.register()
 class COCODataset(BaseDataset):
@@ -156,9 +157,14 @@ class COCODataset(BaseDataset):
         super().__init__(transform=transform)
         
     def load_dataset(self):
-        self.train_dataset = get_dataset(self.args['input_dir'], 'train', 
+        super().load_dataset()
+        self.train_dataset, self.classes = get_dataset(self.args['input_dir'], 'train', 
                                          get_transform(True, {'weights': None, 'test_only': False, 'backend': 'PIL', 'use_v2': False}))
-        self.val_dataset = get_dataset(self.args['input_dir'], 'val', 
-                                         get_transform(False, {'weights': None, 'test_only': False, 'backend': 'PIL', 'use_v2': False}))
+        self.val_dataset, _ = get_dataset(self.args['input_dir'], 'val', 
+                                         get_transform(True, {'weights': None, 'test_only': False, 'backend': 'PIL', 'use_v2': False}))
         
         
+        self.label2index = {index: label for index, label in enumerate(self.classes)}
+        self.index2label = {label: index for index, label in enumerate(self.classes)}
+        self.num_classes = len(self.classes)
+        print(f"label2index: {self.label2index}")

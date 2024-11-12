@@ -38,6 +38,7 @@ dataset:
     type: MaskDataset
     case_sensitive: true
   classes:
+    - background
     - SCRATCH
     - TEAR
     - STABBED
@@ -53,7 +54,7 @@ dataloader:
 
   val:
     batch_size: 2
-    workers: 16
+    workers: 8
 
 model: 
   type: TorchvisionModel
