@@ -78,6 +78,10 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                    _archive=self._archive, 
                    **self.args
                 )
+        loop.run_loop()
+        
+        self.run_callbacks('on_run_end')
+
         
         # dataset, num_classes = get_dataset(self.args, is_train=True)
         # dataset_test, _ = get_dataset(self.args, is_train=False)

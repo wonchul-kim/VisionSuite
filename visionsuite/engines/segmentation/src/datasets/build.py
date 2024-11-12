@@ -34,23 +34,3 @@ def build_dataset(transform=None, **config):
 #     ds = ds_fn(p, image_set=image_set, transforms=get_transform(is_train, args), use_v2=args['use_v2'])
 #     return ds, num_classes
 
-# from torchvision.transforms import functional as F, InterpolationMode
-# import visionsuite.engines.utils.torch_utils.presets as presets
-
-# def get_transform(is_train, args):
-#     if is_train:
-#         return presets.SegmentationPresetTrain(base_size=512, crop_size=480, backend=args['backend'], use_v2=args['use_v2'])
-#     elif args['weights'] and args['test_only']:
-#         weights = torchvision.models.get_weight(args['weights'])
-#         trans = weights.transforms()
-
-#         def preprocessing(img, target):
-#             img = trans(img)
-#             size = F.get_dimensions(img)[1:]
-#             target = F.resize(target, size, interpolation=InterpolationMode.NEAREST)
-#             return img, F.pil_to_tensor(target)
-
-#         return preprocessing
-#     else:
-#         return presets.SegmentationPresetEval(base_size=512, backend=args['backend'], use_v2=args['use_v2'])
-    

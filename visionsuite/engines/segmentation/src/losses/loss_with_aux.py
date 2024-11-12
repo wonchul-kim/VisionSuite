@@ -5,6 +5,10 @@ from visionsuite.engines.segmentation.utils.registry import LOSSES
 from visionsuite.engines.utils.helpers import get_params_from_obj
 
 
+
+
+
+
 @LOSSES.register()
 class LossWithAux:
     def __init__(self, **config):
@@ -17,13 +21,22 @@ class LossWithAux:
             
         self.loss = loss_obj(**loss_params)
 
-    def forward(self, inputs, target):
+    def __call__(self, inputs, target):
+        # losses = {}
+        # if isinstance(inputs, torch.Tensor):
+        #     losses['out'] = self.loss(inputs, target)
+        # else:
+        #     for name, x in inputs.items():
+        #         losses[name] = self.loss(x, target)
+
+        # if len(losses) == 1:
+        #     return losses["out"]
+
+        # return losses["out"] + 0.5 * losses["aux"]
+    
         losses = {}
-        if isinstance(inputs, torch.Tensor):
-            losses['out'] = self.loss(inputs, target, ignore_index=255)
-        else:
-            for name, x in inputs.items():
-                losses[name] = self.loss(x, target, ignore_index=255)
+        for name, x in inputs.items():
+            losses[name] = nn.functional.cross_entropy(x, target, ignore_index=255)
 
         if len(losses) == 1:
             return losses["out"]

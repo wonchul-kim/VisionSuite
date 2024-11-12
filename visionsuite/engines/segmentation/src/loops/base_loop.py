@@ -8,6 +8,8 @@ from visionsuite.engines.segmentation.src.schedulers.build import build_schedule
 from visionsuite.engines.utils.torch_utils.utils import load_ckpt
 from visionsuite.engines.segmentation.utils.registry import LOOPS
 
+
+
 class BaseLoop(BaseOOPModule):
     
     required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset',
@@ -55,6 +57,7 @@ class BaseLoop(BaseOOPModule):
                                                  **self.args['dataloader'], augment=self.args['augment'])
         
         self.loss = build_loss(**self.args['loss'])
+        
         self.optimizer = build_optimizer(model=self.model, **self.args['optimizer'])
         self.lr_scheduler = build_scheduler(optimizer=self.optimizer, 
                                             epochs=self.args['train']['epochs'], 

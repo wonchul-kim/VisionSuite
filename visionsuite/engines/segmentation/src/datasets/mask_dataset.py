@@ -7,6 +7,28 @@ from PIL import Image
 from visionsuite.engines.segmentation.utils.registry import DATASETS
 from visionsuite.engines.classification.src.datasets.base_dataset import BaseDataset
 
+import torchvision
+from torchvision.transforms import functional as F, InterpolationMode
+import visionsuite.engines.utils.torch_utils.presets as presets
+
+def get_transform(is_train, args):
+    if is_train:
+        return presets.SegmentationPresetTrain(base_size=512, crop_size=480, backend=args['backend'], use_v2=args['use_v2'])
+    elif args['weights'] and args['test_only']:
+        weights = torchvision.models.get_weight(args['weights'])
+        trans = weights.transforms()
+
+        def preprocessing(img, target):
+            img = trans(img)
+            size = F.get_dimensions(img)[1:]
+            target = F.resize(target, size, interpolation=InterpolationMode.NEAREST)
+            return img, F.pil_to_tensor(target)
+
+        return preprocessing
+    else:
+        return presets.SegmentationPresetEval(base_size=512, backend=args['backend'], use_v2=args['use_v2'])
+    
+
 
 @DATASETS.register()
 class MaskDatasetWrapper(BaseDataset):
@@ -25,8 +47,16 @@ class MaskDatasetWrapper(BaseDataset):
     def load_dataset(self, train_folder_name='train', val_folder_name='val'):
         super().load_dataset()
         
-        self.train_dataset =  DATASETS.get(self.args['load_dataset']['type'], case_sensitive=self.args['load_dataset']['case_sensitive'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
-        self.val_dataset =  DATASETS.get(self.args['load_dataset']['type'], case_sensitive=self.args['load_dataset']['case_sensitive'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)
+        self.train_dataset =  DATASETS.get(self.args['load_dataset']['type'], 
+                                           case_sensitive=self.args['load_dataset']['case_sensitive']
+                                )(osp.join(self.args['input_dir'], train_folder_name), 
+                                    get_transform(True, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}))
+                                    # self._transform)
+        self.val_dataset =  DATASETS.get(self.args['load_dataset']['type'], 
+                                         case_sensitive=self.args['load_dataset']['case_sensitive']
+                                )(osp.join(self.args['input_dir'], val_folder_name), 
+                                  get_transform(False, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}))
+                                    # self._transform)
 
         self.label2index = {index: label for index, label in enumerate(self.classes)}
         self.index2label = {label: index for index, label in enumerate(self.classes)}
@@ -52,7 +82,7 @@ class MaskDataset(torch.utils.data.Dataset):
         img_file = self.img_files[idx]
         fname = osp.split(osp.splitext(img_file)[0])[-1]
 
-        mask_file = osp.join(self.img_folder, '../masks/{}.bmp'.format(fname))
+        mask_file = osp.join(self.input_dir, 'masks/{}.bmp'.format(fname))
         assert osp.exists(mask_file), RuntimeError(f"There is no such mask image: {mask_file}")
 
         image = Image.open(img_file)

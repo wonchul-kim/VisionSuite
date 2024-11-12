@@ -45,71 +45,58 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
         self.run_callbacks('on_build_validator_end')
         
+    # @abstractmethod
+    # def val(self, epoch):
+    #     self.epoch = epoch
+    #     if epoch%self.args['epoch'] == 0:
+    #         self.model.eval()
+    #         header = f"Val.: {self.log_suffix}"
+    #         num_processed_samples = 0
+    #         start_time_epoch = 0
+    #         self.run_callbacks('on_val_epoch_start')
+    #         with torch.inference_mode():
+    #             for image, target in self.metric_logger.log_every(self.dataloader, self.print_freq, header):
+    #                 self.run_callbacks('on_val_batch_start')
+    #                 image = image.to(self.device, non_blocking=True)
+    #                 target = target.to(self.device, non_blocking=True)
+    #                 output = self.model(image)
+
+    #                 self._update_logger(output, target, batch_size=image.shape[0])
+    #                 num_processed_samples += image.shape[0]
+    #                 self.run_callbacks('on_val_batch_start')
+                    
+    #         # gather the stats from all processes
+    #         num_processed_samples = reduce_across_processes(num_processed_samples)
+    #         if (
+    #             hasattr(self.dataloader.dataset, "__len__")
+    #             and len(self.dataloader.dataset) != num_processed_samples
+    #             and torch.distributed.get_rank() == 0
+    #         ):
+    #             # See FIXME above
+    #             warnings.warn(
+    #                 f"It looks like the dataset has {len(self.dataloader.dataset)} samples, but {num_processed_samples} "
+    #                 "samples were used for the validation, which might bias the results. "
+    #                 "Try adjusting the batch size and / or the world size. "
+    #                 "Setting the world size to 1 is always a safe bet."
+    #             )
+
+
+    #         print(f"{header} Acc@1 {self.metric_logger.acc1.global_avg:.3f} Acc@5 {self.metric_logger.acc5.global_avg:.3f}")
+            
+            
+    #         self.run_callbacks('on_val_epoch_end', epoch=epoch, 
+    #                            start_time_epoch=start_time_epoch)
+
     @abstractmethod
     def val(self, epoch):
-        self.epoch = epoch
-        if epoch%self.args['epoch'] == 0:
-            self.model.eval()
-            header = f"Val.: {self.log_suffix}"
-            num_processed_samples = 0
-            start_time_epoch = 0
-            self.run_callbacks('on_val_epoch_start')
-            with torch.inference_mode():
-                for image, target in self.metric_logger.log_every(self.dataloader, self.print_freq, header):
-                    self.run_callbacks('on_val_batch_start')
-                    image = image.to(self.device, non_blocking=True)
-                    target = target.to(self.device, non_blocking=True)
-                    output = self.model(image)
-
-                    self._update_logger(output, target, batch_size=image.shape[0])
-                    num_processed_samples += image.shape[0]
-                    self.run_callbacks('on_val_batch_start')
-                    
-            # gather the stats from all processes
-            num_processed_samples = reduce_across_processes(num_processed_samples)
-            if (
-                hasattr(self.dataloader.dataset, "__len__")
-                and len(self.dataloader.dataset) != num_processed_samples
-                and torch.distributed.get_rank() == 0
-            ):
-                # See FIXME above
-                warnings.warn(
-                    f"It looks like the dataset has {len(self.dataloader.dataset)} samples, but {num_processed_samples} "
-                    "samples were used for the validation, which might bias the results. "
-                    "Try adjusting the batch size and / or the world size. "
-                    "Setting the world size to 1 is always a safe bet."
-                )
-
-
-            print(f"{header} Acc@1 {self.metric_logger.acc1.global_avg:.3f} Acc@5 {self.metric_logger.acc5.global_avg:.3f}")
-            
-            
-            self.run_callbacks('on_val_epoch_end', epoch=epoch, 
-                               start_time_epoch=start_time_epoch)
-
-    def _update_logger(self, output, target, batch_size):
-        if self.metric_logger is not None:
-            loss = self.loss(output, target)
-            acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
-            # FIXME need to take into account that the datasets
-            # could have been padded in distributed setup
-            self.metric_logger.update(loss=loss.item())
-            self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
-            self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
-            
-            
-
-
-    def evaluate(model, data_loader, device, num_classes):
-        model.eval()
-        confmat = ConfusionMatrix(num_classes)
-        metric_logger = MetricLogger(delimiter="  ")
+        self.model.model.eval()
+        confmat = ConfusionMatrix(len(self.label2index))
         header = "Test:"
         num_processed_samples = 0
         with torch.inference_mode():
-            for batch in metric_logger.log_every(data_loader, 100, header):
-                image, target = batch[0].to(device), batch[1].to(device)
-                output = model(image)
+            for batch in self.metric_logger.log_every(self.data_loader, 100, header):
+                image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
+                output = self.model.model(image)
                 if not isinstance(output, torch.Tensor):
                     output = output["out"]
 
@@ -117,21 +104,34 @@ class BaseValidator(BaseOOPModule, Callbacks):
                 # FIXME need to take into account that the datasets
                 # could have been padded in distributed setup
                 num_processed_samples += image.shape[0]
+                self._update_logger(output, target, batch_size=image.shape[0])
 
             confmat.reduce_from_all_processes()
 
         num_processed_samples = reduce_across_processes(num_processed_samples)
         if (
-            hasattr(data_loader.dataset, "__len__")
-            and len(data_loader.dataset) != num_processed_samples
+            hasattr(self.data_loader.dataset, "__len__")
+            and len(self.data_loader.dataset) != num_processed_samples
             and torch.distributed.get_rank() == 0
         ):
             # See FIXME above
             warnings.warn(
-                f"It looks like the dataset has {len(data_loader.dataset)} samples, but {num_processed_samples} "
+                f"It looks like the dataset has {len(self.data_loader.dataset)} samples, but {num_processed_samples} "
                 "samples were used for the validation, which might bias the results. "
                 "Try adjusting the batch size and / or the world size. "
                 "Setting the world size to 1 is always a safe bet."
             )
 
         return confmat, metric_logger
+
+    def _update_logger(self, output, target, batch_size):
+        if self.metric_logger is not None:
+            pass
+            # loss = self.loss(output, target)
+            # acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
+            # # FIXME need to take into account that the datasets
+            # # could have been padded in distributed setup
+            # self.metric_logger.update(loss=loss.item())
+            # self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
+            # self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
+            

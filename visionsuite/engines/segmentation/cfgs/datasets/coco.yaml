@@ -1,1 +1,2 @@
-input_dir: /HDD/datasets/public/coco
+dataset:
+  input_dir: /HDD/datasets/public/coco
