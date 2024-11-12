@@ -23,8 +23,7 @@ def on_val_epoch_end(validator, *args, **kwargs):
             vis_dir = osp.join(validator.archive.val_dir, str(kwargs['epoch']))
             if not osp.exists(vis_dir):
                 mkdir(vis_dir)
-                
-            # save_validation(validator.model, validator.dataloader, validator.label2index, kwargs['epoch'], vis_dir, validator.device, denormalize)
+               
 
             from visionsuite.engines.segmentation.utils.vis.vis_val import save_validation
             from visionsuite.engines.utils.functionals import denormalize
