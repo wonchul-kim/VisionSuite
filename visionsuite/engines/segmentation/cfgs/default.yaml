@@ -76,6 +76,9 @@ monitor:
   use: true
 
 train:
+  trainer:
+    type: BaseTrainer
+    case_sensitive: true
   device_ids: 0
   device: cuda
   use_deterministic_algorithms: False
@@ -89,8 +92,13 @@ train:
   resume: False
   start_epoch: 0
 
-
   amp: False
+
+val:
+  validator:
+    type: BaseValidator
+    case_sensitive: true
+  epoch: 1
 
 resume: 
   use: false
