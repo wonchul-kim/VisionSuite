@@ -85,25 +85,24 @@ class BaseTrainer(BaseOOPModule, Callbacks):
             image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 output = self.model.model(image) # 'out': (bs num_classes(including bg) h w)
-            #     loss = self.loss(output, target)
+                loss = self.loss(output, target)
 
-            # self.optimizer.zero_grad()
-            # if self.scaler is not None:
-            #     self.scaler.scale(loss).backward()
-            #     self.scaler.step(self.optimizer)
-            #     self.scaler.update()
-            # else:
-            #     loss.backward()
-            #     self.optimizer.step()
+            self.optimizer.zero_grad()
+            if self.scaler is not None:
+                self.scaler.scale(loss).backward()
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
+            else:
+                loss.backward()
+                self.optimizer.step()
             self.lr_scheduler.step()
-            # self._update_logger(output, target, loss, start_time, batch_size = image.shape[0])
+            # self._update_logger(output, target, loss, start_time, batch_size=image.shape[0])
 
                 
     def _update_logger(self, output, target, loss, start_time, batch_size):
         if self.metric_logger is not None:
             self.metric_logger.update(loss=loss.item(), lr=self.optimizer.param_groups[0]["lr"])
             # acc1, acc5 = get_accuracies(output, target, topk=(1, self.args['topk']))
-            # self.metric_logger.update(loss=loss.item(), lr=self.optimizer.param_groups[0]["lr"])
             # self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
             # self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
             # self.metric_logger.meters["img/s"].update(batch_size / (time.time() - start_time))
