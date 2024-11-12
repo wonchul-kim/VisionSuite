@@ -81,7 +81,7 @@ train:
   trainer:
     type: BaseTrainer
     case_sensitive: true
-  device_ids: 0
+  device_ids: 0,1
   device: cuda
   use_deterministic_algorithms: False
 

@@ -83,7 +83,7 @@ class TorchvisionModel(BaseOOPModule):
         else:
             assert_key_dict(self.args['train'], 'device_ids')
             if len(self.args['train']['device_ids']) > 1:
-                self._model = torch.nn.parallel.DataParallel(self._model, device_ids=[self.args['train']['device_ids']])
+                self._model = torch.nn.parallel.DataParallel(self._model, device_ids=self.args['train']['device_ids'])
                 self._model_without_ddp = self.model.module
                 print(f"Data Parallel is set")
                 
