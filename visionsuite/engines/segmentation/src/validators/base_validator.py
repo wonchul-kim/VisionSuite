@@ -17,6 +17,7 @@ from visionsuite.engines.segmentation.utils.metrics.confusion_matrix import Conf
 from visionsuite.engines.utils.metrics.metric_logger import MetricLogger
 from visionsuite.engines.utils.torch_utils.dist import reduce_across_processes
 
+
 @VALIDATORS.register()
 class BaseValidator(BaseOOPModule, Callbacks):
     
