@@ -32,7 +32,7 @@ def get_transform(is_train, args):
 
 @DATASETS.register()
 class MaskDatasetWrapper(BaseDataset):
-    def __init__(self, transform=None):
+    def __init__(self, name="MaskDatasetWrapper", transform=None):
         if transform is None:
             mean=(0.485, 0.456, 0.406)
             std=(0.229, 0.224, 0.225)
@@ -42,7 +42,7 @@ class MaskDatasetWrapper(BaseDataset):
                                             [transforms.ToTensor(),
                                             transforms.Normalize(mean=mean, std=std)])
             
-        super().__init__(transform=transform)
+        super().__init__(name=name, transform=transform)
 
     def load_dataset(self, train_folder_name='train', val_folder_name='val'):
         super().load_dataset()
@@ -52,16 +52,25 @@ class MaskDatasetWrapper(BaseDataset):
                                 )(osp.join(self.args['input_dir'], train_folder_name), 
                                     get_transform(True, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}))
                                     # self._transform)
+        self.log_info(f"LOADED train_dataset: {self.args['load_dataset']['type']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- input_dir: {self.args['input_dir']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- number of images: {len(self.train_dataset)}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- transforms: TODO", self.build.__name__, __class__.__name__)
+        
         self.val_dataset =  DATASETS.get(self.args['load_dataset']['type'], 
                                          case_sensitive=self.args['load_dataset']['case_sensitive']
                                 )(osp.join(self.args['input_dir'], val_folder_name), 
                                   get_transform(False, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}))
                                     # self._transform)
-
+        self.log_info(f"LOADED val_dataset: {self.args['load_dataset']['type']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- input_dir: {self.args['input_dir']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- number of images:: {len(self.val_dataset)}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- transforms: TODO", self.build.__name__, __class__.__name__)
+        
         self.label2index = {index: label for index, label in enumerate(self.classes)}
         self.index2label = {label: index for index, label in enumerate(self.classes)}
         self.num_classes = len(self.classes)
-        print(f"label2index: {self.label2index}")
+        self.log_info(f"- label2index: {self.label2index}", self.load_dataset.__name__, __class__.__name__)
      
         
 @DATASETS.register()

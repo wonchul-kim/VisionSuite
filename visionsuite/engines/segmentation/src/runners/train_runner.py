@@ -49,7 +49,7 @@ class TrainRunner(BaseTrainRunner, Callbacks):
 
         # TODO: Define transform
         dataset = build_dataset(**self.args['dataset'], transform=None)
-        dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
+        dataset.build(**self.args['dataset'], distributed=self.args['distributed'], _logger=self.args['dataset'].get('logger', None))
         self.log_info(f"Dataset is LOADED and BUILT", self.run.__name__, __class__.__name__)
         
         model = build_model(**self.args['model'])
@@ -72,19 +72,6 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         
         self.run_callbacks('on_runner_run_end')
 
-        
-        # dataset, num_classes = get_dataset(self.args, is_train=True)
-        # dataset_test, _ = get_dataset(self.args, is_train=False)
-        # data_loader, data_loader_test, train_sampler, test_sampler = get_dataloader(self.args, dataset, dataset_test)
-        # model, model_without_ddp, params_to_optimize = get_model(self.args, num_classes, self.args['device'])
-        
-        # optimizer = get_optimizer(self.args, params_to_optimize)
-        # scaler = torch.cuda.amp.GradScaler() if self.args['amp'] else None
-        # iters_per_epoch = len(data_loader)
-        # lr_scheduler = get_scheduler(self.args, optimizer, iters_per_epoch)
-
-        # # self.args['start_epoch'] = set_resume(self.args['resume'], self.args['ckpt'], model_without_ddp, 
-        # #                               optimizer, lr_scheduler, scaler, self.args['amp'])
         
         # self.args['start_epoch'] = 1
         # monitor = Monitor()
@@ -111,15 +98,3 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         #         if 'iou' in key:
         #             monitor.log({key: val})
         #     monitor.save()
-
-        #     checkpoint = {
-        #         "model": model_without_ddp.state_dict(),
-        #         "optimizer": optimizer.state_dict(),
-        #         "lr_scheduler": lr_scheduler.state_dict(),
-        #         "epoch": epoch,
-        #         "self.args": self.args,
-        #         'scale': scaler.state_dict() if scaler and self.args['amp'] else None
-        #     }
-        #     save_on_master(checkpoint, os.path.join(self.args['output_dir'], f"model_{epoch}.pth"))
-        #     save_on_master(checkpoint, os.path.join(self.args['output_dir'], "checkpoint.pth"))
-

@@ -23,6 +23,12 @@ class BaseOOPModule(Logger):
         print(f"args: ", args)
         print(f"kwargs: ", kwargs)
         
+        if '_logger' in kwargs and kwargs['_logger'] and 'logs_dir' in kwargs['_logger']:
+            self.set_logger(log_stream_level=kwargs['_logger'].get('log_stream_level', 'DEBUG'),
+                        log_file_level=kwargs['_logger'].get('log_file_level', 'DEBUG'),
+                        log_dir=kwargs['_logger']['logs_dir']) 
+            
+        
         if isinstance(kwargs, (argparse.Namespace, SimpleNamespace)):
             self.args = dict(kwargs)
         elif isinstance(kwargs, dict):

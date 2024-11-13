@@ -33,18 +33,6 @@ class BaseTrainRunner(Logger):
             # device_ids
             args['train']['device_ids'] = parse_device_ids(args['train']['device_ids'])
                         
-            # logger for runner, loop, trainer, validator
-            for key in ['runner', 'loop', 'trainer', 'validator', 'archive']:
-                if key not in args:
-                    args[key] = {'logger': {}}
-                
-                if 'logger' not in args[key]:
-                    args[key]['logger'] = self.args['logger']
-                else:
-                    for key2, val2 in args['logger'].items():
-                        if key2 not in args[key]['logger']:
-                            args[key]['logger'][key2] = val2
-                        
         if default_cfgs_file is None:
             default_cfgs_file=ROOT.parents[1] / self._task / 'cfgs/default.yaml'
         default_cfgs = yaml2dict(default_cfgs_file)
@@ -58,13 +46,41 @@ class BaseTrainRunner(Logger):
 
     @abstractmethod
     def set_variables(self):
+        # logger
+        for key in ['archive']:
+            if key not in self.args:
+                self.args[key] = {'logger': {}}
+            
+            if 'logger' not in self.args[key]:
+                self.args[key]['logger'] = self.args['logger']
+            else:
+                for key2, val2 in self.args['logger'].items():
+                    if key2 not in self.args[key]['logger']:
+                        self.args[key]['logger'][key2] = val2
+        
         self._archive = Archive()
         self._archive.build(**self.args['archive'])
         self._archive.save_args(self.args)
         
+        # logger
+        for key in ['runner', 'loop', 'trainer', 'validator', 'dataset']:
+            if key not in self.args:
+                self.args[key] = {'logger': {}}
+            
+            if 'logger' not in self.args[key]:
+                self.args[key]['logger'] = self.args['logger']
+                self.args[key]['logger']['logs_dir'] = self._archive.logs_dir
+            else:
+                for key2, val2 in self.args['logger'].items():
+                    if key2 not in self.args[key]['logger']:
+                        self.args[key]['logger'][key2] = val2
+                self.args[key]['logger']['logs_dir'] = self._archive.logs_dir
+                
         self.set_logger(log_stream_level=self.args['runner']['logger']['log_stream_level'],
                         log_file_level=self.args['runner']['logger']['log_file_level'],
-                        log_dir=self._archive.logs_dir) 
+                        log_dir=self.args['runner']['logger']['logs_dir']) 
+        
+        
         self.log_info(f"Args: {self.args}", self.set_variables.__name__, __class__.__name__)
         
         init_distributed_mode(self.args)
