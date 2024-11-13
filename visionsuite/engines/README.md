@@ -1,4 +1,4 @@
-# Tutorial
+# Guide
 
 ## Directory Structure
 ```
