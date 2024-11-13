@@ -111,7 +111,7 @@ def _log_plots(plots, step):
             _processed_plots[name] = timestamp
 
 
-def on_set_variables(engine):
+def on_runner_set_variables(engine):
     try:
         engine.flags.is_wandb_logined = wb.login(
             key="817e3db4693a77186b46ea420d9fcb5bdd74f4d8"
@@ -135,9 +135,9 @@ def on_set_variables(engine):
         engine.flags.is_wandb_initialized = True
 
         if engine._callbacks.logger is not None:
-            engine._callbacks.logger.info(f"Logined WanDB: ", on_set_variables.__name__)
+            engine._callbacks.logger.info(f"Logined WanDB: ", on_runner_set_variables.__name__)
             engine._callbacks.logger.info(
-                f" - project name: {name}", on_set_variables.__name__
+                f" - project name: {name}", on_runner_set_variables.__name__
             )
 
     except Exception as error:
@@ -156,7 +156,7 @@ def on_fit_epoch_end(engine):
     #     wb.run.log(model_info_for_loggers(engine), step=engine.epoch + 1)
 
 
-def on_train_epoch_end(engine):
+def on_trainer_epoch_end(engine):
     """Log metrics and save images at the end of each training epoch."""
     # wb.run.log(engine.label_loss_items(engine.tloss, prefix='train'), step=engine.epoch + 1)
     # wb.run.log(engine.lr, step=engine.epoch + 1)
@@ -168,7 +168,7 @@ def on_train_epoch_end(engine):
         if engine._callbacks.logger is not None:
             engine._callbacks.logger.info(
                 f"Logged train results of one epoch into WanDB",
-                on_train_epoch_end.__name__,
+                on_trainer_epoch_end.__name__,
             )
         # if engine.epoch == 1:
         #     _log_plots(engine.plots, step=engine.epoch + 1)
@@ -219,8 +219,8 @@ def on_val_end(engine):
 
 callbacks = (
     {
-        "on_set_variables": on_set_variables,
-        "on_train_epoch_end": on_train_epoch_end,
+        "on_runner_set_variables": on_runner_set_variables,
+        "on_trainer_epoch_end": on_trainer_epoch_end,
         "on_val_end": on_val_end,
         "on_fit_epoch_end": on_fit_epoch_end,
         "on_train_end": on_train_end,

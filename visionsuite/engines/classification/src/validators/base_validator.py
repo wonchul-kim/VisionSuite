@@ -25,7 +25,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
     def build(self, model, loss, dataloader, device, label2index, archive=None, print_freq=100, topk=3, **args):
 
-        self.run_callbacks('on_build_validator_start')
+        self.run_callbacks('on_validator_build_start')
         self.epoch = None
         self.model = model.model_ema if model.model_ema else model.model
         self.loss = loss
@@ -41,7 +41,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.results = ValResults()
         self.metric_logger = MetricLogger(delimiter="  ")
         
-        self.run_callbacks('on_build_validator_end')
+        self.run_callbacks('on_validator_build_end')
         
     @abstractmethod
     def val(self, epoch):
@@ -51,17 +51,17 @@ class BaseValidator(BaseOOPModule, Callbacks):
             header = f"Val.: {self.log_suffix}"
             num_processed_samples = 0
             start_time_epoch = 0
-            self.run_callbacks('on_val_epoch_start')
+            self.run_callbacks('on_validator_epoch_start')
             with torch.inference_mode():
                 for image, target in self.metric_logger.log_every(self.dataloader, self.print_freq, header):
-                    self.run_callbacks('on_val_batch_start')
+                    self.run_callbacks('on_validator_batch_start')
                     image = image.to(self.device, non_blocking=True)
                     target = target.to(self.device, non_blocking=True)
                     output = self.model(image)
 
                     self._update_logger(output, target, batch_size=image.shape[0])
                     num_processed_samples += image.shape[0]
-                    self.run_callbacks('on_val_batch_start')
+                    self.run_callbacks('on_validator_batch_start')
                     
             # gather the stats from all processes
             num_processed_samples = reduce_across_processes(num_processed_samples)
@@ -82,7 +82,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
             print(f"{header} Acc@1 {self.metric_logger.acc1.global_avg:.3f} Acc@5 {self.metric_logger.acc5.global_avg:.3f}")
             
             
-            self.run_callbacks('on_val_epoch_end', epoch=epoch, 
+            self.run_callbacks('on_validator_epoch_end', epoch=epoch, 
                                start_time_epoch=start_time_epoch)
 
     def _update_logger(self, output, target, batch_size):

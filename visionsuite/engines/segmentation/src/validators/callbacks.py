@@ -2,20 +2,20 @@ import time
 import os.path as osp
 from visionsuite.engines.utils.helpers import mkdir
 
-def on_build_validator_start(validator, *args, **kwargs):
+def on_validator_build_start(validator, *args, **kwargs):
     pass
 
-def on_build_validator_end(validator, *args, **kwargs):
+def on_validator_build_end(validator, *args, **kwargs):
     
     for attribute_name in validator.required_attributes:
         assert hasattr(validator, attribute_name), ValueError(f'{attribute_name} must be assgined in validator class')
         assert getattr(validator, attribute_name) is not None, ValueError(f"{attribute_name} is None for validator")
     
 
-def on_val_epoch_start(validator, *args, **kwargs):
+def on_validator_epoch_start(validator, *args, **kwargs):
     pass
 
-def on_val_epoch_end(validator, *args, **kwargs):
+def on_validator_epoch_end(validator, *args, **kwargs):
     # validator.metric_logger.synchronize_between_processes()
 
     def _save_val():
@@ -41,25 +41,25 @@ def on_val_epoch_end(validator, *args, **kwargs):
     _save_val()
     _save_results()
 
-def on_val_batch_start(validator, *args, **kwargs):
+def on_validator_batch_start(validator, *args, **kwargs):
     pass
 
-def on_val_batch_end(validator, *args, **kwargs):
+def on_validator_batch_end(validator, *args, **kwargs):
     pass 
 
-def on_val_step_start(validator, *args, **kwargs): # iteration for a batch
+def on_validator_step_start(validator, *args, **kwargs): # iteration for a batch
     pass
 
-def on_val_step_end(validator, *args, **kwargs): # iteration for a batch
+def on_validator_step_end(validator, *args, **kwargs): # iteration for a batch
     pass
 
 callbacks = {
-    "on_build_validator_start": [on_build_validator_start],
-    "on_build_validator_end": [on_build_validator_end],
-    "on_val_epoch_start": [on_val_epoch_start],
-    "on_val_epoch_end": [on_val_epoch_end],
-    "on_val_batch_start": [on_val_batch_start],
-    "on_val_batch_end": [on_val_batch_end],
-    "on_val_step_start": [on_val_step_start],
-    "on_val_step_end": [on_val_step_end],
+    "on_validator_build_start": [on_validator_build_start],
+    "on_validator_build_end": [on_validator_build_end],
+    "on_validator_epoch_start": [on_validator_epoch_start],
+    "on_validator_epoch_end": [on_validator_epoch_end],
+    "on_validator_batch_start": [on_validator_batch_start],
+    "on_validator_batch_end": [on_validator_batch_end],
+    "on_validator_step_start": [on_validator_step_start],
+    "on_validator_step_end": [on_validator_step_end],
 }

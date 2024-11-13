@@ -31,7 +31,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         
     def build(self, model, loss, dataloader, device, label2index, archive=None, print_freq=100, **args):
 
-        self.run_callbacks('on_build_validator_start')
+        self.run_callbacks('on_validator_build_start')
         self.epoch = None
         self.model = model.model_ema if model.model_ema else model.model
         self.loss = loss
@@ -46,13 +46,13 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.results = ValResults()
         self.metric_logger = MetricLogger(delimiter="  ")
         
-        self.run_callbacks('on_build_validator_end')
+        self.run_callbacks('on_validator_build_end')
         
     @abstractmethod
     def val(self, epoch):
         self.epoch = epoch 
         if epoch%self.args['epoch'] == 0:
-            self.run_callbacks('on_val_epoch_start')
+            self.run_callbacks('on_validator_epoch_start')
             start_time_epoch = time.time()
             self.model.eval()
             confmat = ConfusionMatrix(len(self.label2index))
@@ -60,7 +60,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
             num_processed_samples = 0
             with torch.inference_mode():
                 for batch in self.metric_logger.log_every(self.dataloader, 100, header):
-                    self.run_callbacks('on_val_batch_start')
+                    self.run_callbacks('on_validator_batch_start')
                     image, target = batch[0].to(self.device), batch[1].to(self.device)
                     output = self.model(image)
                     if not isinstance(output, torch.Tensor):
@@ -72,7 +72,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     num_processed_samples += image.shape[0]
                     self._update_logger(output, target, batch_size=image.shape[0])
 
-                    self.run_callbacks('on_val_batch_start')
+                    self.run_callbacks('on_validator_batch_start')
                     
                 confmat.reduce_from_all_processes()
 
@@ -90,7 +90,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
                     "Setting the world size to 1 is always a safe bet."
                 )
                 
-            self.run_callbacks('on_val_epoch_end', epoch=epoch, 
+            self.run_callbacks('on_validator_epoch_end', epoch=epoch, 
                                start_time_epoch=start_time_epoch)
 
     def _update_logger(self, output, target, batch_size):

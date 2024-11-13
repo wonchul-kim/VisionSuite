@@ -2,8 +2,9 @@ from visionsuite.engines.segmentation.src.loops.build import build_loop
 from visionsuite.engines.segmentation.src.datasets.build import build_dataset
 from visionsuite.engines.segmentation.src.models.build import build_model
 from visionsuite.engines.segmentation.utils.registry import RUNNERS
-from visionsuite.engines.utils.bases.base_train_runner import BaseTrainRunner
+from visionsuite.engines.utils.bases import BaseTrainRunner
 from visionsuite.engines.utils.callbacks import Callbacks
+from .callbacks import callbacks
 
 import numpy as np
 
@@ -23,20 +24,22 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         BaseTrainRunner.__init__(self, task)
         Callbacks.__init__(self)
         
+        self.add_callbacks(callbacks)
+        
     def set_configs(self, *args, **kwargs):
         super().set_configs(*args, **kwargs)
         
-        self.run_callbacks('on_set_configs')
+        self.run_callbacks('on_runner_set_configs')
         
     def set_variables(self):
         super().set_variables()
         
-        self.run_callbacks('on_set_variables')
+        self.run_callbacks('on_runner_set_variables')
                
     def run(self):
         super().run()
                 
-        self.run_callbacks('on_run_start')
+        self.run_callbacks('on_runner_run_start')
 
         import os.path as osp 
         
@@ -67,7 +70,7 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                 )
         loop.run_loop()
         
-        self.run_callbacks('on_run_end')
+        self.run_callbacks('on_runner_run_end')
 
         
         # dataset, num_classes = get_dataset(self.args, is_train=True)

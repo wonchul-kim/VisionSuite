@@ -3,9 +3,7 @@ from .default import get_default_callbacks
 class Callbacks:
 
     @classmethod
-    def add_integration_callbacks(cls):
-        callbacks_list = []
- 
+    def add_integration_callbacks(cls, callbacks_list):
         for callbacks in callbacks_list:
             for k, v in callbacks.items():
                 if v not in cls._callbacks[k]:

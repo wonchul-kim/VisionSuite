@@ -4,19 +4,19 @@ import time
 
 from visionsuite.engines.utils.torch_utils.utils import save_on_master
 
-def on_build_trainer_start(trainer, *args, **kwargs):
+def on_trainer_build_start(trainer, *args, **kwargs):
     pass        
      
-def on_build_trainer_end(trainer, *args, **kwargs):
+def on_trainer_build_end(trainer, *args, **kwargs):
     
     for attribute_name in trainer.required_attributes:
         assert hasattr(trainer, attribute_name), ValueError(f'{attribute_name} must be assgined in trainer class')
         assert getattr(trainer, attribute_name) is not None, ValueError(f"{attribute_name} is None for trainer")
 
-def on_train_epoch_start(trainer, *args, **kwargs):
+def on_trainer_epoch_start(trainer, *args, **kwargs):
     pass 
 
-def on_train_epoch_end(trainer, *args, **kwargs):
+def on_trainer_epoch_end(trainer, *args, **kwargs):
     def _save_model():
         if trainer.archive and trainer.archive.weights_dir:
             checkpoint = {
@@ -57,26 +57,26 @@ def on_train_epoch_end(trainer, *args, **kwargs):
     _save_results()
     
     
-def on_train_batch_start(trainer, *args, **kwargs):
+def on_trainer_batch_start(trainer, *args, **kwargs):
     pass
 
-def on_train_batch_end(trainer, *args, **kwargs):
+def on_trainer_batch_end(trainer, *args, **kwargs):
     pass
 
-def on_train_step_start(trainer, *args, **kwargs): # iteration for a batch
+def on_trainer_step_start(trainer, *args, **kwargs): # iteration for a batch
     pass
 
-def on_train_step_end(trainer, *args, **kwargs): # iteration for a batch
+def on_trainer_step_end(trainer, *args, **kwargs): # iteration for a batch
     pass
 
 callbacks = {
-    "on_build_trainer_start": [on_build_trainer_start], 
-    "on_build_trainer_end": [on_build_trainer_end], 
-    "on_train_epoch_start": [on_train_epoch_start],
-    "on_train_epoch_end": [on_train_epoch_end],
-    "on_train_batch_start": [on_train_batch_start],
-    "on_train_batch_end": [on_train_batch_end],
-    "on_train_step_start": [on_train_step_start],
-    "on_train_step_end": [on_train_step_end],
+    "on_trainer_build_start": [on_trainer_build_start], 
+    "on_trainer_build_end": [on_trainer_build_end], 
+    "on_trainer_epoch_start": [on_trainer_epoch_start],
+    "on_trainer_epoch_end": [on_trainer_epoch_end],
+    "on_trainer_batch_start": [on_trainer_batch_start],
+    "on_trainer_batch_end": [on_trainer_batch_end],
+    "on_trainer_step_start": [on_trainer_step_start],
+    "on_trainer_step_end": [on_trainer_step_end],
 }
 

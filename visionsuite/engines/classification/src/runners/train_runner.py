@@ -17,17 +17,17 @@ class TrainRunner(BaseTrainRunner, Callbacks):
     def set_configs(self, *args, **kwargs):
         super().set_configs(*args, **kwargs)
         
-        self.run_callbacks('on_set_configs')
+        self.run_callbacks('on_runner_set_configs')
         
     def set_variables(self):
         super().set_variables()
         
-        self.run_callbacks('on_set_variables')
+        self.run_callbacks('on_runner_set_variables')
                
     def run(self):
         super().run()
                 
-        self.run_callbacks('on_run_start')
+        self.run_callbacks('on_runner_run_start')
 
         # TODO: Define transform
         dataset = build_dataset(**self.args['dataset'], transform=None)
@@ -48,4 +48,4 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                 )
         loop.run_loop()
         
-        self.run_callbacks('on_run_end')
+        self.run_callbacks('on_runner_run_end')

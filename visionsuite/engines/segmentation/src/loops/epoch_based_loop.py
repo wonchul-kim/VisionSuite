@@ -15,7 +15,7 @@ class EpochBasedLoop(BaseLoop, Callbacks):
 
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(_model, _dataset, _archive=_archive, *args, **kwargs)
-        self.run_callbacks('on_build_loop_start')
+        self.run_callbacks('on_loop_build_start')
 
         self.trainer = build_trainer(**self.args['train']['trainer'])()
         self.trainer.build(model=self.model, loss=self.loss, optimizer=self.optimizer, 
@@ -28,11 +28,11 @@ class EpochBasedLoop(BaseLoop, Callbacks):
                              device=self.args['train']['device'],
                              archive=self.archive, **self.args['val'])
         
-        self.run_callbacks('on_build_loop_end')
+        self.run_callbacks('on_loop_build_end')
         
     def run_loop(self):
         super().run_loop()
-        self.run_callbacks('on_run_loop_start')
+        self.run_callbacks('on_loop_run_start')
         for epoch in range(self.start_epoch, self.args['train']['epochs']):
 
             if self.args['distributed']['use']:
@@ -40,4 +40,4 @@ class EpochBasedLoop(BaseLoop, Callbacks):
             self.trainer.train(epoch)
             self.validator.val(epoch)
             
-        self.run_callbacks('on_run_loop_end')
+        self.run_callbacks('on_loop_run_end')

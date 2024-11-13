@@ -24,7 +24,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         
     def build(self, model, loss, optimizer, lr_scheduler, dataloader, scaler=None, archive=None, **args):
         
-        self.run_callbacks('on_build_trainer_start')
+        self.run_callbacks('on_trainer_build_start')
         
         self.epoch = None
         
@@ -42,18 +42,18 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.gpu_logger = GPULogger(self.args['device_ids'])
 
         
-        self.run_callbacks('on_build_trainer_end')
+        self.run_callbacks('on_trainer_build_end')
 
     @abstractmethod
     def train(self, epoch):
-        self.run_callbacks('on_train_epoch_start')
+        self.run_callbacks('on_trainer_epoch_start')
         self.epoch = epoch 
         start_time_epoch = time.time()
         self.model.model.train()
         self.metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
         header = f"Epoch: [{epoch}]"
         for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
-            self.run_callbacks('on_train_batch_start')
+            self.run_callbacks('on_trainer_batch_start')
 
             start_time = time.time()
             image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
@@ -72,9 +72,9 @@ class BaseTrainer(BaseOOPModule, Callbacks):
             self.lr_scheduler.step()
             self._update_logger(output, target, loss, start_time, batch_size=image.shape[0])
             
-            self.run_callbacks('on_train_batch_end')
+            self.run_callbacks('on_trainer_batch_end')
 
-        self.run_callbacks('on_train_epoch_end', 
+        self.run_callbacks('on_trainer_epoch_end', 
                            epoch=epoch, start_time_epoch=start_time_epoch)
     
                 
