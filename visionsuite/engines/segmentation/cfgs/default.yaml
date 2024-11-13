@@ -23,7 +23,7 @@ scheduler:
 loss:
   type: LossWithAux
   case_sensitive: true
-  loss_name: CrossEntropyLoss # loss_name?
+  loss_name: CrossEntropyLoss
   label_smoothing: 0.0
   ignore_index: 255
 
@@ -83,7 +83,7 @@ train:
   trainer:
     type: BaseTrainer
     case_sensitive: true
-  device_ids: 0,1
+  device_ids: 0
   device: cuda
   use_deterministic_algorithms: False
 
@@ -91,8 +91,6 @@ train:
 
   epochs: 150
   print_freq: 10
-  ckpt: null
-  ckpt: null
   resume: False
   start_epoch: 0
 
@@ -105,7 +103,12 @@ val:
   epoch: 1
 
 resume: 
-  use: false
+  use: true
+  seed_model: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/2024_11_12_18_46_21/weights/last.pth
+  optimizer: true 
+  lr_scheduler: true 
+  epoch: true 
+  scaler: true
 
 distributed:
   world_size: 1

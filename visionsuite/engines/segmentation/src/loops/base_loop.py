@@ -73,9 +73,9 @@ class BaseLoop(BaseOOPModule):
         pass
     
     def _set_resume(self):
-        if self.args['resume']['use'] and self.args['train']['ckpt']:
-            assert osp.exists(self.args['train']['ckpt']), ValueError(f"There is no such checkpoint: {self.args['train']['ckpt']}")
-            ckpt = load_ckpt(self.args['train']['ckpt'])
+        if self.args['resume']['use']:
+            assert osp.exists(self.args['resume']['seed_model']), ValueError(f"There is no such checkpoint: {self.args['resume']['seed_model']}")
+            ckpt = load_ckpt(self.args['resume']['seed_model'])
             
             self.model.model_without_ddp.load_state_dict(ckpt['model'], strict=True)
             
@@ -87,7 +87,13 @@ class BaseLoop(BaseOOPModule):
                 if self.args['resume'][attribute]:
                     if attribute in ckpt:
                         if attribute == 'epoch':
-                            getattr(self, 'start_epoch').load_state_dict(ckpt[attribute])
+                            self.start_epoch = int(ckpt[attribute]) + 1
+                            
+                            if self.args['train']['epochs'] - 10 <= self.start_epoch <= self.args['train']['epochs'] + 10:
+                                self.args['train']['epochs'] = self.start_epoch + 100
+                                
+                                print(f"Epochs is updated to {self.start_epoch + 100} since the loaded epoch is {int(ckpt[attribute])}")
+                            
                         else:
                             getattr(self, attribute).load_state_dict(ckpt[attribute])
                     else:
