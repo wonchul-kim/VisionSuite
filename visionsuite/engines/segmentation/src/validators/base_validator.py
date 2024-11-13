@@ -67,6 +67,8 @@ class BaseValidator(BaseOOPModule, Callbacks):
                 for batch in self.metric_logger.log_every(self.dataloader, 100, header):
                     self.run_callbacks('on_validator_batch_start')
                     image, target = batch[0].to(self.device), batch[1].to(self.device)
+                    self.log_debug(f"- image: {image.shape} with device({self.device})", self.val.__name__, __class__.__name__)
+                    self.log_debug(f"- target: {target.shape} with device({self.device})", self.val.__name__, __class__.__name__)
                     output = self.model(image)
                     if not isinstance(output, torch.Tensor):
                         output = output["out"]

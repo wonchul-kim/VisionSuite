@@ -62,6 +62,8 @@ class BaseTrainer(BaseOOPModule, Callbacks):
 
             start_time = time.time()
             image, target = batch[0].to(self.args['device']), batch[1].to(self.args['device'])
+            self.log_debug(f"- image: {image.shape} with device({self.args['device']})", self.train.__name__, __class__.__name__)
+            self.log_debug(f"- target: {target.shape} with device({self.args['device']})", self.train.__name__, __class__.__name__)
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 output = self.model.model(image) # 'out': (bs num_classes(including bg) h w)
                 loss = self.loss(output, target)

@@ -132,7 +132,7 @@ archive:
     save_freq_epoch: 10
 
 logger:
-  log_stream_level: DEBUG
-  log_file_level: DEBUG
+  log_stream_level: ERROR
+  log_file_level: ERROR
 
 
