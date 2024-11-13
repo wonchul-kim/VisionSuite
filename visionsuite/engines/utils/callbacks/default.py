@@ -15,10 +15,10 @@ def on_runner_run_end(runner, *args, **kwargs):
     pass
 
 ### Loop ---------------------------------------------
-def on_loop_build_start(obj, *args, **kwargs):
+def on_loop_build_start(loop, *args, **kwargs):
     pass
 
-def on_loop_build_end(obj, *args, **kwargs):
+def on_loop_build_end(loop, *args, **kwargs):
     pass
 
 def on_loop_run_start(loop, *args, **kwargs):
