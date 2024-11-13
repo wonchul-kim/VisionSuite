@@ -35,12 +35,12 @@
 - File names: ***snake_case***
 - Class names: ***CamelCase***
 - File-Class alignment: Each file name should correspond to the class name it contains, with the file name reflecting the class in snake_case
-    - For example, if the class name is CustomDataset, then the file should be named custom_dataset.py.
+    - For example, if the class name is `CustomDataset`, then the file should be named `custom_dataset.py`.
 
 
 ## Add new module
 1. OOP is preferable
 2. Register the module with decorator
-3. Importing in root.py and including it in the __all__ list.
+3. Importing in `root.py` and including it in the `__all__` list.
  
 
