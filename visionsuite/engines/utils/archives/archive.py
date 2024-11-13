@@ -7,7 +7,7 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
 class Archive(BaseOOPModule):
     def __init__(self, output_dir=None):
-        super().__init__()
+        super().__init__(__class__.__name__)
         self.args = None
         self._output_dir = output_dir
         
@@ -18,6 +18,9 @@ class Archive(BaseOOPModule):
         assert osp.exists(self._output_dir), RuntimeError(f"Output dir ({self._output_dir}) has not been created")
         
         self.create_directories()
+        self.set_logger(log_stream_level=self.args['logger']['log_stream_level'],
+                        log_file_level=self.args['logger']['log_file_level'],
+                        log_dir=self.logs_dir)        
         self._load()
         
     @property
@@ -33,13 +36,18 @@ class Archive(BaseOOPModule):
         if self.args['monitor']['use']:
             self.monitor = Monitor()
             self.monitor.set(output_dir=self.logs_dir, fn='monitor')
+            self.log_info(f"Monitor is LOADED and SET", self._load_monitor.__name__, __class__.__name__)
+
         else:
             self.monitor = None
+            self.log_info(f"Monitor is NOT LOADED", self._load_monitor.__name__, __class__.__name__)
     
     @BaseOOPModule.track_status
     def save_args(self, args):
         with open(osp.join(self.cfgs_dir, 'args.yaml'), 'w') as yf:
             yaml.dump(args, yf, default_flow_style=False)
+            
+        self.log_info(f"Saved args at {osp.join(self.cfgs_dir, 'args.yaml')}", self.save_args.__name__, __class__.__name__)
     
     @BaseOOPModule.track_status
     def create_directories(self):
@@ -47,7 +55,8 @@ class Archive(BaseOOPModule):
             mkdir(osp.join(self._output_dir, directory))
             setattr(self, directory + '_dir', osp.join(self._output_dir, directory))    
     
-            
+            self.log_info(f"Created directory: {osp.join(self._output_dir, directory)}", self.create_directories.__name__, __class__.__name__)
+
         
         
             

@@ -34,7 +34,7 @@ class BaseTrainRunner(Logger):
             args['train']['device_ids'] = parse_device_ids(args['train']['device_ids'])
                         
             # logger for runner, loop, trainer, validator
-            for key in ['runner', 'loop', 'trainer', 'validator']:
+            for key in ['runner', 'loop', 'trainer', 'validator', 'archive']:
                 if key not in args:
                     args[key] = {'logger': {}}
                 
@@ -65,6 +65,7 @@ class BaseTrainRunner(Logger):
         self.set_logger(log_stream_level=self.args['runner']['logger']['log_stream_level'],
                         log_file_level=self.args['runner']['logger']['log_file_level'],
                         log_dir=self._archive.logs_dir) 
+        self.log_info(f"Args: {self.args}", self.set_variables.__name__, __class__.__name__)
         
         init_distributed_mode(self.args)
         self.log_info(f"Initialize distribution mode: {self.args['distributed']['use']}", self.set_variables.__name__, __class__.__name__)

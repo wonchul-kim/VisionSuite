@@ -116,7 +116,9 @@ class Logger:
         log_dir=None,
         config_json=osp.join(ROOT, "data/colored-logging.json"),
     ):
-
+        if self.is_logger_set:
+            self.log_info(f"Logger is already set for {self._name}")
+            return 
         self.log_stream_level = log_stream_level.upper()
         self.log_file_level = log_file_level.upper()
         self.log_dir = log_dir
