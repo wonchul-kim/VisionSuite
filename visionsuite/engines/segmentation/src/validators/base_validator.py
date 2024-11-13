@@ -23,14 +23,15 @@ class BaseValidator(BaseOOPModule, Callbacks):
     
     required_attributes = ['model', 'dataloader']
     
-    def __init__(self):
-        BaseOOPModule.__init__(self)
+    def __init__(self, name='BaseValidator'):
+        BaseOOPModule.__init__(self, name=name)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)
         
     def build(self, model, loss, dataloader, device, label2index, archive=None, print_freq=100, **args):
-
+        super().build(**args)
+        
         self.run_callbacks('on_validator_build_start')
         self.epoch = None
         self.model = model.model_ema if model.model_ema else model.model
@@ -44,7 +45,10 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.print_freq = print_freq
         
         self.results = ValResults()
+        self.log_info(f"SET ValResults", self.build.__name__, __class__.__name__)
+        
         self.metric_logger = MetricLogger(delimiter="  ")
+        self.log_info(f"SET MetricLogger", self.build.__name__, __class__.__name__)
         
         self.run_callbacks('on_validator_build_end')
         
@@ -58,6 +62,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
             confmat = ConfusionMatrix(len(self.label2index))
             header = "Val:"
             num_processed_samples = 0
+            self.log_info(f"START val epoch: {epoch}", self.val.__name__, __class__.__name__)
             with torch.inference_mode():
                 for batch in self.metric_logger.log_every(self.dataloader, 100, header):
                     self.run_callbacks('on_validator_batch_start')

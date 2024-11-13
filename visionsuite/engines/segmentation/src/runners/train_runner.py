@@ -65,7 +65,8 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         loop.build(_model=model, 
                    _dataset=dataset, 
                    _archive=self._archive, 
-                   **self.args
+                   **self.args,
+                   _logger=self.args['loop'].get('logger', None)
                 )
         self.log_info(f"Loop is LOADED and BUILT", self.run.__name__, __class__.__name__)
 

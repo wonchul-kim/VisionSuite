@@ -16,14 +16,14 @@ class BaseTrainer(BaseOOPModule, Callbacks):
     
     required_attributes = ['model', 'loss', 'dataloader']
     
-    def __init__(self):
-        BaseOOPModule.__init__(self)
+    def __init__(self, name='BaseTrainer'):
+        BaseOOPModule.__init__(self, name=name)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)
         
     def build(self, model, loss, optimizer, lr_scheduler, dataloader, scaler=None, archive=None, **args):
-        
+        super().build(**args)
         self.run_callbacks('on_trainer_build_start')
         
         self.epoch = None
@@ -38,9 +38,13 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.archive = archive
         
         self.results = TrainResults()
+        self.log_info(f"SET TrainResults", self.build.__name__, __class__.__name__)
+        
         self.metric_logger = MetricLogger(delimiter="  ")
+        self.log_info(f"SET MetricLogger", self.build.__name__, __class__.__name__)
+        
         self.gpu_logger = GPULogger(self.args['device_ids'])
-
+        self.log_info(f"SET GPULogger", self.build.__name__, __class__.__name__)
         
         self.run_callbacks('on_trainer_build_end')
 
@@ -52,6 +56,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.model.model.train()
         self.metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
         header = f"Epoch: [{epoch}]"
+        self.log_info(f"START train epoch: {epoch}", self.train.__name__, __class__.__name__)
         for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
             self.run_callbacks('on_trainer_batch_start')
 
