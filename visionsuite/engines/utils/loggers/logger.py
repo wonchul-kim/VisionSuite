@@ -109,7 +109,7 @@ class Logger:
     def name(self, value):
         self.__name = value
 
-    def set(
+    def set_logger(
         self,
         log_stream_level="DEBUG",
         log_file_level="DEBUG",

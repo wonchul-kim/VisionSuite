@@ -131,3 +131,8 @@ archive:
   val:
     save_freq_epoch: 10
 
+logger:
+  log_stream_level: DEBUG
+  log_file_level: DEBUG
+
+

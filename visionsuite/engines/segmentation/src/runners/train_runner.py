@@ -40,8 +40,6 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         super().run()
                 
         self.run_callbacks('on_runner_run_start')
-
-        import os.path as osp 
         
         if self.args['augment']['train']['backend'].lower() != "pil" and not self.args['augment']['train']['use_v2']:
             # TODO: Support tensor backend in V1?

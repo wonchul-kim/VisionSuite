@@ -9,9 +9,12 @@ from visionsuite.engines.utils.helpers import yaml2dict, update_dict
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
 from visionsuite.engines.utils.torch_utils.dist import init_distributed_mode
 from visionsuite.engines.utils.archives import Archive
+from visionsuite.engines.utils.loggers import Logger
+
             
-class BaseTrainRunner:
+class BaseTrainRunner(Logger):
     def __init__(self, task):
+        super().__init__("TrainRunner")
         self._task = task
         self.pipelines = {}
         
@@ -27,8 +30,21 @@ class BaseTrainRunner:
         cfgs = yaml2dict(cfgs_file)
 
         def _parse_args(args):
+            # device_ids
             args['train']['device_ids'] = parse_device_ids(args['train']['device_ids'])
-            
+                        
+            # logger for runner, loop, trainer, validator
+            for key in ['runner', 'loop', 'trainer', 'validator']:
+                if key not in args:
+                    args[key] = {'logger': {}}
+                
+                if 'logger' not in args[key]:
+                    args[key]['logger'] = self.args['logger']
+                else:
+                    for key2, val2 in args['logger'].items():
+                        if key2 not in args[key]['logger']:
+                            args[key]['logger'][key2] = val2
+                        
         if default_cfgs_file is None:
             default_cfgs_file=ROOT.parents[1] / self._task / 'cfgs/default.yaml'
         default_cfgs = yaml2dict(default_cfgs_file)
@@ -39,6 +55,7 @@ class BaseTrainRunner:
         self.args = default_cfgs
         _parse_args(self.args)
 
+
     @abstractmethod
     def set_variables(self):
         init_distributed_mode(self.args)
@@ -48,6 +65,10 @@ class BaseTrainRunner:
         self._archive = Archive()
         self._archive.build(**self.args['archive'])
         self._archive.save_args(self.args)
+        
+        self.set_logger(log_stream_level=self.args['runner']['logger']['log_stream_level'],
+                        log_file_level=self.args['runner']['logger']['log_file_level'],
+                        log_dir=self._archive.logs_dir) 
         
     @abstractmethod
     def run(self):
