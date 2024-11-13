@@ -37,5 +37,4 @@ class BaseOOPModule(Logger):
             NotImplementedError(f"NOT Considered this case for args({args}) and kwargs({kwargs})")
         
         assert self.args is not None, RuntimeError(f"Args for dataset is None")
-        
-        print(f"Loaded args: {self.args}")
+        self.log_info(f"Loaded args: {self.args}", self.build.__name__, __class__.__name__)
