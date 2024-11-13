@@ -67,13 +67,13 @@ class BaseTrainRunner(Logger):
                         log_dir=self._archive.logs_dir) 
         
         init_distributed_mode(self.args)
-        self.log_info(f"Initialize distribution mode: {self.args['distributed']['use']}", self.set_variables.__name__, self.__class__.__name__)
+        self.log_info(f"Initialize distribution mode: {self.args['distributed']['use']}", self.set_variables.__name__, __class__.__name__)
         
         set_torch_deterministic(self.args['train']['use_deterministic_algorithms'])
-        self.log_info(f"Set torch deterministic: {self.args['train']['use_deterministic_algorithms']}", self.set_variables.__name__, self.__class__.__name__)
+        self.log_info(f"Set torch deterministic: {self.args['train']['use_deterministic_algorithms']}", self.set_variables.__name__, __class__.__name__)
 
         self.args['train']['device'] = get_device(self.args['train']['device'])
-        self.log_info(f"Set train devices: {self.args['train']['device']}", self.set_variables.__name__, self.__class__.__name__)
+        self.log_info(f"Set train devices: {self.args['train']['device']}", self.set_variables.__name__, __class__.__name__)
         
         
     @abstractmethod

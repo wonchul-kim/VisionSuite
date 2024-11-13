@@ -1,10 +1,10 @@
 import argparse 
 from types import SimpleNamespace
-
-        
+from visionsuite.engines.utils.loggers import Logger
 
 class BaseOOPModule:
     def __init__(self):
+        # super().__init__()
         self._status = {}
         
     def track_status(func):
