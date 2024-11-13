@@ -13,7 +13,7 @@ class TorchvisionModel(BaseOOPModule):
     - weights can be referred by https://pytorch.org/vision/main/models.html
     """
     def __init__(self):
-        super().__init__()
+        super().__init__(name='TorchvisionModel')
         self.args = None
         self._device = 'cpu'
         self._model_without_ddp = None
@@ -56,7 +56,7 @@ class TorchvisionModel(BaseOOPModule):
                                     aux_loss=self.args['aux_loss'],
                 )
             
-            print(f"LOADED model: {self.args['model_name']}")
+            self.log_info(f"LOADED model: {self.args['model_name']}", self._load_model.__name__, __class__.__name__)
         except Exception as error:
             raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
            
@@ -65,6 +65,8 @@ class TorchvisionModel(BaseOOPModule):
         assert_key_dict(self.args['train'], 'device')
         self._device = self.args['train']['device']
         self._model.to(self._device)
+        
+        self.log_info(f"TRANSFER model to device: {self._device}", self._to_device.__name__, __class__.__name__)
 
     @BaseOOPModule.track_status
     def _set_dist(self):
@@ -73,28 +75,30 @@ class TorchvisionModel(BaseOOPModule):
 
         if self.args['distributed'] and self.args['train']['sync_bn']:
             self._model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(self._model)
+            self.log_info(f"CONVERT batchnorm into sync_batchnorm: {self._device}", self._set_dist.__name__, __class__.__name__)
             
         self._model_without_ddp = self._model
         if self.args['distributed']:
             assert_key_dict(self.args['distributed'], 'gpu')
             self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['distributed']['gpu']])
-            print(f"Distributed Data Parallel is set")
+            self.log_info(f"SET distributed Data Parallel: {self.args['distributed']['gpu']}", self._set_dist.__name__, __class__.__name__)
             self._model_without_ddp = self.model.module
         else:
             assert_key_dict(self.args['train'], 'device_ids')
             if len(self.args['train']['device_ids']) > 1:
                 self._model = torch.nn.parallel.DataParallel(self._model, device_ids=self.args['train']['device_ids'])
                 self._model_without_ddp = self.model.module
-                print(f"Data Parallel is set")
-                
+                self.log_info(f"SET Data Parallel: {self.args['train']['device_ids']}", self._set_dist.__name__, __class__.__name__)
                 
     def _set_params_to_optimize(self):
         self._params_to_optimize = [
             {"params": [p for p in self._model_without_ddp.backbone.parameters() if p.requires_grad]},
             {"params": [p for p in self._model_without_ddp.classifier.parameters() if p.requires_grad]},
         ]
+        self.log_info(f"SET params to optimize", self._set_params_to_optimize.__name__, __class__.__name__)
         
     def apply_aux_loss_to_params_to_optimize(self, lr):
         if self.args['aux_loss']:
             params = [p for p in self._model_without_ddp.aux_classifier.parameters() if p.requires_grad]
             self._params_to_optimize.append({"params": params, "lr": lr * 10})
+            self.log_info(f"APPLY aux_loss to params to optimize: {self.args['aux_loss']}", self.apply_aux_loss_to_params_to_optimize.__name__, __class__.__name__)

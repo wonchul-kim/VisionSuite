@@ -56,7 +56,8 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         model.build(**self.args['model'], 
                     num_classes=dataset.num_classes, 
                     train=self.args['train'], 
-                    distributed=self.args['distributed']['use']
+                    distributed=self.args['distributed']['use'],
+                    _logger=self.args['model'].get('logger', None)
         )
         self.log_info(f"Model is LOADED and BUILT", self.run.__name__, __class__.__name__)
         
