@@ -141,7 +141,7 @@ class Logger:
         #         self._logger = None
         #         self.is_logger_set = False
 
-        # self.info(f"Logger has been set for {self.__name}", self.__init__.__name__, __class__.__name__)
+        # self.log_info(f"Logger has been set for {self.__name}", self.__init__.__name__, __class__.__name__)
 
         try:
             self._get_config()
@@ -189,29 +189,29 @@ class Logger:
                 self._logger = None
                 self.is_logger_set = False
 
-        self.info(
+        self.log_info(
             f"Logger has been set for {self.__name}",
             self.__init__.__name__,
             __class__.__name__,
         )
 
-    def debug(self, msg, func_name="", class_name=""):
+    def log_debug(self, msg, func_name="", class_name=""):
         if self._logger is not None:
             self._logger.debug(f"[{class_name}] - [{func_name}] - {msg}")
 
-    def info(self, msg, func_name="", class_name=""):
+    def log_info(self, msg, func_name="", class_name=""):
         if self._logger is not None:
             self._logger.info(f"[{class_name}] - [{func_name}] - {msg}")
 
-    def warning(self, msg, func_name="", class_name=""):
+    def log_warning(self, msg, func_name="", class_name=""):
         if self._logger is not None:
             self._logger.warning(f"[{class_name}] - [{func_name}] - {msg}")
 
-    def error(self, msg, func_name="", class_name=""):
+    def log_error(self, msg, func_name="", class_name=""):
         if self._logger is not None:
             self._logger.error(f"[{class_name}] - [{func_name}] - {msg}")
 
-    def critical(self, msg, func_name="", class_name=""):
+    def log_critical(self, msg, func_name="", class_name=""):
         if self._logger is not None:
             self._logger.critical(f"[{class_name}] - [{func_name}] - {msg}")
 

@@ -58,10 +58,6 @@ class BaseTrainRunner(Logger):
 
     @abstractmethod
     def set_variables(self):
-        init_distributed_mode(self.args)
-        set_torch_deterministic(self.args['train']['use_deterministic_algorithms'])
-        self.args['train']['device'] = get_device(self.args['train']['device'])
-        
         self._archive = Archive()
         self._archive.build(**self.args['archive'])
         self._archive.save_args(self.args)
@@ -69,6 +65,16 @@ class BaseTrainRunner(Logger):
         self.set_logger(log_stream_level=self.args['runner']['logger']['log_stream_level'],
                         log_file_level=self.args['runner']['logger']['log_file_level'],
                         log_dir=self._archive.logs_dir) 
+        
+        init_distributed_mode(self.args)
+        self.log_info(f"Initialize distribution mode: {self.args['distributed']['use']}", self.set_variables.__name__, self.__class__.__name__)
+        
+        set_torch_deterministic(self.args['train']['use_deterministic_algorithms'])
+        self.log_info(f"Set torch deterministic: {self.args['train']['use_deterministic_algorithms']}", self.set_variables.__name__, self.__class__.__name__)
+
+        self.args['train']['device'] = get_device(self.args['train']['device'])
+        self.log_info(f"Set train devices: {self.args['train']['device']}", self.set_variables.__name__, self.__class__.__name__)
+        
         
     @abstractmethod
     def run(self):

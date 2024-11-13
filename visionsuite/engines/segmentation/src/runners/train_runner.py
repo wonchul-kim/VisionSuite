@@ -47,11 +47,10 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         if self.args['augment']['train']['use_v2'] and self.args['dataset']['type'] != "coco":
             raise ValueError("v2 is only support supported for coco dataset for now.")
 
-
-
         # TODO: Define transform
         dataset = build_dataset(**self.args['dataset'], transform=None)
         dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
+        self.log_info(f"Dataset is LOADED and BUILT", self.run.__name__, self.__class__.__name__)
         
         model = build_model(**self.args['model'])
         model.build(**self.args['model'], 
@@ -59,6 +58,7 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                     train=self.args['train'], 
                     distributed=self.args['distributed']['use']
         )
+        self.log_info(f"Model is LOADED and BUILT", self.run.__name__, self.__class__.__name__)
         
         loop = build_loop(**self.args['loop'])
         loop.build(_model=model, 
@@ -66,6 +66,8 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                    _archive=self._archive, 
                    **self.args
                 )
+        self.log_info(f"Loop is LOADED and BUILT", self.run.__name__, self.__class__.__name__)
+
         loop.run_loop()
         
         self.run_callbacks('on_runner_run_end')
