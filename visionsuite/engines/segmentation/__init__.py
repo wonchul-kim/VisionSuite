@@ -12,6 +12,10 @@ class Engine(BaseEngine):
         assert runner is not None, ValueError(f"runner is None")
         
         runner.train(cfgs_file, *args, **kwargs)
-                        
         
+    def test(self, cfgs_file, *args, **kwargs):
         
+        runner = RUNNERS.get("TestRunner", case_sensitive=True)(self.task)
+        assert runner is not None, ValueError(f"runner is None")
+
+        runner.test(cfgs_file, *args, **kwargs)
