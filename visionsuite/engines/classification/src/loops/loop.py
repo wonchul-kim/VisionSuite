@@ -1,5 +1,6 @@
 from visionsuite.engines.utils.bases import BaseLoop
 
+
 class Loop(BaseLoop):
     
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
@@ -41,7 +42,6 @@ class Loop(BaseLoop):
         else:
             self.log_warning(f"NO lr_scheduler", self.build.__name__, __class__.__name__)     
 
-        self._set_resume()
         
         if 'train' in self.args and 'trainer' in self.args['train'] and self.args['train']['trainer'] is not None:
             from visionsuite.engines.classification.src.trainers.build import build_trainer
@@ -69,4 +69,5 @@ class Loop(BaseLoop):
         else:
             self.log_warning(f"NO validator", self.build.__name__, __class__.__name__)
             
+        self._set_resume()
     
