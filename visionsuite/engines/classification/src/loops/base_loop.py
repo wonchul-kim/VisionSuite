@@ -125,9 +125,9 @@ class BaseLoop(BaseOOPModule):
         self.run_callbacks('on_loop_run_start')
     
     def _set_resume(self):
-        if self.args['resume']['use'] and self.args['train']['ckpt']:
-            assert osp.exists(self.args['train']['ckpt']), ValueError(f"There is no such checkpoint: {self.args['train']['ckpt']}")
-            ckpt = load_ckpt(self.args['train']['ckpt'])
+        if self.args['resume']['use']:
+            assert osp.exists(self.args['resume']['seed_model']), ValueError(f"There is no such checkpoint: {self.args['resume']['seed_model']}")
+            ckpt = load_ckpt(self.args['resume']['seed_model'])
             self.log_info(f"LOADED ckpt: {ckpt.keys()}", self._set_resume.__name__, __class__.__name__)
             
             self.model.model_without_ddp.load_state_dict(ckpt['model'], strict=True)

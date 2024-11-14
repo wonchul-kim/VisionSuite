@@ -53,7 +53,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.run_callbacks('on_validator_build_end')
         
     @abstractmethod
-    def val(self, epoch):
+    def run(self, epoch):
         self.epoch = epoch 
         if epoch%self.args['epoch'] == 0:
             self.run_callbacks('on_validator_epoch_start')
@@ -62,13 +62,13 @@ class BaseValidator(BaseOOPModule, Callbacks):
             confmat = ConfusionMatrix(len(self.label2index))
             header = "Val:"
             num_processed_samples = 0
-            self.log_info(f"START val epoch: {epoch}", self.val.__name__, __class__.__name__)
+            self.log_info(f"START val epoch: {epoch}", self.run.__name__, __class__.__name__)
             with torch.inference_mode():
                 for batch in self.metric_logger.log_every(self.dataloader, 100, header):
                     self.run_callbacks('on_validator_batch_start')
                     image, target = batch[0].to(self.device), batch[1].to(self.device)
-                    self.log_debug(f"- image: {image.shape} with device({self.device})", self.val.__name__, __class__.__name__)
-                    self.log_debug(f"- target: {target.shape} with device({self.device})", self.val.__name__, __class__.__name__)
+                    self.log_debug(f"- image: {image.shape} with device({self.device})", self.run.__name__, __class__.__name__)
+                    self.log_debug(f"- target: {target.shape} with device({self.device})", self.run.__name__, __class__.__name__)
                     output = self.model(image)
                     if not isinstance(output, torch.Tensor):
                         output = output["out"]

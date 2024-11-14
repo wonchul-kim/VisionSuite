@@ -1,5 +1,4 @@
-from visionsuite.engines.segmentation.src.trainers.build import build_trainer
-from visionsuite.engines.segmentation.src.validators.build import build_validator
+
 from visionsuite.engines.segmentation.utils.registry import LOOPS
 from visionsuite.engines.segmentation.src.loops.base_loop import BaseLoop
 from visionsuite.engines.utils.callbacks import Callbacks
@@ -15,35 +14,15 @@ class EpochBasedLoop(BaseLoop, Callbacks):
 
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(_model, _dataset, _archive=_archive, *args, **kwargs)
-        self.run_callbacks('on_loop_build_start')
-
-        self.trainer = build_trainer(**self.args['train']['trainer'])()
-        self.trainer.build(model=self.model, loss=self.loss, optimizer=self.optimizer, 
-                           lr_scheduler=self.lr_scheduler, dataloader=self.train_dataloader, 
-                           scaler=self.scaler, archive=self.archive,
-                           **self.args['train'],
-                           _logger=self.args['trainer'].get('logger', None))
-        self.log_info(f"BUILT trainer: {self.trainer}", self.build.__name__, __class__.__name__)
-        
-        self.validator = build_validator(**self.args['val']['validator'])()
-        self.validator.build(model=self.model, loss=self.loss, dataloader=self.val_dataloader,
-                             label2index=self.dataset.label2index, 
-                             device=self.args['train']['device'],
-                             archive=self.archive, **self.args['val'],
-                             _logger=self.args['validator'].get('logger', None))
-        
-        self.log_info(f"BUILT validator: {self.validator}", self.build.__name__, __class__.__name__)
         
         self.run_callbacks('on_loop_build_end')
         
-    def run_loop(self):
-        super().run_loop()
-        self.run_callbacks('on_loop_run_start')
-        for epoch in range(self.start_epoch, self.args['train']['epochs']):
+    def run(self):
+        super().run()
 
-            if self.args['distributed']['use']:
-                self.dataset.train_sampler.set_epoch(epoch)
-            self.trainer.train(epoch)
-            self.validator.val(epoch)
+        for epoch in range(self.start_epoch, self.epochs):
+            self.set_epoch_for_sampler(epoch)
+            for loop in self.loops:
+                loop.run(epoch)
             
         self.run_callbacks('on_loop_run_end')

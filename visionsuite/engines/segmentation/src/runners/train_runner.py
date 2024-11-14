@@ -70,7 +70,7 @@ class TrainRunner(BaseTrainRunner, Callbacks):
                 )
         self.log_info(f"Loop is LOADED and BUILT", self.run.__name__, __class__.__name__)
 
-        loop.run_loop()
+        loop.run()
         
         self.run_callbacks('on_runner_run_end')
 
