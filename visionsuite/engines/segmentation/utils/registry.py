@@ -12,6 +12,7 @@ from visionsuite.engines.utils.registry import SAMPLERS as ROOT_SAMPLERS
 from visionsuite.engines.utils.registry import FUNCTIONALS as ROOT_FUNCTIONALS
 from visionsuite.engines.utils.registry import TRAINERS as ROOT_TRAINERS
 from visionsuite.engines.utils.registry import VALIDATORS as ROOT_VALIDATORS
+from visionsuite.engines.utils.registry import TESTERS as ROOT_TESTERS
 
 from visionsuite.engines.utils.registry import Registry
 
@@ -80,4 +81,9 @@ TRAINERS = Registry('trainers', parent=ROOT_TRAINERS,
 VALIDATORS = Registry('validators', parent=ROOT_VALIDATORS, 
                    scope=scope,
                    locations=['visionsuite.engines.segmentation.src.validators']
+        )
+
+TESTERS = Registry('testers', parent=ROOT_TESTERS, 
+                   scope=scope,
+                   locations=['visionsuite.engines.segmentation.src.testers']
         )

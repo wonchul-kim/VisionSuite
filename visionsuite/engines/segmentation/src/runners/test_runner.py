@@ -40,7 +40,7 @@ class TestRunner(BaseTestRunner, Callbacks):
         )
         self.log_info(f"Model is LOADED and BUILT", self.run.__name__, __class__.__name__)
         
-        loop = build_loop(**self.args['loop'])
+        loop = build_loop(**self.args['test']['loop'])
         loop.build(_model=model, 
                    _dataset=dataset, 
                    _archive=self._archive, 
@@ -49,6 +49,6 @@ class TestRunner(BaseTestRunner, Callbacks):
                 )
         self.log_info(f"Loop is LOADED and BUILT", self.run.__name__, __class__.__name__)
 
-        # loop.run()
+        loop.run()
         
         self.run_callbacks('on_runner_run_end')

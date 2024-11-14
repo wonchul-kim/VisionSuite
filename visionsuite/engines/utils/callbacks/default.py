@@ -77,6 +77,30 @@ def on_validator_step_start(validator, *args, **kwargs): # iteration for a batch
 def on_validator_step_end(validator, *args, **kwargs): # iteration for a batch
     pass
 
+### Tester -------------------------------------
+def on_tester_build_start(tester, *args, **kwargs):
+    pass        
+     
+def on_tester_build_end(tester, *args, **kwargs):
+    pass 
+    
+def on_tester_start(tester, *args, **kwargs):
+    pass 
+
+def on_tester_end(tester, *args, **kwargs):
+    pass
+    
+def on_tester_batch_start(tester, *args, **kwargs):
+    pass
+
+def on_tester_batch_end(tester, *args, **kwargs):
+    pass
+
+def on_tester_step_start(tester, *args, **kwargs): # iteration for a batch
+    pass
+
+def on_tester_step_end(tester, *args, **kwargs): # iteration for a batch
+    pass
 
 default_callbacks = {
     ### Runner ---------------------------------------
@@ -110,6 +134,16 @@ default_callbacks = {
     "on_validator_batch_end": [on_validator_batch_end],
     "on_validator_step_start": [on_validator_step_start],
     "on_validator_step_end": [on_validator_step_end],
+    
+    ### Tester -----------------------------------------
+    "on_tester_build_start": [on_tester_build_start], 
+    "on_tester_build_end": [on_tester_build_end], 
+    "on_tester_start": [on_tester_start],
+    "on_tester_end": [on_tester_end],
+    "on_tester_batch_start": [on_tester_batch_start],
+    "on_tester_batch_end": [on_tester_batch_end],
+    "on_tester_step_start": [on_tester_step_start],
+    "on_tester_step_end": [on_tester_step_end],
 }
 
 

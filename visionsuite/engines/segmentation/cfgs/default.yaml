@@ -57,6 +57,10 @@ dataloader:
     batch_size: 4
     num_workers: 8
 
+  test:
+    batch_size: 4
+    num_workers: 8
+
 model: 
   type: TorchvisionModel
   case_sensitive: true
@@ -120,6 +124,9 @@ test:
       - SCRATCH
       - TEAR
       - STABBED
+  loop:
+    type: TestLoop
+    case_sensitive: true
 
 resume: 
   use: true

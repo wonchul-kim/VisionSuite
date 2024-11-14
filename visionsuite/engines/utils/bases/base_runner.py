@@ -71,7 +71,7 @@ class BaseRunner(Logger):
         self._archive.save_args(self.args)
         
         # logger
-        for key in ['runner', 'model', 'loop', 'trainer', 'validator', 'dataset']:
+        for key in ['runner', 'model', 'loop', 'trainer', 'validator', 'tester', 'dataset']:
             if key not in self.args:
                 self.args[key] = {'logger': {}}
             

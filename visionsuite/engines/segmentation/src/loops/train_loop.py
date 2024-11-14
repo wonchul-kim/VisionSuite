@@ -1,7 +1,7 @@
 from visionsuite.engines.utils.bases import BaseTrainLoop
 
 
-class Loop(BaseTrainLoop):
+class TrainLoop(BaseTrainLoop):
     
     def build(self, _model, _dataset, _archive=None, *args, **kwargs):
         super().build(_model=_model, _dataset=_dataset, _archive=_archive, *args, **kwargs)

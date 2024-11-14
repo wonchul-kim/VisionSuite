@@ -8,7 +8,7 @@ def build_dataloader(dataset, mode, **config):
         dataloader_params = get_params_from_obj(dataloader_obj)
         for key in dataloader_params.keys():
             if key == 'dataset' or key == 'sampler':
-                dataloader_params[key] = getattr(dataset, f'{mode}_{key}')
+                dataloader_params[key] = getattr(dataset, f'{mode}_{key}', dataset)
                 
             if key in config:
                 dataloader_params[key] = config[key]
