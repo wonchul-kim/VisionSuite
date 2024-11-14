@@ -1,13 +1,13 @@
 
 from visionsuite.engines.segmentation.utils.registry import LOOPS
-from visionsuite.engines.segmentation.src.loops.base_loop import BaseLoop
+from visionsuite.engines.segmentation.src.loops.loop import Loop
 from visionsuite.engines.utils.callbacks import Callbacks
 from .callbacks import callbacks
 
 @LOOPS.register()
-class EpochBasedLoop(BaseLoop, Callbacks):
+class EpochBasedLoop(Loop, Callbacks):
     def __init__(self, name="EpochBasedLoop"):
-        BaseLoop.__init__(self, name=name)
+        Loop.__init__(self, name=name)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)

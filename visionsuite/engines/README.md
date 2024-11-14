@@ -51,7 +51,7 @@
         - `run`: execute defined modules
 
 - `loop`: 
-    - `BaseLoop`: select and build `dataloader`, `loss`, `optimizer`, and `scheduler`
+    - `Loop`: select and build `dataloader`, `loss`, `optimizer`, and `scheduler`
     - According the **mode**, it will select and build `trainer`, `validator`, or `tester`
     
 
