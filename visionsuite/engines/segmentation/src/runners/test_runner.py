@@ -1,6 +1,7 @@
 from visionsuite.engines.segmentation.utils.registry import RUNNERS
 from visionsuite.engines.utils.bases import BaseTestRunner
 from visionsuite.engines.utils.callbacks import Callbacks
+from .callbacks import train_callbacks
 
 @RUNNERS.register()
 class TestRunner(BaseTestRunner, Callbacks):
@@ -8,6 +9,8 @@ class TestRunner(BaseTestRunner, Callbacks):
         BaseTestRunner.__init__(self, task)
         Callbacks.__init__(self)
         
+        self.add_callbacks(train_callbacks)
+
     def set_configs(self, *args, **kwargs):
         super().set_configs(mode='test', *args, **kwargs)
         
@@ -22,12 +25,5 @@ class TestRunner(BaseTestRunner, Callbacks):
         super().run()
                 
         self.run_callbacks('on_runner_run_start')
-        
-        if self.args['augment']['train']['backend'].lower() != "pil" and not self.args['augment']['train']['use_v2']:
-            # TODO: Support tensor backend in V1?
-            raise ValueError("Use --use-v2 if you want to use the tv_tensor or tensor backend.")
-        if self.args['augment']['train']['use_v2'] and self.args['dataset']['type'] != "coco":
-            raise ValueError("v2 is only support supported for coco dataset for now.")
-
         
         self.run_callbacks('on_test_run_end')

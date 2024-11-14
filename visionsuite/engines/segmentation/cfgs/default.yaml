@@ -74,7 +74,9 @@ augment:
   val:
     backend: PIL
     use_v2: False
-  
+  test:
+    backend: PIL
+    use_v2: False
 
 monitor:
   use: true
