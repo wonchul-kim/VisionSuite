@@ -4,6 +4,7 @@ ROOT = FILE.parent
 
 from abc import abstractmethod
 import os.path as osp
+import warnings 
 
 from visionsuite.engines.utils.helpers import yaml2dict, update_dict
 from visionsuite.engines.utils.torch_utils.utils import parse_device_ids, set_torch_deterministic, get_device
@@ -16,18 +17,25 @@ class BaseRunner(Logger):
     def __init__(self, task, name=None):
         super().__init__(name=name)
         self._task = task
+        self._mode = None
         self.pipelines = {}
         
     @property 
     def task(self):
         return self._task 
-        
+    
+    @property 
+    def mode(self):
+        return self._mode 
+    
     @abstractmethod
     def set_configs(self, mode, cfgs_file=None, default_cfgs_file=None, *args, **kwargs):
-
-        assert osp.exists(cfgs_file), ValueError(f'There is no such cfgs file: {cfgs_file}')
-
-        cfgs = yaml2dict(cfgs_file)
+        self._mode = mode
+        if cfgs_file and osp.exists(cfgs_file):
+            cfgs = yaml2dict(cfgs_file)
+        else:
+            cfgs = {}
+            warnings.warn(f'There is no such cfgs file: {cfgs_file}')
 
         def _parse_args(args):
             # device_ids
@@ -46,7 +54,6 @@ class BaseRunner(Logger):
 
     @abstractmethod
     def set_variables(self):
-        
         # logger
         for key in ['archive']:
             if key not in self.args:
@@ -59,7 +66,7 @@ class BaseRunner(Logger):
                     if key2 not in self.args[key]['logger']:
                         self.args[key]['logger'][key2] = val2
         
-        self._archive = Archive()
+        self._archive = Archive(self.mode)
         self._archive.build(**self.args['archive'])
         self._archive.save_args(self.args)
         
@@ -84,14 +91,14 @@ class BaseRunner(Logger):
         
         self.log_info(f"Args: {self.args}", self.set_variables.__name__, __class__.__name__)
         
-        init_distributed_mode(self.args)
+        init_distributed_mode(self.args, self._mode)
         self.log_info(f"Initialize distribution mode: {self.args['distributed']['use']}", self.set_variables.__name__, __class__.__name__)
         
-        set_torch_deterministic(self.args['train']['use_deterministic_algorithms'])
-        self.log_info(f"Set torch deterministic: {self.args['train']['use_deterministic_algorithms']}", self.set_variables.__name__, __class__.__name__)
+        set_torch_deterministic(self.args[self._mode]['use_deterministic_algorithms'])
+        self.log_info(f"Set torch deterministic: {self.args[self._mode]['use_deterministic_algorithms']}", self.set_variables.__name__, __class__.__name__)
 
-        self.args['train']['device'] = get_device(self.args['train']['device'])
-        self.log_info(f"Set train devices: {self.args['train']['device']}", self.set_variables.__name__, __class__.__name__)
+        self.args[self._mode]['device'] = get_device(self.args[self._mode]['device'])
+        self.log_info(f"Set devices: {self.args[self._mode]['device']}", self.set_variables.__name__, __class__.__name__)
         
         
     @abstractmethod

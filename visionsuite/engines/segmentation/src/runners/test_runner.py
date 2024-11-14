@@ -9,7 +9,7 @@ class TestRunner(BaseTestRunner, Callbacks):
         Callbacks.__init__(self)
         
     def set_configs(self, *args, **kwargs):
-        super().set_configs(*args, **kwargs)
+        super().set_configs(mode='test', *args, **kwargs)
         
         self.run_callbacks('on_runner_set_configs')
         
@@ -22,8 +22,6 @@ class TestRunner(BaseTestRunner, Callbacks):
         super().run()
                 
         self.run_callbacks('on_runner_run_start')
-
-        import os.path as osp 
         
         if self.args['augment']['train']['backend'].lower() != "pil" and not self.args['augment']['train']['use_v2']:
             # TODO: Support tensor backend in V1?

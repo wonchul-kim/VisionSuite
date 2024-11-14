@@ -86,9 +86,7 @@ train:
   device_ids: 0
   device: cuda
   use_deterministic_algorithms: False
-
   sync_bn: true
-
   epochs: 150
   print_freq: 10
   resume: False
@@ -101,6 +99,20 @@ val:
     type: BaseValidator
     case_sensitive: true
   epoch: 1
+
+test: 
+  tester:
+    type: BaseTester
+    case_sensitive: true 
+  device_ids: 0
+  device: cuda
+  use_deterministic_algorithms: True
+  sync_bn: true
+  print_freq: 10
+
+  input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/val
+  output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/test
+  seed_model: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/2024_11_12_18_46_21/weights/last.pth
 
 resume: 
   use: true
@@ -132,7 +144,7 @@ archive:
     save_freq_epoch: 10
 
 logger:
-  log_stream_level: ERROR
-  log_file_level: ERROR
+  log_stream_level: DEBUG
+  log_file_level: DEBUG
 
 

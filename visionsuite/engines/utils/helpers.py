@@ -32,7 +32,7 @@ def get_cache_path(filepath):
     cache_path = os.path.expanduser(cache_path)
     return cache_path
 
-def create_output_dir(output_dir, make_dirs=False):
+def create_output_dir(output_dir, mode, make_dirs=False):
     now = datetime.datetime.now()
     year = now.year 
     month = now.month
@@ -41,7 +41,7 @@ def create_output_dir(output_dir, make_dirs=False):
     minute = now.minute
     second = now.second
     
-    output_dir = osp.join(output_dir, f'{year}_{month}_{day}_{hour}_{minute}_{second}')
+    output_dir = osp.join(output_dir, f'{year}_{month}_{day}_{hour}_{minute}_{second}', mode)
     mkdir(output_dir, make_dirs=make_dirs)
     
     return output_dir

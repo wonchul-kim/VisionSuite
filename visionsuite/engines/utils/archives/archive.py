@@ -6,15 +6,27 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
 
 class Archive(BaseOOPModule):
-    def __init__(self, output_dir=None):
+    _train_dirs = ['val', 'cfgs', 'logs', 'weights']
+    _test_dirs = ['cfgs', 'logs', 'vis']
+
+    def __init__(self, mode, output_dir=None):
         super().__init__(__class__.__name__)
         self.args = None
+        self._mode = mode 
         self._output_dir = output_dir
         
+    @property 
+    def mode(self):
+        return self._mode 
+            
+    @property
+    def output_dir(self):
+        return self._output_dir
+    
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
-        
-        self._output_dir = create_output_dir(self.args['output_dir'], make_dirs=True)
+
+        self._output_dir = create_output_dir(self.args['output_dir'], mode=self._mode, make_dirs=True)
         assert osp.exists(self._output_dir), RuntimeError(f"Output dir ({self._output_dir}) has not been created")
         
         self.create_directories()
@@ -23,10 +35,6 @@ class Archive(BaseOOPModule):
                         log_dir=self.logs_dir)        
         self._load()
         
-    @property
-    def output_dir(self):
-        return self._output_dir
-    
     @BaseOOPModule.track_status
     def _load(self):
         self._load_monitor()
@@ -51,7 +59,7 @@ class Archive(BaseOOPModule):
     
     @BaseOOPModule.track_status
     def create_directories(self):
-        for directory in ['val', 'cfgs', 'logs', 'weights']:
+        for directory in getattr(self, f'_{self._mode}_dirs'):
             mkdir(osp.join(self._output_dir, directory))
             setattr(self, directory + '_dir', osp.join(self._output_dir, directory))    
     

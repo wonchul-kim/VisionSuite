@@ -44,8 +44,8 @@ def is_main_process():
     return get_rank() == 0
 
 
-def init_distributed_mode(args):
-    args['distributed']['gpu'] = args['train']['device_ids'][0]
+def init_distributed_mode(args, mode):
+    args['distributed']['gpu'] = args[mode]['device_ids'][0]
     
     if "RANK" in os.environ and "WORLD_SIZE" in os.environ:
         print(">>> case 1")
