@@ -23,7 +23,7 @@ class BaseRunner(Logger):
         return self._task 
         
     @abstractmethod
-    def set_configs(self, cfgs_file=None, default_cfgs_file=None, *args, **kwargs):
+    def set_configs(self, mode, cfgs_file=None, default_cfgs_file=None, *args, **kwargs):
 
         assert osp.exists(cfgs_file), ValueError(f'There is no such cfgs file: {cfgs_file}')
 
@@ -31,10 +31,10 @@ class BaseRunner(Logger):
 
         def _parse_args(args):
             # device_ids
-            args['train']['device_ids'] = parse_device_ids(args['train']['device_ids'])
+            args[mode]['device_ids'] = parse_device_ids(args[mode]['device_ids'])
                         
         if default_cfgs_file is None:
-            default_cfgs_file=ROOT.parents[1] / self._task / 'cfgs/default.yaml'
+            default_cfgs_file=ROOT.parents[1] / self._task / f'cfgs/default.yaml'
         default_cfgs = yaml2dict(default_cfgs_file)
 
         update_dict(default_cfgs, cfgs)  

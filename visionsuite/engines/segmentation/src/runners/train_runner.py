@@ -27,7 +27,7 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         self.add_callbacks(callbacks)
         
     def set_configs(self, *args, **kwargs):
-        super().set_configs(*args, **kwargs)
+        super().set_configs(mode='train', *args, **kwargs)
         
         self.run_callbacks('on_runner_set_configs')
         
