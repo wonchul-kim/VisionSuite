@@ -8,8 +8,8 @@ from .callbacks import callbacks
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner, Callbacks):
-    def __init__(self, task=""):
-        BaseTrainRunner.__init__(self, task)
+    def __init__(self, task="classification", name="TrainRunner"):
+        BaseTrainRunner.__init__(self, name=name, task=task)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)
@@ -31,21 +31,27 @@ class TrainRunner(BaseTrainRunner, Callbacks):
 
         # TODO: Define transform
         dataset = build_dataset(**self.args['dataset'], transform=None)
-        dataset.build(**self.args['dataset'], distributed=self.args['distributed'])
-        
+        dataset.build(**self.args['dataset'], distributed=self.args['distributed'], _logger=self.args['dataset'].get('logger', None))
+        self.log_info(f"Dataset is LOADED and BUILT", self.run.__name__, __class__.__name__)
+
         model = build_model(**self.args['model'])
         model.build(**self.args['model'], 
                     num_classes=dataset.num_classes, 
                     train=self.args['train'], 
-                    distributed=self.args['distributed']['use']
+                    distributed=self.args['distributed']['use'],
+                    _logger=self.args['model'].get('logger', None)
                 )
+        self.log_info(f"Model is LOADED and BUILT", self.run.__name__, __class__.__name__)
         
         loop = build_loop(**self.args['loop'])
         loop.build(_model=model, 
                    _dataset=dataset, 
                    _archive=self._archive, 
-                   **self.args
+                   **self.args,
+                   _logger=self.args['loop'].get('logger', None)
                 )
+        self.log_info(f"Loop is LOADED and BUILT", self.run.__name__, __class__.__name__)
+        
         loop.run_loop()
         
         self.run_callbacks('on_runner_run_end')

@@ -13,8 +13,8 @@ class TorchvisionModel(BaseOOPModule):
     """
     - weights can be referred by https://pytorch.org/vision/main/models.html
     """
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name="TorchvisionModel"):
+        super().__init__(name=name)
         self.args = None
         self._device = 'cpu'
         self._model_without_ddp = None
@@ -48,14 +48,15 @@ class TorchvisionModel(BaseOOPModule):
             if self.args['weights']:
                 self._model = torchvision.models.get_model(name=self.args['model_name'] + self.args['backbone'], 
                                                        weights=self.args['weights'])
-                print(f"LOADED weights: {self.args['weights']}")
+                self.log_info(f"LOADED weights: {self.args['weights']}", self.load_model.__name__, __class__.__name__)
+                
                 self._model.fc = torch.nn.Linear(self._model.fc.in_features, self.args['num_classes'])
-                print(f"CHANGED fc for num_classes({self.args['num_classes']})")
+                self.log_info(f"CHANGED fc for num_classes({self.args['num_classes']})", self.load_model.__name__, __class__.__name__)
             else:
                 self._model = torchvision.models.get_model(name=self.args['model_name'] + self.args['backbone'], 
                                                        num_classes=self.args['num_classes'])
                 
-            print(f"LOADED model: {self.args['model_name']}")
+            self.log_info(f"LOADED model: {self.args['model_name']}", self.load_model.__name__, __class__.__name__)
         except Exception as error:
             raise RuntimeError(f"{error}: There has been error when loading torchvision model: {self.args['type']} with config({self.args}): ")
            
@@ -77,17 +78,15 @@ class TorchvisionModel(BaseOOPModule):
         if self.args['distributed']:
             assert_key_dict(self.args['distributed'], 'gpu')
             self._model = torch.nn.parallel.DistributedDataParallel(self._model, device_ids=[self.args['distributed']['gpu']])
-            print(f"Distributed Data Parallel is set")
+            self.log_info(f"Distributed Data Parallel is set", self.set_dist.__name__, __class__.__name__)
             self._model_without_ddp = self.model.module
         else:
             assert_key_dict(self.args['train'], 'device_ids')
             if len(self.args['train']['device_ids']) > 1:
                 self._model = torch.nn.parallel.DataParallel(self._model, device_ids=[self.args['train']['device_ids']])
                 self._model_without_ddp = self.model.module
-                print(f"Data Parallel is set")
+                self.log_info(f"Data Parallel is set", self.set_dist.__name__, __class__.__name__)
                 
-                
-
     @BaseOOPModule.track_status
     def set_ema(self):
         assert_key_dict(self.args, 'ema')
@@ -110,4 +109,4 @@ class TorchvisionModel(BaseOOPModule):
                                                  device=self.args['train']['device'], 
                                                  decay=1.0 - alpha)
             
-        
+            self.log_info(f"SET EMA", self.set_ema.__name__, __class__.__name__)

@@ -20,8 +20,8 @@ def denormalize(x, mean=MEAN, std=STD):
 
 @RUNNERS.register()
 class TrainRunner(BaseTrainRunner, Callbacks):
-    def __init__(self, task=""):
-        BaseTrainRunner.__init__(self, task)
+    def __init__(self, task="", name="TrainRunner"):
+        BaseTrainRunner.__init__(self, task=task, name=name)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)

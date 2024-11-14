@@ -78,7 +78,6 @@ class BaseLoop(BaseOOPModule):
     @abstractmethod
     def run_loop(self):
         self.log_info(f"START loop", self._set_resume.__name__, __class__.__name__)  
-        pass
     
     def _set_resume(self):
         if self.args['resume']['use']:

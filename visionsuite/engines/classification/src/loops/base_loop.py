@@ -13,8 +13,8 @@ class BaseLoop(BaseOOPModule):
     required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset',
                            'trainer', 'start_epoch']
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, name=None):
+        super().__init__(name=name)
         self.args = None 
         
         self.loop = None
@@ -51,12 +51,20 @@ class BaseLoop(BaseOOPModule):
         
         self.train_dataloader = build_dataloader(dataset=self.dataset, mode='train', 
                                                  **self.args['dataloader'], augment=self.args['augment'])
+        self.log_info(f"BUILT train_dataloader: {self.train_dataloader}", self.build.__name__, __class__.__name__)
+        
         self.val_dataloader = build_dataloader(dataset=self.dataset, mode='val', 
                                                  **self.args['dataloader'], augment=self.args['augment'])
+        self.log_info(f"BUILT val_dataloader: {self.val_dataloader}", self.build.__name__, __class__.__name__)    
         
         self.loss = build_loss(**self.args['loss'])
+        self.log_info(f"BUILT loss: {self.loss}", self.build.__name__, __class__.__name__)      
+        
         self.optimizer = build_optimizer(model=self.model.model, **self.args['optimizer'])
+        self.log_info(f"BUILT optimizer: {self.optimizer}", self.build.__name__, __class__.__name__)    
+        
         self.lr_scheduler = build_scheduler(optimizer=self.optimizer, epochs=self.args['train']['epochs'], **self.args['scheduler'])
+        self.log_info(f"BUILT lr_scheduler: {self.lr_scheduler}", self.build.__name__, __class__.__name__)     
         
         self._set_resume()
         self.loop = LOOPS.get(self.args['loop']['type'])
@@ -64,14 +72,16 @@ class BaseLoop(BaseOOPModule):
     @BaseOOPModule.track_status
     @abstractmethod
     def run_loop(self):
-        pass
+        self.log_info(f"START loop", self._set_resume.__name__, __class__.__name__)  
     
     def _set_resume(self):
         if self.args['resume']['use'] and self.args['train']['ckpt']:
             assert osp.exists(self.args['train']['ckpt']), ValueError(f"There is no such checkpoint: {self.args['train']['ckpt']}")
             ckpt = load_ckpt(self.args['train']['ckpt'])
+            self.log_info(f"LOADED ckpt: {ckpt.keys()}", self._set_resume.__name__, __class__.__name__)
             
             self.model.model_without_ddp.load_state_dict(ckpt['model'], strict=True)
+            self.log_info(f"LOADED seed_model weights", self._set_resume.__name__, __class__.__name__)
             
             attributes = ['optimizer', 'lr_scheduler', 'epoch']
             if self.args['train']['amp']:
@@ -86,7 +96,8 @@ class BaseLoop(BaseOOPModule):
                             getattr(self, attribute).load_state_dict(ckpt[attribute])
                     else:
                         raise AttributeError(f"There is no {attribute} in ckpt({self.args['train']['ckpt']})")
+            self.log_info(f"SET resume lr_scheduler: start_epoch is {self._start_epoch}", self._set_resume.__name__, __class__.__name__) 
                     
         else:
             self._start_epoch = 1
-            
+            self.log_info(f"NO resume lr_scheduler: start_epoch is {self._start_epoch}", self._set_resume.__name__, __class__.__name__)   

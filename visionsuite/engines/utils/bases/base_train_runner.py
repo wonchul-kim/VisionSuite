@@ -13,8 +13,8 @@ from visionsuite.engines.utils.loggers import Logger
 
             
 class BaseTrainRunner(Logger):
-    def __init__(self, task):
-        super().__init__("TrainRunner")
+    def __init__(self, task, name=None):
+        super().__init__(name=name)
         self._task = task
         self.pipelines = {}
         

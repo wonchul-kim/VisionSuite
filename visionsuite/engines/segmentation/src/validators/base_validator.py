@@ -102,7 +102,6 @@ class BaseValidator(BaseOOPModule, Callbacks):
 
     def _update_logger(self, output, target, batch_size):
         if self.metric_logger is not None:
-            pass
             # loss = self.loss(output, target)
             # acc1, acc5 = get_accuracies(output, target, topk=(1, self.topk))
             # # FIXME need to take into account that the datasets
@@ -111,3 +110,4 @@ class BaseValidator(BaseOOPModule, Callbacks):
             # self.metric_logger.meters["acc1"].update(acc1.item(), n=batch_size)
             # self.metric_logger.meters["acc5"].update(acc5.item(), n=batch_size)
             
+            self.log_debug(f"- Updated metric_logger", self._update_logger.__name__, __class__.__name__)

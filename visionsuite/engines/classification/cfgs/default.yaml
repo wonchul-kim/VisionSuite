@@ -133,3 +133,6 @@ archive:
   val:
     save_freq_epoch: 10
 
+logger:
+  log_stream_level: INFO
+  log_file_level: INFO

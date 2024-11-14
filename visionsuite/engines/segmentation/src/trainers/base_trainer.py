@@ -44,7 +44,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.log_info(f"SET MetricLogger", self.build.__name__, __class__.__name__)
         
         self.gpu_logger = GPULogger(self.args['device_ids'])
-        self.log_info(f"SET GPULogger", self.build.__name__, __class__.__name__)
+        self.log_info(f"SET GPULogger with devices({self.args['device_ids']})", self.build.__name__, __class__.__name__)
         
         self.run_callbacks('on_trainer_build_end')
 
@@ -91,6 +91,8 @@ class BaseTrainer(BaseOOPModule, Callbacks):
             self.metric_logger.meters["img/s"].update(batch_size / (time.time() - start_time))
             self.metric_logger.meters['gpu'].update((torch.cuda.memory_allocated() + torch.cuda.memory_reserved()) / 1024**2)
         
+            self.log_debug(f"- Updated metric_logger", self._update_logger.__name__, __class__.__name__)
         if self.gpu_logger is not None:
             self.gpu_logger.update()
         
+            self.log_debug(f"- Updated gpu_logger", self._update_logger.__name__, __class__.__name__)

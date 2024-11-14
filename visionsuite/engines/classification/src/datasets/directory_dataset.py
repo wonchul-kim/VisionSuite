@@ -6,7 +6,7 @@ from visionsuite.engines.classification.src.datasets.base_dataset import BaseDat
 
 @DATASETS.register()
 class DirectoryDataset(BaseDataset):
-    def __init__(self, transform=None):
+    def __init__(self, name="DirectoryDataset", transform=None):
         if transform is None:
             mean=(0.485, 0.456, 0.406)
             std=(0.229, 0.224, 0.225)
@@ -16,19 +16,28 @@ class DirectoryDataset(BaseDataset):
                                             [transforms.ToTensor(),
                                             transforms.Normalize(mean=mean, std=std)])
             
-        super().__init__(transform=transform)
+        super().__init__(name=name, transform=transform)
 
     def load_dataset(self, train_folder_name='train', val_folder_name='val'):
         super().load_dataset()
         
         self.train_dataset =  DATASETS.get(self.args['load_dataset']['type'], case_sensitive=self.args['load_dataset']['case_sensitive'])(osp.join(self.args['input_dir'], train_folder_name), self._transform)
+        self.log_info(f"LOADED train_dataset: {self.args['load_dataset']['type']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- input_dir: {self.args['input_dir']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- number of images: {len(self.train_dataset)}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- transforms: TODO", self.build.__name__, __class__.__name__)
+        
         self.val_dataset =  DATASETS.get(self.args['load_dataset']['type'], case_sensitive=self.args['load_dataset']['case_sensitive'])(osp.join(self.args['input_dir'], val_folder_name), self._transform)
-
+        self.log_info(f"LOADED val_dataset: {self.args['load_dataset']['type']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- input_dir: {self.args['input_dir']}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- number of images:: {len(self.val_dataset)}", self.build.__name__, __class__.__name__)
+        self.log_info(f"- transforms: TODO", self.build.__name__, __class__.__name__)
+        
         self.label2index = {index: label for index, label in enumerate(self.train_dataset.classes)}
         self.index2label = {label: index for index, label in enumerate(self.train_dataset.classes)}
         self.classes = self.train_dataset.classes
         self.num_classes = len(self.train_dataset.classes)
-        print(f"label2index: {self.label2index}")
+        self.log_info(f"- label2index: {self.label2index}", self.load_dataset.__name__, __class__.__name__)
 
 # def load_data(traindir, valdir, transform, args):
 #     import os

@@ -7,8 +7,8 @@ from .callbacks import callbacks
 
 @LOOPS.register()
 class EpochBasedLoop(BaseLoop, Callbacks):
-    def __init__(self):
-        BaseLoop.__init__(self)
+    def __init__(self, name="EpochBasedLoop"):
+        BaseLoop.__init__(self, name=name)
         Callbacks.__init__(self)
         
         self.add_callbacks(callbacks)
@@ -21,12 +21,17 @@ class EpochBasedLoop(BaseLoop, Callbacks):
         self.trainer.build(model=self.model, loss=self.loss, optimizer=self.optimizer, 
                            lr_scheduler=self.lr_scheduler, dataloader=self.train_dataloader, 
                            scaler=self.scaler, archive=self.archive,
-                           **self.args['train'])
+                           **self.args['train'],
+                           _logger=self.args['trainer'].get('logger', None))
+        self.log_info(f"BUILT trainer: {self.trainer}", self.build.__name__, __class__.__name__)
+        
         self.validator = build_validator(**self.args['val']['validator'])()
         self.validator.build(model=self.model, loss=self.loss, dataloader=self.val_dataloader,
                              label2index=self.dataset.label2index, 
                              device=self.args['train']['device'], topk=self.args['train']['topk'],
-                             archive=self.archive, **self.args['val'])
+                             archive=self.archive, **self.args['val'],
+                             _logger=self.args['validator'].get('logger', None))
+        self.log_info(f"BUILT validator: {self.validator}", self.build.__name__, __class__.__name__)
         
         self.run_callbacks('on_loop_build_end')
         
