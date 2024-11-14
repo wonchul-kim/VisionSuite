@@ -58,9 +58,6 @@ class TrainRunner(BaseTrainRunner, Callbacks):
         self.run_callbacks('on_runner_run_end')
 
         
-        # self.args['start_epoch'] = 1
-        # monitor = Monitor()
-        # monitor.set(output_dir=self.args['output_dir'], fn='monitor')
         # for epoch in range(self.args['start_epoch'], self.args['epochs']):
         #     if self.args['distributed']['use']:
         #         train_sampler.set_epoch(epoch)

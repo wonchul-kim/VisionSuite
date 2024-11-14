@@ -1,12 +1,22 @@
 
 
 from visionsuite.engines.segmentation.utils.registry import DATASETS
+from visionsuite.engines.utils.helpers import get_params_from_obj
 
 def build_dataset(transform=None, **config):
-    dataset = DATASETS.get(config['type'], case_sensitive=config['case_sensitive'])
-    dataset(transform=transform)
+    dataset_obj = DATASETS.get(config['type'], case_sensitive=config['case_sensitive'])
+    dataset_params = get_params_from_obj(dataset_obj)
+    for key in dataset_params.keys():
+        if key in config:
+            dataset_params[key] = config[key]
+            
+        if key == 'transform':
+            dataset_params[key] = transform
     
-    return dataset()    
+    dataset = dataset_obj(**dataset_params)
+    
+    return dataset
+    
     
     
 # from visionsuite.engines.segmentation.src.datasets.coco_utils import get_coco

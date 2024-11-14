@@ -5,7 +5,7 @@ from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 
 @DATASETS.register()
 class BaseDataset(BaseOOPModule):
-    def __init__(self, name=None, transform=None):
+    def __init__(self, name=None, transform=None, mode='train'):
         super().__init__(name=name)
         self.args = None
         
@@ -25,10 +25,6 @@ class BaseDataset(BaseOOPModule):
     def transform(self):
         return self._transform 
     
-    @transform.setter
-    def transform(self, val):
-        self._transform = val
-        
     def build(self, load=True, *args, **kwargs):
         super().build(*args, **kwargs)
         
