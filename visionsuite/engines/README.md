@@ -44,6 +44,8 @@
 
 ## Running process
 
+- `engine`: select and build `runner` based on **task** such as **classification** and **segmentation**
+
 - `runner`: determine one of **mode** including **train**, **test**, and **export** 
     - `BaseTrainRunner`: select and build `dataset`, `model`, and `loop` according to the **task**
         - `set_configs`: parse `yaml` file
