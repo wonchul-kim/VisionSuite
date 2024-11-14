@@ -51,7 +51,7 @@ class BaseTrainer(BaseOOPModule, Callbacks):
         self.run_callbacks('on_trainer_build_end')
 
     @abstractmethod
-    def train(self, epoch):
+    def run(self, epoch):
         self.run_callbacks('on_trainer_epoch_start')
         self.epoch = epoch
         self.model.model.train()
@@ -60,17 +60,17 @@ class BaseTrainer(BaseOOPModule, Callbacks):
 
         header = f"Epoch: [{epoch}]"
         start_time_epoch = time.time()
-        self.log_info(f"START train epoch: {epoch}", self.train.__name__, __class__.__name__)
+        self.log_info(f"START train epoch: {epoch}", self.run.__name__, __class__.__name__)
         for step, (image, target) in enumerate(self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header)):
             self.run_callbacks('on_trainer_batch_start')
             start_time = time.time()
             image, target = image.to(self.args['device']), target.to(self.args['device'])
-            self.log_debug(f"- image: {image.shape} with device({self.args['device']})", self.train.__name__, __class__.__name__)
-            self.log_debug(f"- target: {target.shape} with device({self.args['device']})", self.train.__name__, __class__.__name__)
+            self.log_debug(f"- image: {image.shape} with device({self.args['device']})", self.run.__name__, __class__.__name__)
+            self.log_debug(f"- target: {target.shape} with device({self.args['device']})", self.run.__name__, __class__.__name__)
             with torch.cuda.amp.autocast(enabled=self.scaler is not None):
                 output = self.model.model(image)
                 loss = self.loss(output, target)
-                self.log_debug(f"- loss: {loss}", self.train.__name__, __class__.__name__)
+                self.log_debug(f"- loss: {loss}", self.run.__name__, __class__.__name__)
                 
             self._backward(loss)
             self._reset_ema_buffer(epoch, step)

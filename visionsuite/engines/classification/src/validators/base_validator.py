@@ -47,7 +47,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
         self.run_callbacks('on_validator_build_end')
         
     @abstractmethod
-    def val(self, epoch):
+    def run(self, epoch):
         self.epoch = epoch
         if epoch%self.args['epoch'] == 0:
             self.model.eval()
@@ -55,14 +55,14 @@ class BaseValidator(BaseOOPModule, Callbacks):
             num_processed_samples = 0
             start_time_epoch = 0
             self.run_callbacks('on_validator_epoch_start')
-            self.log_info(f"START val epoch: {epoch}", self.val.__name__, __class__.__name__)
+            self.log_info(f"START val epoch: {epoch}", self.run.__name__, __class__.__name__)
             with torch.inference_mode():
                 for image, target in self.metric_logger.log_every(self.dataloader, self.print_freq, header):
                     self.run_callbacks('on_validator_batch_start')
                     image = image.to(self.device, non_blocking=True)
                     target = target.to(self.device, non_blocking=True)
-                    self.log_debug(f"- image: {image.shape} with device({self.device})", self.val.__name__, __class__.__name__)
-                    self.log_debug(f"- target: {target.shape} with device({self.device})", self.val.__name__, __class__.__name__)
+                    self.log_debug(f"- image: {image.shape} with device({self.device})", self.run.__name__, __class__.__name__)
+                    self.log_debug(f"- target: {target.shape} with device({self.device})", self.run.__name__, __class__.__name__)
                     output = self.model(image)
 
                     self._update_logger(output, target, batch_size=image.shape[0])
