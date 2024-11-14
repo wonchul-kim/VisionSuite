@@ -4,7 +4,7 @@ from abc import abstractmethod
 from visionsuite.engines.utils.bases.base_oop_module import BaseOOPModule
 from visionsuite.engines.utils.torch_utils.utils import load_ckpt
 
-class BaseLoop(BaseOOPModule):
+class BaseTrainLoop(BaseOOPModule):
     
     required_attributes = ['model', 'train_dataloader', 'lr_scheduler', 'loss', 'optimizer', 'dataset',
                            'loops', 'start_epoch', 'epochs']

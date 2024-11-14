@@ -3,7 +3,7 @@ from .base_train_runner import BaseTrainRunner
 from .base_test_runner import BaseTestRunner
 from .base_oop_module import BaseOOPModule
 from .base_results import BaseResults
-from .base_loop import BaseLoop
+from .base_train_loop import BaseTrainLoop
 from .base_runner import BaseRunner
 
-__all__ = ['BaseEngine', 'BaseTrainRunner', 'BaseTestRunner', 'BaseOOPModule', 'BaseResults', 'BaseLoop', 'BaseRunner']
+__all__ = ['BaseEngine', 'BaseTrainRunner', 'BaseTestRunner', 'BaseOOPModule', 'BaseResults', 'BaseTrainLoop', 'BaseRunner']
