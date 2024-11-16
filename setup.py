@@ -35,8 +35,7 @@ try:
         package_data={
             '': ['*.yaml', '*.json'], },
         include_package_data=True,
-        install_requires=["nvidia-ml-py3"],
-        install_requires=parse_requirements(PARENT / 'requirements.txt'),
+        install_requires=parse_requirements(PARENT / 'requirements.txt') + ["nvidia-ml-py3"],
     )
 except:
     setup(
@@ -51,6 +50,6 @@ except:
         package_data={
             '': ['*.yaml', '*.json'], },
         include_package_data=True,
-        install_requires=["nvidia-ml-py3"],
-        install_requires=parse_requirements(PARENT / 'requirements.txt'),
+        # install_requires=["nvidia-ml-py3"],
+        install_requires=parse_requirements(PARENT / 'requirements.txt') + ["nvidia-ml-py3"],
     )

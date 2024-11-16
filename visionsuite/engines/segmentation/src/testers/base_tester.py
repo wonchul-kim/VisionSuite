@@ -54,6 +54,11 @@ class BaseTester(BaseOOPModule, Callbacks):
         self.metric_logger.add_meter("lr", SmoothedValue(window_size=1, fmt="{value}"))
         header = f"Epoch: [{epoch}]"
         self.log_info(f"START test epoch: {epoch}", self.run.__name__, __class__.__name__)
+        
+        for batch in self.dataloader:
+            print(batch)        
+        
+        
         for batch in self.metric_logger.log_every(self.dataloader, self.args['print_freq'], header):
             self.run_callbacks('on_tester_batch_start')
 

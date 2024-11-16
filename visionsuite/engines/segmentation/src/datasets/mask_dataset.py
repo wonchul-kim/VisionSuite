@@ -75,9 +75,9 @@ class MaskDatasetWrapper(BaseDataset):
         
 @DATASETS.register()
 class MaskDataset(torch.utils.data.Dataset):
-    def __init__(self, input_dir, transforms=None, img_exts=['png', 'bmp']):
+    def __init__(self, input_dir, transform=None, img_exts=['png', 'bmp']):
         self.input_dir = input_dir
-        self.transforms = transforms
+        self.transform = transform
 
         self.img_files = []
         for img_ext in img_exts:
@@ -88,6 +88,7 @@ class MaskDataset(torch.utils.data.Dataset):
         return len(self.img_files)
 
     def __getitem__(self, idx): 
+        print(idx)
         img_file = self.img_files[idx]
         fname = osp.split(osp.splitext(img_file)[0])[-1]
 
@@ -97,8 +98,8 @@ class MaskDataset(torch.utils.data.Dataset):
         image = Image.open(img_file)
         mask = Image.open(mask_file)        
         
-        if self.transforms is not None:
-            image, mask = self.transforms(image, mask)
+        if self.transform is not None:
+            image, mask = self.transform(image, mask)
 
         return image, mask, fname
     

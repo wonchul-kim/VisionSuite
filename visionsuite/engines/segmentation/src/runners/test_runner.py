@@ -26,9 +26,11 @@ class TestRunner(BaseTestRunner, Callbacks):
     
     def run(self):
         super().run()
-                
+        
+        from visionsuite.engines.segmentation.src.datasets.mask_dataset import get_transform
+        transform = get_transform(True, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False})
         self.run_callbacks('on_runner_run_start')
-        dataset = build_dataset(**self.args['test']['dataset'], transform=None)
+        dataset = build_dataset(**self.args['test']['dataset'], transform=transform)
         self.log_info(f"Dataset is LOADED and BUILT", self.run.__name__, __class__.__name__)
         
         model = build_model(**self.args['model'])

@@ -105,8 +105,8 @@ def split_dataset(input_dir, output_dir, image_formats, ratio, figs=True):
 
                 
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_patch_labelme_dataset'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_patch_labelme_dataset'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/ALL/INNER/2411105/data'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/ALL/INNER/2411105/split_dataset'
     image_formats = ['bmp']
     ratio = 0.1
     figs = True

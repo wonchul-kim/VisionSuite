@@ -8,6 +8,9 @@ class TestLoop(BaseTestLoop):
         super().build(_model=_model, _dataset=_dataset, _archive=_archive, *args, **kwargs)
         self.run_callbacks('on_loop_build_start')
 
+
+        
+
         if 'dataloader' in self.args and self.args['dataloader'] is not None:
             from visionsuite.engines.segmentation.src.dataloaders.build import build_dataloader
             self.test_dataloader = build_dataloader(dataset=self.dataset, mode='test', 
