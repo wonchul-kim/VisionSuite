@@ -12,15 +12,15 @@ import os
 import uuid
 from pathlib import Path
 
-import main_pretrain as trainer
+import visionsuite.cores.masked_autoencoder.mae.main_pretrain as trainer
 import submitit
 
 
 def parse_args():
     trainer_parser = trainer.get_args_parser()
     parser = argparse.ArgumentParser("Submitit for MAE pretrain", parents=[trainer_parser])
-    parser.add_argument("--ngpus", default=8, type=int, help="Number of gpus to request on each node")
-    parser.add_argument("--nodes", default=2, type=int, help="Number of nodes to request")
+    parser.add_argument("--ngpus", default=4, type=int, help="Number of gpus to request on each node")
+    parser.add_argument("--nodes", default=1, type=int, help="Number of nodes to request")
     parser.add_argument("--timeout", default=4320, type=int, help="Duration of the job")
     parser.add_argument("--job_dir", default="", type=str, help="Job dir. Leave empty for automatic.")
 
@@ -31,13 +31,11 @@ def parse_args():
 
 
 def get_shared_folder() -> Path:
-    user = os.getenv("USER")
-    if Path("/checkpoint/").is_dir():
-        p = Path(f"/checkpoint/{user}/experiments")
-        p.mkdir(exist_ok=True)
-        return p
-    raise RuntimeError("No shared folder available")
+    output_dir = Path('/HDD/etc/mae/')
+    if not output_dir.exists():
+        output_dir.mkdir()
 
+    return Path('/HDD/etc/mae/')
 
 def get_init_file():
     # Init file must not exist, but it's parent dir must exist.
@@ -53,7 +51,6 @@ class Trainer(object):
         self.args = args
 
     def __call__(self):
-        import main_pretrain as trainer
 
         self._setup_gpu_args()
         trainer.main(self.args)

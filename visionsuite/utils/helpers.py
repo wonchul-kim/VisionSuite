@@ -1,6 +1,13 @@
 import cv2
 import json
 import numpy as np
+import os.path as osp
+
+def get_filename(file_path, include_ext=False):
+    if not include_ext:
+        return osp.split(osp.splitext(file_path)[0])[-1]
+    else:
+        return osp.split(file_path)[-1]
 
 def string_to_list_of_type(data, type_, lower=False, sep=','):
 

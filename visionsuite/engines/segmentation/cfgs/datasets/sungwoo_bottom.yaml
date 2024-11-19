@@ -1,0 +1,8 @@
+dataset:
+  input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset
+  type: MaskDatasetWrapper 
+  case_sensitive: true 
+
+archive:
+  output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch
+  

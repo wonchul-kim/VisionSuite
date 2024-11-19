@@ -5,20 +5,23 @@ from src.test_obb import test_obb
 
 if __name__ == '__main__':
     
-    model_name = 'yolov10'
-    backbone = 'l'
-    weights_file = f"/HDD/_projects/benchmark/obb_detection/rich/outputs/{model_name}_obb/train/weights/best.pt"
+    model_name = 'yolov8'
+    backbone = 'l_dfl_0.2_norad'
+    weights_file = f"/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/dfl_0.2_norad/weights/best.pt"
 
-    input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-    json_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-    output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
+    # input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_doosan/val'
+    # json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_doosan/val'
+    # output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/doosan/{model_name}_{backbone}'
+    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+    json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+    output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/sfaw/{model_name}_{backbone}'
     
     if not osp.exists(output_dir):
-        os.mkdir(output_dir)
+        os.makedirs(output_dir)
     
     compare_gt = True
-    iou_threshold = 0.7
-    conf_threshold = 0.25
+    iou_threshold = 0.9
+    conf_threshold = 0.1
     line_width = 3
     font_scale = 2
     imgsz = 768

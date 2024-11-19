@@ -7,6 +7,7 @@ import imgviz
 import json
 import pandas as pd
 from tqdm import tqdm
+import numpy as np
 
 from visionsuite.utils.visualizers.vis_obb import vis_obb
 
@@ -26,12 +27,19 @@ def test_obb(weights_file, imgsz, _classes, input_dir, output_dir, json_dir, com
     compare = {}
     for img_file in tqdm(img_files):
         filename = osp.split(osp.splitext(img_file)[0])[-1]
-        pred = model(img_file, save=False, imgsz=imgsz, conf=conf_threshold, verbose=False)[0]
+        pred = model(img_file, save=False, imgsz=imgsz, iou=iou_threshold, conf=conf_threshold, verbose=False)[0]
         
         idx2class = pred.names
         obb_result = pred.obb
         classes = obb_result.cls.tolist()
         confs = obb_result.conf.tolist()
+        
+        for res in obb_result:
+            xywhr = res.xywhr
+            angle = np.rad2deg(xywhr[0][-1].cpu().detach().item())
+            # print("angle: ", angle)
+            xyxyxyxy = res.xyxyxyxy
+            # print("xyxyxyxyxy: ", xyxyxyxy)
         
         idx2xyxys = {}
         for cls, xyxys, conf in zip(classes, obb_result.xyxyxyxy, confs):

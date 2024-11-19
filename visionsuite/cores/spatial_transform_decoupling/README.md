@@ -118,7 +118,7 @@ python src/tools/data/dota/split/img_split.py --base-json src/tools/data/dota/sp
 #### - Train 
 
 ```shell
-CUDA_VISIBLE_DEVICES=0,1,2,3 bash ./src/tools/dist_train.sh ./src/configs/_rotated_faster_rcnn_/rotated_faster_rcnn_r50_fpn_1x_dota_le90.py 4
+CUDA_VISIBLE_DEVICES=0,1,2,3 bash ./tools/dist_train.sh ./configs/_rotated_faster_rcnn_/rotated_faster_rcnn_r50_fpn_1x_dota_le90.py 4
 ```
 
 #### - Test

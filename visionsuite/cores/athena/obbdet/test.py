@@ -19,7 +19,7 @@ compare_mask = True
 ml_framework = 'pytorch'
 model_name='rtmdet'
 backbone = 'large'
-weights = '/HDD/_projects/benchmark/obb_detection/rich/outputs/rtmdet/outputs/OBBDETECTION/2024_09_03_18_17_32/train/weights/last.pt'
+weights = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/outputs/outputs/OBBDETECTION/2024_10_11_16_05_36/train/weights/last.pt'
 ckpt = torch.load(weights, map_location='cpu')
 model = ckpt['model']
 # model = de_parallel(model)
@@ -41,9 +41,12 @@ classes = ['BOX']
 idx2class = {idx: cls for idx, cls in enumerate(classes)}
 _classes = ['BOX']
 _idx2class = {idx: cls for idx, cls in enumerate(_classes)}
-input_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-json_dir = '/HDD/_projects/benchmark/obb_detection/rich/datasets/split_dataset_box/val'
-output_dir = f'/HDD/_projects/benchmark/obb_detection/rich/tests/{model_name}_{backbone}'
+input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/sfaw/{model_name}_{backbone}'
+# input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
+# json_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset_rich/val'
+# output_dir = f'/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/tests/rich/{model_name}_{backbone}'
 
 if not osp.exists(output_dir):
     os.makedirs(output_dir)
@@ -64,6 +67,16 @@ for img_file in tqdm(img_files):
     with torch.no_grad():
         preds = model(torch_img)
     pred = preds[0].detach().cpu()
+    
+    # start_angle = -90 / 180*np.pi
+    # x, y, w, h, r = pred[:, :-1].unbind(-1)
+    # _w = torch.where(w > h, w, h)
+    # _h = torch.where(w > h, h, w)
+    # r = torch.where(w > h, r, r + np.pi/2)
+    # r = ((r - start_angle)%np.pi) + start_angle
+    
+    # pred[:, :-1] = torch.stack([x, y, _w, _h, r], dim=-1)
+    
     dets, _ = nms_rotated(pred[:, :-1], pred[:, -1], iou_threshold=nms_iou_threshold)
     confs, labels = torch.max(dets[:, 5:], axis=1)
 

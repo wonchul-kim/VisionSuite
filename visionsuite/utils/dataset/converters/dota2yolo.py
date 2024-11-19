@@ -41,7 +41,10 @@ def convert_dota2yolo_obb(dota_root_path: str, save_dir: str,
     for phase in ["train", "val"]:
         if copy_image:
             image_dir = dota_root_path  / phase/ "images"
-            orig_label_dir = dota_root_path / phase / "labelTxt" 
+            try:
+                orig_label_dir = dota_root_path / phase / "labelTxt" 
+            except: 
+                orig_label_dir = dota_root_path / phase / "labels" 
             save_labels_dir = Path(save_dir) / "labels" / phase
             save_labels_dir.mkdir(parents=True, exist_ok=True)
             save_images_dir = Path(save_dir) / "images" / phase
@@ -55,7 +58,10 @@ def convert_dota2yolo_obb(dota_root_path: str, save_dir: str,
                 convert_label(image_name_without_ext, w, h, orig_label_dir, save_labels_dir)
         else:
             assert image_width is not None and image_height is not None, ValueError(f"Height({image_height}) and Width({image_width}) of image must not be None")
-            orig_label_dir = dota_root_path / phase / "labelTxt" 
+            try:
+                orig_label_dir = dota_root_path / phase / "labelTxt" 
+            except:
+                orig_label_dir = dota_root_path / phase / "labels" 
             save_labels_dir = Path(save_dir) / "labels" / phase
             save_labels_dir.mkdir(parents=True, exist_ok=True)
             label_paths = list(orig_label_dir.iterdir())
@@ -76,6 +82,6 @@ def convert_dota2yolo_obb(dota_root_path: str, save_dir: str,
 
 
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/rich/24.06.19/split_dataset_box_dota'
-    output_dir = '/HDD/datasets/projects/rich/24.06.19/split_dataset_box_yolo_obb'
-    convert_dota2yolo_obb(input_dir, output_dir, True, 'bmp')
+    input_dir = '/HDD/datasets/public/dota/ship/v2_ship'
+    output_dir = '/HDD/datasets/public/dota/ship/v2_ship_yolo'
+    convert_dota2yolo_obb(input_dir, output_dir, True, 'png')

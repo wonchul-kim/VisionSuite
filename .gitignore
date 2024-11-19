@@ -1,9 +1,12 @@
 # etc.
 logs
+*.out 
+tmp
 
 # mm archives
 work_dirs
 work_dir
+output_dir
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -160,6 +163,7 @@ weights/
 *.torchscript
 *.tflite
 *.h5
+*.pth
 *_saved_model/
 *_web_model/
 *_openvino_model/
