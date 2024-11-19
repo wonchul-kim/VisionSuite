@@ -13,14 +13,17 @@ class GPULogger:
             handle = pynvml.nvmlDeviceGetHandleByIndex(device_id)
             utilization = pynvml.nvmlDeviceGetUtilizationRates(handle)
             memory_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+            power_info = pynvml.nvmlDeviceGetPowerUsage(handle)
 
             if f'GPU {device_id}' not in self.data:
-                self.data[f'GPU {device_id}'] = {"GPU-Util (%)": [utilization.gpu],
-                                                 "GPU Mem. (MB)": [float(round(memory_info.used / 1024**2, 2))]
+                self.data[f'GPU {device_id}'] = {"Util (%)": [utilization.gpu],
+                                                 "Mem. (MB)": [float(round(memory_info.used / 1024**2, 2))],
+                                                 "Power (W)": [float(round(power_info / 1000, 2))]
                                             }
             else:
-                self.data[f'GPU {device_id}']["GPU-Util (%)"].append(utilization.gpu),
-                self.data[f'GPU {device_id}']["GPU Mem. (MB)"].append(float(round(memory_info.used / 1024**2, 2)))
+                self.data[f'GPU {device_id}']["Util (%)"].append(utilization.gpu),
+                self.data[f'GPU {device_id}']["Mem. (MB)"].append(float(round(memory_info.used / 1024**2, 2)))
+                self.data[f'GPU {device_id}']["Power (W)"].append(float(round(power_info / 1000, 2)))
 
     def mean(self):
         mean_data = {}
@@ -36,3 +39,12 @@ class GPULogger:
 
     def end(self):
         pynvml.nvmlShutdown()
+        
+if __name__ == '__main__':
+    logger = GPULogger([0, 1])
+    
+    for _ in range(10):
+        logger.update()
+        
+    print(logger.mean())
+    
