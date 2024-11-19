@@ -6,7 +6,7 @@ class CPULogger:
         self.data = {'Power (%)': []}
 
     def update(self):
-        cpu_usage = psutil.cpu_percent(interval=0.1)
+        cpu_usage = psutil.cpu_percent(interval=0.01)
         
         self.data['Power (%)'].append(cpu_usage)
         
