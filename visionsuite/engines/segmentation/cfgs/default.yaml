@@ -109,12 +109,12 @@ test:
     case_sensitive: true 
   device_ids: 0
   device: cuda
-  use_deterministic_algorithms: True
+  use_deterministic_algorithms: false
   sync_bn: true
   print_freq: 10
 
-  output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/test
-  seed_model: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/2024_11_12_18_46_21/weights/last.pth
+  output_dir: null
+  seed_model: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/2024_11_16_10_51_57/train/weights/model_190.pth
 
   dataset: 
     input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/val

@@ -4,9 +4,6 @@ import os.path as osp
 import torch 
 import imgviz
 
-RGBs = [[255, 0, 0], [0, 255, 0], [0, 0, 255], \
-        [255, 255, 0], [255, 0, 255], [0, 255, 255], \
-        [255, 136, 0], [136, 0, 255], [255, 51, 153]]
         
 def save_validation(model, device, dataset, num_classes, epoch, output_dir, denormalize=False, input_channel=3, \
                         image_channel_order='bgr', validation_image_idxes_list=[], color_map=imgviz.label_colormap(50)):

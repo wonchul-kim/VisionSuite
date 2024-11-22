@@ -1,6 +1,6 @@
 import torch
 import torchvision 
-
+import os.path as osp
 
 from visionsuite.engines.segmentation.utils.registry import MODELS
 from visionsuite.engines.utils.helpers import assert_key_dict
@@ -24,11 +24,14 @@ class TorchvisionModel(BaseOOPModule):
     def build(self, *args, **kwargs):
         super().build(*args, **kwargs)
         
+        
         self._load_model() 
         self._to_device()
         self._set_dist()
         self._set_params_to_optimize()
         
+        self._load_seed_model()
+            
     @property
     def model(self):
         return self._model
@@ -102,3 +105,19 @@ class TorchvisionModel(BaseOOPModule):
             params = [p for p in self._model_without_ddp.aux_classifier.parameters() if p.requires_grad]
             self._params_to_optimize.append({"params": params, "lr": lr * 10})
             self.log_info(f"APPLY aux_loss to params to optimize: {self.args['aux_loss']}", self.apply_aux_loss_to_params_to_optimize.__name__, __class__.__name__)
+            
+    def _load_seed_model(self):
+        if 'seed_model' in self.args and osp.exists(self.args['seed_model']):
+            from visionsuite.engines.utils.torch_utils.utils import load_ckpt
+
+            assert osp.exists(self.args['seed_model']), ValueError(f"There is no such checkpoint: {self.args['seed_model']}")
+            ckpt = load_ckpt(self.args['seed_model'])
+            self.log_info(f"LOADED ckpt: {ckpt.keys()}", self._load_seed_model.__name__, __class__.__name__)
+            
+            self._model_without_ddp.load_state_dict(ckpt['model'], strict=True)
+            self._model.load_state_dict(ckpt['model'], strict=True)
+            self.log_info(f"LOADED seed_model weights", self._load_seed_model.__name__, __class__.__name__)
+                    
+        else:
+            self.log_info(f"NOT LOADED seed_model", self._load_seed_model.__name__, __class__.__name__)   
+    
