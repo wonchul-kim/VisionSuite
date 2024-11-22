@@ -12,7 +12,8 @@ from visionsuite.engines.utils.system.gpu_logger import GPULogger
 from visionsuite.engines.utils.bases import BaseOOPModule
 from visionsuite.engines.utils.callbacks import Callbacks
 from visionsuite.engines.utils.helpers import increment_path
-from visionsuite.engines.segmentation.utils.vis.vis_test import save_pred
+from visionsuite.engines.segmentation.utils.vis.vis_test import vis_by_batch
+from visionsuite.engines.utils.functionals import denormalize
 from .callbacks import callbacks
 
 
@@ -74,7 +75,8 @@ class BaseTester(BaseOOPModule, Callbacks):
                 output = self.model.model(image) # ';out': (bs num_classes(including bg) h w)
                 loss = self.loss(output, target)
 
-            save_pred(output['out'], target, image, fname, epoch, batch_idx, output_dir=self.args['output_dir'])
+            vis_by_batch(output['out'], target, image, fname, epoch, batch_idx, output_dir=self.args['output_dir'],
+                         denormalize=denormalize)
                 
             self._update_logger(output, target, loss, start_time, batch_size=image.shape[0])
             
