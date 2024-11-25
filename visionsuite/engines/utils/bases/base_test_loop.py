@@ -86,4 +86,4 @@ class BaseTestLoop(BaseOOPModule, Callbacks):
             self._start_epoch = 1
             self._epochs = self.args['train']['epochs']
             self.log_info(f"NO resume lr_scheduler: start_epoch is {self._start_epoch}", self._set_resume.__name__, __class__.__name__)   
-                
+    

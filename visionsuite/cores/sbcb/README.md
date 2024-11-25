@@ -16,3 +16,17 @@
   pip install mmsegmentation==0.27.0 scikit-image scikit-learn pyEdgeEval yapf==0.40.1
   ```
 
+
+#### Train
+
+- Distributed
+
+  ```
+    bash dist_train.sh <number of gpus to use>
+  ```
+
+- Not distributed
+
+  ```
+  python train.py
+  ```

@@ -88,7 +88,6 @@ class MaskDataset(torch.utils.data.Dataset):
         return len(self.img_files)
 
     def __getitem__(self, idx): 
-        print(idx)
         img_file = self.img_files[idx]
         fname = osp.split(osp.splitext(img_file)[0])[-1]
 
