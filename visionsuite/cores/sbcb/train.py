@@ -11,7 +11,7 @@ import torch
 import torch.distributed as dist
 import os
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1"
 
 import mmcv
 from mmcv.cnn.utils import revert_sync_batchnorm
