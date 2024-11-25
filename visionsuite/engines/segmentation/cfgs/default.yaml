@@ -50,7 +50,7 @@ dataloader:
   pin_memory: true
 
   train:
-    batch_size: 32
+    batch_size: 4
     num_workers: 16
 
   val:
@@ -86,7 +86,7 @@ train:
   trainer:
     type: BaseTrainer
     case_sensitive: true
-  device_ids: 0,1,2,3
+  device_ids: 0,1
   device: cuda
   use_deterministic_algorithms: False
   sync_bn: true
@@ -107,7 +107,7 @@ test:
   tester:
     type: BaseTester
     case_sensitive: true 
-  device_ids: 0
+  device_ids: 0,1
   device: cuda
   use_deterministic_algorithms: false
   sync_bn: true
@@ -120,11 +120,7 @@ test:
     input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/val
     type: MaskDataset 
     case_sensitive: true 
-    classes:
-      - background
-      - SCRATCH
-      - TEAR
-      - STABBED
+
   loop:
     type: TestLoop
     case_sensitive: true
