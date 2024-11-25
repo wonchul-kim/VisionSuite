@@ -21,6 +21,10 @@ class TrainLoop(BaseTrainLoop):
         else:
             self.log_warning(f"NO dataloader", self.build.__name__, __class__.__name__)    
 
+        self.train_dataloader.vis(self.archive.output_dir)
+
+
+
         if 'loss' in self.args and self.args['loss'] is not None:
             from visionsuite.engines.segmentation.src.losses.build import build_loss
             self.loss = build_loss(**self.args['loss'])
