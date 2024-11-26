@@ -11,7 +11,7 @@ import torch
 import torch.distributed as dist
 import os
 # os.environ['CUDA_LAUNCH_BLOCKING'] = "1"
-os.environ['CUDA_VISIBLE_DEVICES'] = "0,1"
+os.environ['CUDA_VISIBLE_DEVICES'] = "0,1,2,3"
 
 import mmcv
 from mmcv.cnn.utils import revert_sync_batchnorm
@@ -30,7 +30,7 @@ from mmseg.utils import collect_env, get_root_logger, setup_multi_processes, get
 def parse_args():
     parser = argparse.ArgumentParser(description="Train a segmentor")
     # parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512x1024_40k_cityscapes.py')
-    parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512_512_mask.py')
+    parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r101b-d8_512_512_mask.py')
     parser.add_argument("--work-dir", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/sbcb')
     parser.add_argument("--load-from", help="the checkpoint file to load weights from")
     parser.add_argument("--resume-from", help="the checkpoint file to resume from")
@@ -95,7 +95,7 @@ def parse_args():
     parser.add_argument(
         "--launcher",
         choices=["none", "pytorch", "slurm", "mpi"],
-        default="none",
+        default="pytorch",
         help="job launcher",
     )
     parser.add_argument("--local_rank", type=int, default=0)
