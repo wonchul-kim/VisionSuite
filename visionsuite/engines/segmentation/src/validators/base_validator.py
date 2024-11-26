@@ -87,7 +87,7 @@ class BaseValidator(BaseOOPModule, Callbacks):
             if (
                 hasattr(self.dataloader.dataset, "__len__")
                 and len(self.dataloader.dataset) != num_processed_samples
-                and torch.distributed.get_rank() == 0
+                # and torch.distributed.get_rank() == 0
             ):
                 # See FIXME above
                 warnings.warn(
