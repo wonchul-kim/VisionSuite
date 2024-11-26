@@ -1,5 +1,37 @@
 # Applying ViT-Adapter to Semantic Segmentation
 
+
+### Set up the environment
+
+- download docker image
+```
+docker pull nvidia/cuda:11.3.1-cudnn8-devel-ubuntu20.04
+```
+
+- install libraries
+```
+pip install torch==1.11.0+cu113 torchvision==0.12.0+cu113 torchaudio==0.11.0 -f https://download.pytorch.org/whl/torch_stable.html
+pip install mmcv-full==1.4.7 -f https://download.openmmlab.com/mmcv/dist/cu113/torch1.11.0/index.html
+pip install timm==0.4.12 mmdet==2.22.0 mmsegmentation==0.20.2
+ln -s ../detection/ops ./
+```
+
+- compile deformable attention
+```
+cd ops 
+sh make.sh
+cd ..
+```
+
+
+### Download the checkpoint 
+```
+wget https://github.com/czczup/ViT-Adapter/releases/download/v0.2.0/mask2former_beit_adapter_large_896_80k_ade20k.zip 
+unzip mask2former_beit_adapter_large_896_80k_ade20k.zip 
+```
+
+
+
 Our segmentation code is developed on top of [MMSegmentation v0.20.2](https://github.com/open-mmlab/mmsegmentation/tree/v0.20.2).
 
 For details see [Vision Transformer Adapter for Dense Predictions](https://arxiv.org/abs/2205.08534).

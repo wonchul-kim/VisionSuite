@@ -66,8 +66,8 @@ test_pipeline = [
     ),
 ]
 data = dict(
-    samples_per_gpu=2,
-    workers_per_gpu=8,
+    samples_per_gpu=8,
+    workers_per_gpu=16,
     train=dict(
         type=dataset_type,
         data_root=data_root,
@@ -86,7 +86,7 @@ data = dict(
         img_suffix='.bmp',
         seg_map_suffix='.bmp',
         classes=classes,
-        pipeline=train_pipeline,
+        pipeline=val_pipeline,
     ),
     test=dict(
         type=dataset_type,

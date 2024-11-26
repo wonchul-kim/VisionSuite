@@ -19,12 +19,12 @@ from mmseg.apis import multi_gpu_test, single_gpu_test
 from bbseg import digit_version
 from bbseg.datasets import build_dataloader, build_dataset
 from bbseg.models import build_segmentor
-
+import cv2
 
 def parse_args():
     parser = argparse.ArgumentParser(description="mmseg test (and eval) a model")
     # parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512x1024_40k_cityscapes.py')
-    parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512_512_mask.py')
+    parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r101b-d8_512_512_mask.py')
     parser.add_argument("--checkpoint", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/sbcb/epoch_200.pth', help="checkpoint file")
     parser.add_argument(
         "--work-dir", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/tests/sbcb',
@@ -311,14 +311,17 @@ def main():
             vis_img = np.zeros((h, w*2, 3))
             vis_img[:, w:, :] = color_map[pred]
             vis_img[:, :w, :] = img
+            
+            cv2.imwrite(osp.join(args.show_dir, img_meta['ori_filename']), vis_img)
+            
 
-            ori_h, ori_w = img_meta['ori_shape'][:-1]
-            img_show = mmcv.imresize(img_show, (ori_w, ori_h))
+            # ori_h, ori_w = img_meta['ori_shape'][:-1]
+            # img_show = mmcv.imresize(img_show, (ori_w, ori_h))
 
-            if args.show_dir:
-                out_file = osp.join(args.show_dir, img_meta['ori_filename'])
-            else:
-                out_file = None
+            # if args.show_dir:
+            #     out_file = osp.join(args.show_dir, img_meta['ori_filename'])
+            # else:
+            #     out_file = None
 
             # model.module.show_result(
             #     img_show,
@@ -331,16 +334,16 @@ def main():
         # if format_only:
         #     result = dataset.format_results(
         #         result, indices=batch_indices, **format_args)
-        if pre_eval:
-            # TODO: adapt samples_per_gpu > 1.
-            # only samples_per_gpu=1 valid now
-            result = dataset.pre_eval(result, indices=batch_indices)
-            results.extend(result)
-        else:
-            results.extend(result)
+        # if pre_eval:
+        #     # TODO: adapt samples_per_gpu > 1.
+        #     # only samples_per_gpu=1 valid now
+        #     result = dataset.pre_eval(result, indices=batch_indices)
+        #     results.extend(result)
+        # else:
+        #     results.extend(result)
 
 
-    return results
+    # return results
 
 
 if __name__ == "__main__":

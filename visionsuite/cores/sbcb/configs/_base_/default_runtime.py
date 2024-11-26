@@ -1,9 +1,9 @@
 # yapf:disable
 log_config = dict(
-    interval=10,
+    interval=100,
     hooks=[
         dict(type="TextLoggerHook", by_epoch=False),
-        dict(type="TextLoggerHook", by_epoch=True),
+        # dict(type="TextLoggerHook", by_epoch=True),
         # dict(type="TensorboardLoggerHook"),
     ],
 )
@@ -13,8 +13,8 @@ dist_params = dict(backend="nccl")
 log_level = "INFO"
 load_from = None
 resume_from = None
-workflow = [("train", 1)]
-# workflow = [("train", 1), ('val', 10)]
+# workflow = [("train", 1)]
+workflow = [("train", 1), ('val', 10)]
 cudnn_benchmark = True
 
 # Unused parameters: https://github.com/open-mmlab/mmcv/issues/1601
