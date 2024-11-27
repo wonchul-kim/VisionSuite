@@ -25,9 +25,9 @@ def parse_args():
     parser = argparse.ArgumentParser(description="mmseg test (and eval) a model")
     # parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r50b-d8_512x1024_40k_cityscapes.py')
     parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/sbcb/configs/deeplabv3plus/deeplabv3plus_r101b-d8_512_512_mask.py')
-    parser.add_argument("--checkpoint", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/sbcb/epoch_200.pth', help="checkpoint file")
+    parser.add_argument("--checkpoint", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/sbcb/20241125/epoch_200.pth', help="checkpoint file")
     parser.add_argument(
-        "--work-dir", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/tests/sbcb',
+        "--work-dir", default='/HDD/_projects/benchmark/semantic_segmentation/new_model/tests/sbcb_241125',
         help=(
             "if specified, the evaluation metric results will be dumped"
             "into the directory as json"
@@ -64,7 +64,7 @@ def parse_args():
     )
     parser.add_argument(
         "--show-dir", 
-        default='/HDD/_projects/benchmark/semantic_segmentation/new_model/tests/sbcb',
+        default='/HDD/_projects/benchmark/semantic_segmentation/new_model/tests/sbcb_241125',
         help="directory where painted images will be saved",
     )
     parser.add_argument(
