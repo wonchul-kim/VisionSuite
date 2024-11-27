@@ -52,19 +52,19 @@ class MaskDataset(BaseSegDataset):
     The ``img_suffix`` is fixed to '.jpg' and ``seg_map_suffix`` is fixed to
     '.png'.
     """
-    # METAINFO = dict(
-    #     palette=[[120, 120, 120], [180, 120, 120], [6, 230, 230]])
+    METAINFO = dict(
+        palette=[[120, 120, 120], [180, 120, 120], [6, 230, 230]])
     METAINFO = dict()
     def __init__(self,
                  classes,
                  img_suffix='.jpg',
                  seg_map_suffix='.png',
-                 reduce_zero_label=True,
+                #  reduce_zero_label=True,
                  **kwargs) -> None:
         
         self.METAINFO.update({'classes': classes})
         super().__init__(
             img_suffix=img_suffix,
             seg_map_suffix=seg_map_suffix,
-            reduce_zero_label=reduce_zero_label,
+            # reduce_zero_label=reduce_zero_label,
             **kwargs)

@@ -22,7 +22,7 @@ def parse_args():
     # parser.add_argument('config', help='train config file path')
     # parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_ade20k-512x512.py')
     parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_sungwoo_bottom-512x512.py')
-    parser.add_argument('--work-dir', default='/HDD/etc/outputs', help='the dir to save logs and models')
+    parser.add_argument('--work-dir', default='/HDD/etc/outputs/train/deeplabv3plus', help='the dir to save logs and models')
     parser.add_argument(
         '--resume',
         action='store_true',
@@ -103,7 +103,7 @@ def main():
         # build customized runner from the registry
         # if 'runner_type' is set in the cfg
         runner = RUNNERS.build(cfg)
-
+        
     # start training
     runner.train()
 

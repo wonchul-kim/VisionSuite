@@ -1,7 +1,7 @@
 # dataset settings
 dataset_type = "MaskDataset"
 data_root = "/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset"
-classes=['scratch', 'stabbed', 'tear'],
+classes=['__background__', 'scratch', 'stabbed', 'tear'],
 
 image_size = (512, 512)
 img_norm_cfg = dict(
@@ -9,7 +9,8 @@ img_norm_cfg = dict(
 )
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', reduce_zero_label=True),
+    # dict(type='LoadAnnotations', reduce_zero_label=True),
+    dict(type='LoadAnnotations'),
     dict(type='Resize', scale=image_size, keep_ratio=True),
     # dict(
     #     type='RandomResize',
@@ -26,7 +27,8 @@ test_pipeline = [
     dict(type='Resize', scale=image_size, keep_ratio=True),
     # add loading annotation after ``Resize`` because ground truth
     # does not need to do resize data transform
-    dict(type='LoadAnnotations', reduce_zero_label=True),
+    # dict(type='LoadAnnotations', reduce_zero_label=True),
+    dict(type='LoadAnnotations'),
     dict(type='PackSegInputs')
 ]
 img_ratios = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75]
