@@ -17,7 +17,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='MMSeg test (and eval) a model')
     parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_sungwoo_bottom-512x512.py')
-    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/sungwoo_bottom/train/deeplabv3plus/iter_1100.pth')
+    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/sungwoo_bottom/train/deeplabv3plus/iter_20000.pth')
     parser.add_argument(
         '--work-dir', default='/HDD/etc/outputs/sungwoo_bottom/test/deeplabv3plus',
         help=('if specified, the evaluation metric results will be dumped'
