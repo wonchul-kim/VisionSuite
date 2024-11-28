@@ -14,14 +14,14 @@ param_scheduler = [
         by_epoch=False)
 ]
 # training schedule for 20k
-train_cfg = dict(type='IterBasedTrainLoop', max_iters=max_iters, val_interval=max_iters)
+train_cfg = dict(type='IterBasedTrainLoop', max_iters=max_iters, val_interval=max_iters/20)
 val_cfg = dict(type='ValLoop')
 test_cfg = dict(type='TestLoop')
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
-    logger=dict(type='LoggerHook', interval=100, log_metric_by_epoch=True),
+    logger=dict(type='LoggerHook', interval=100, log_metric_by_epoch=False),
     param_scheduler=dict(type='ParamSchedulerHook'),
     checkpoint=dict(type='CheckpointHook', by_epoch=False, interval=100),
     sampler_seed=dict(type='DistSamplerSeedHook'),
-    # visualization=dict(type='SegVisualizationHook')
+    visualization=dict(type='SegVisualizationHook')
     )

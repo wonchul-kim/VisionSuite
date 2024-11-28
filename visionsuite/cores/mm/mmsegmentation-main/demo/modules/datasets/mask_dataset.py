@@ -1,25 +1,23 @@
-# Copyright (c) OpenMMLab. All rights reserved.
 from mmseg.registry import DATASETS
 from mmseg.datasets.basesegdataset import BaseSegDataset
 
 
 @DATASETS.register_module()
 class MaskDataset(BaseSegDataset):
-    """ADE20K dataset.
-
-    In segmentation map annotation for ADE20K, 0 stands for background, which
-    is not included in 150 categories. ``reduce_zero_label`` is fixed to True.
+    """
+    In segmentation map annotation for MaskDataset, 0 stands for background, which
+    is not included in defined categories. ``reduce_zero_label`` is fixed to True.
     The ``img_suffix`` is fixed to '.jpg' and ``seg_map_suffix`` is fixed to
     '.png'.
     """
     METAINFO = dict(
-        classes=('background', 'scratch', 'stabbed', 'tear'),
-        palette=[[120, 120, 120], [180, 120, 120], [6, 230, 230], [4, 200, 3]])
+        classes=('scratch', 'stabbed', 'tear'),
+        palette=[[120, 120, 120], [180, 120, 120], [6, 230, 230]])
 
     def __init__(self,
                  img_suffix='.bmp',
                  seg_map_suffix='.bmp',
-                 reduce_zero_label=False,
+                 reduce_zero_label=True,
                  **kwargs) -> None:
         super().__init__(
             img_suffix=img_suffix,

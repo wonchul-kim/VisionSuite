@@ -5,20 +5,21 @@ import os.path as osp
 
 from mmengine.config import Config, DictAction
 from mmengine.runner import Runner
-from mmseg.customs.datasets import MaskDataset
 
+from mmseg.customs.datasets import MaskDataset
 from pathlib import Path 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parent
+ROOT = FILE.parents[2]
+
 
 # TODO: support fuse_conv_bn, visualization, and format_only
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMSeg test (and eval) a model')
     parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_sungwoo_bottom-512x512.py')
-    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/train/deeplabv3plus/iter_2000.pth')
+    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/sungwoo_bottom/train/deeplabv3plus/iter_1100.pth')
     parser.add_argument(
-        '--work-dir', default='/HDD/etc/outputs/test/deeplabv3plus/',
+        '--work-dir', default='/HDD/etc/outputs/sungwoo_bottom/test/deeplabv3plus',
         help=('if specified, the evaluation metric results will be dumped'
               'into the directory as json'))
     parser.add_argument(
@@ -28,7 +29,7 @@ def parse_args():
     parser.add_argument(
         '--show', action='store_true', help='show prediction results')
     parser.add_argument(
-        '--show-dir', default='/HDD/etc/outputs/test/deeplabv3plus/',
+        '--show-dir', default='/HDD/etc/outputs/sungwoo_bottom/test/deeplabv3plus',
         help='directory where painted images will be saved. '
         'If specified, it will be automatically saved '
         'to the work_dir/timestamp/show_dir')
@@ -89,8 +90,6 @@ def main():
     # load config
     cfg = Config.fromfile(args.config)
     cfg.launcher = args.launcher
-    cfg.gpu_ids = [1]
-    
     if args.cfg_options is not None:
         cfg.merge_from_dict(args.cfg_options)
 
@@ -105,13 +104,13 @@ def main():
 
     cfg.load_from = args.checkpoint
 
-    # if args.show or args.show_dir:
-    #     cfg = trigger_visualization_hook(cfg, args)
+    if args.show or args.show_dir:
+        cfg = trigger_visualization_hook(cfg, args)
 
-    if args.tta:
-        cfg.test_dataloader.dataset.pipeline = cfg.tta_pipeline
-        cfg.tta_model.module = cfg.model
-        cfg.model = cfg.tta_model
+    # if args.tta:
+    #     cfg.test_dataloader.dataset.pipeline = cfg.tta_pipeline
+    #     cfg.tta_model.module = cfg.model
+    #     cfg.model = cfg.tta_model
 
     # add output_dir in metric
     if args.out is not None:
@@ -121,35 +120,11 @@ def main():
     # build the runner from config
     runner = Runner.from_cfg(cfg)
 
-    import torch 
-    import imgviz
-    import numpy as np
-    import cv2
-
-    color_map = imgviz.label_colormap(255)
     runner.model.to('cuda:1')
-    runner.model.eval()
 
-    for idx, batch in enumerate(runner.test_loop.dataloader):
-        with torch.no_grad():
-            outputs = runner.model.test_step(batch)
-            
-        for output in outputs:
-            original_img = cv2.imread(output.img_path) 
-            gt_img = color_map[cv2.imread(output.seg_map_path, 0)]
-            vis_gt = cv2.addWeighted(original_img, 0.4, gt_img, 0.6, 0)
-            
-            filename = osp.split(osp.splitext(output.img_path)[0])[-1]
-            h, w = output.ori_shape
-            vis_img = np.zeros((h, w*2, 3))
-            gt_sem_seg = output.gt_sem_seg.data.cpu().detach().numpy().squeeze(0).astype(np.uint8)
-            pred_sem_seg = output.pred_sem_seg.data.cpu().detach().numpy().squeeze(0).astype(np.uint8)
-            seg_logits = output.seg_logits.data.cpu().detach().numpy()
-            vis_img[:, :w, :] = vis_gt
-            vis_img[:, w:, :] = color_map[pred_sem_seg]
-            
-            cv2.imwrite(osp.join(args.show_dir, filename + '.png'), vis_img)
-            
-            
+    # start testing
+    runner.test()
+
+
 if __name__ == '__main__':
     main()

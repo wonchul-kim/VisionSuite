@@ -2,7 +2,6 @@
 import argparse
 import logging
 import os
-os.environ['CUDA_VISIBLE_DEVICES'] = '0,1'
 import os.path as osp
 
 from mmengine.config import Config, DictAction
@@ -14,15 +13,14 @@ from mmseg.customs.datasets import MaskDataset
 
 from pathlib import Path 
 FILE = Path(__file__).resolve()
-ROOT = FILE.parent
+ROOT = FILE.parents[2]
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
     # parser.add_argument('config', help='train config file path')
-    # parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_ade20k-512x512.py')
     parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_sungwoo_bottom-512x512.py')
-    parser.add_argument('--work-dir', default='/HDD/etc/outputs/train/deeplabv3plus', help='the dir to save logs and models')
+    parser.add_argument('--work-dir', default='/HDD/etc/outputs/sungwoo_bottom/train/deeplabv3plus', help='the dir to save logs and models')
     parser.add_argument(
         '--resume',
         action='store_true',
