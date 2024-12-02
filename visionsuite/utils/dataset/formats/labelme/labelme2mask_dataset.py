@@ -36,6 +36,7 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
             with open(json_file, 'r') as jf:
                 anns = json.load(jf)
                 
+                
             if width is None and height is None:
                 width, height = anns['imageWidth'], anns['imageHeight']
             mask = get_mask_from_labelme(json_file, width, height, class2label, 
@@ -68,13 +69,13 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/tenneco/split_patch_labelme_dataset'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/tenneco/split_patch_mask_dataset'
+    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_labelme_patch_dataset'
+    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_mask_patch_dataset'
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}
     # class2label = {'scratch': 1, 'tear': 2}
     # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
-    class2label = {'stabbed': 1, 'stabbed_c': 2, 'stabbed_p': 3, 'scratch': 4}
+    class2label = {'timber': 1, 'screw': 2}
     width, height = 512, 512
     vis = True
 

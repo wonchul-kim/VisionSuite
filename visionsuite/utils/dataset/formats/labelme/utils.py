@@ -169,31 +169,32 @@ def get_mask_from_labelme(json_file, width, height, class2label, format='pil', m
     else:
         anns = {"shapes": metis}
     mask = np.zeros((height, width))
-    for shapes in anns['shapes']:
-        shape_type = shapes['shape_type'].lower()
-        label = shapes['label'].lower()
-        if label in class2label.keys():
-            _points = shapes['points']
-            if shape_type == 'circle':
-                cx, cy = _points[0][0], _points[0][1]
-                radius = int(math.sqrt((cx - _points[1][0]) ** 2 + (cy - _points[1][1]) ** 2))
-                cv2.circle(mask, (int(cx), int(cy)), int(radius), True, -1)
-            elif shape_type in ['rectangle']:
-                if len(_points) == 2:
-                    arr = np.array(_points, dtype=np.int32)
+    for label_idx in range(0, len(class2label.keys())):
+        for shapes in anns['shapes']:
+            shape_type = shapes['shape_type'].lower()
+            label = shapes['label'].lower()
+            if label == list(class2label.keys())[label_idx]:
+                _points = shapes['points']
+                if shape_type == 'circle':
+                    cx, cy = _points[0][0], _points[0][1]
+                    radius = int(math.sqrt((cx - _points[1][0]) ** 2 + (cy - _points[1][1]) ** 2))
+                    cv2.circle(mask, (int(cx), int(cy)), int(radius), True, -1)
+                elif shape_type in ['rectangle']:
+                    if len(_points) == 2:
+                        arr = np.array(_points, dtype=np.int32)
+                    else:
+                        RuntimeError(f"Rectangle labeling should have 2 points")
+                    cv2.fillPoly(mask, [arr], color=(class2label[label]))
+                elif shape_type in ['polygon', 'watershed']:
+                    if len(_points) > 2:  # handle cases for 1 point or 2 points
+                        arr = np.array(_points, dtype=np.int32)
+                    else:
+                        continue
+                    cv2.fillPoly(mask, [arr], color=(class2label[label]))
+                elif shape_type in ['point']:
+                    pass
                 else:
-                    RuntimeError(f"Rectangle labeling should have 2 points")
-                cv2.fillPoly(mask, [arr], color=(class2label[label]))
-            elif shape_type in ['polygon', 'watershed']:
-                if len(_points) > 2:  # handle cases for 1 point or 2 points
-                    arr = np.array(_points, dtype=np.int32)
-                else:
-                    continue
-                cv2.fillPoly(mask, [arr], color=(class2label[label]))
-            elif shape_type in ['point']:
-                pass
-            else:
-                raise ValueError(f"There is no such shape-type: {shape_type}")
+                    raise ValueError(f"There is no such shape-type: {shape_type}")
 
     if format == 'pil':
         return Image.fromarray(mask)

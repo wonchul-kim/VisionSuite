@@ -64,7 +64,8 @@ def min_max_normalize(image_array, min_val, max_val):
 
 
 def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, 
-                    image_ext='bmp', patch_overlap_ratio = 0.2,
+                    input_formats = ['bmp'],
+                    output_format='bmp', patch_overlap_ratio = 0.2,
                     norm_val=None, vis=False, include_positive=True, classes_to_include=None):
 
     if not osp.exists(output_dir):
@@ -83,7 +84,9 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
         if not osp.exists(_output_dir):
             os.mkdir(_output_dir)
         
-        img_files = glob.glob(osp.join(input_dir, mode, '*.bmp'))
+        img_files = []
+        for input_format in input_formats:
+            img_files = glob.glob(osp.join(input_dir, mode, f'*.{input_format}'))
         for img_file in tqdm(img_files):
             filename = osp.split(osp.splitext(img_file)[0])[-1]
             json_file = osp.splitext(img_file)[0] + '.json'
@@ -106,7 +109,7 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                     else:
                         x = x0
             
-                    _labelme = init_labelme_json(filename + f'_{num_patches}.{image_ext}', img_w, img_h)
+                    _labelme = init_labelme_json(filename + f'_{num_patches}.{output_format}', img_w, img_h)
                     xmin, xmax, ymin, ymax = x, x + patch_width, y, y + patch_height
                     window = [[xmin, ymin], [xmax, ymax]]
 
@@ -150,7 +153,7 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                 patch = (patch * 255).astype(np.uint8)
                         else:
                             patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
-                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), patch)
+                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{output_format}'), patch)
                         with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
                             json.dump(_labelme, jf)
                             
@@ -173,9 +176,9 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_labelme_dataset'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_labelme_patch_dataset'
-    modes = ['./']
+    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
+    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_labelme_patch_dataset'
+    modes = ['train', 'val']
     classes_to_include = None
 
 
@@ -184,11 +187,12 @@ if __name__ == '__main__':
     patch_height = 512
     vis = True
     include_positive = True
+    input_formats = ['jpg']
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None
         
-    labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
+    labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, input_formats,
                     norm_val=norm_val, vis=vis, include_positive=include_positive, classes_to_include=classes_to_include)
                             
                         
