@@ -1,0 +1,12 @@
+dataset:
+  input_dir: /HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_mask_patch_dataset
+  type: MaskDatasetWrapper 
+  case_sensitive: true 
+  classes:
+    - background
+    - timber
+    - screw
+
+archive:
+  output_dir: /HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical
+  

@@ -54,7 +54,7 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
             copyfile(img_file, osp.join(image_output_dir, filename + '.bmp'))
             
             if vis:
-                import numpy as np
+                import numpy as np1
                 import imgviz 
                 
                 img = cv2.imread(img_file)
@@ -76,7 +76,7 @@ if __name__ == '__main__':
     # class2label = {'scratch': 1, 'tear': 2}
     # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
     class2label = {'timber': 1, 'screw': 2}
-    width, height = 512, 512
+    width, height = 1024, 1024
     vis = True
 
     labelme2mask(input_dir, output_dir, class2label, width, height, vis)

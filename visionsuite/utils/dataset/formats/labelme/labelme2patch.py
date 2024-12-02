@@ -183,8 +183,8 @@ if __name__ == '__main__':
 
 
     patch_overlap_ratio = 0.1
-    patch_width = 512
-    patch_height = 512
+    patch_width = 1024
+    patch_height = 1024
     vis = True
     include_positive = True
     input_formats = ['jpg']
