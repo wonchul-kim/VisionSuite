@@ -1,7 +1,7 @@
 # dataset settings
 dataset_type = "MaskDataset"
-data_root = "/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset"
-crop_size = (512, 512)
+data_root = "/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset"
+crop_size = (1024, 1024)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', reduce_zero_label=False),
@@ -40,7 +40,7 @@ tta_pipeline = [
         ])
 ]
 train_dataloader = dict(
-    batch_size=4,
+    batch_size=2,
     num_workers=4,
     persistent_workers=True,
     sampler=dict(type='InfiniteSampler', shuffle=True),
@@ -48,8 +48,8 @@ train_dataloader = dict(
         type=dataset_type,
         data_root=data_root,
         data_prefix=dict(img_path='train/images', seg_map_path='train/masks'),
-        img_suffix='.bmp',
-        seg_map_suffix='.bmp',
+        img_suffix='.jpg',
+        seg_map_suffix='.jpg',
         pipeline=train_pipeline))
 val_dataloader = dict(
     batch_size=1,
@@ -60,8 +60,8 @@ val_dataloader = dict(
         type=dataset_type,
         data_root=data_root,
         data_prefix=dict(img_path='train/images', seg_map_path='train/masks'),
-        img_suffix='.bmp',
-        seg_map_suffix='.bmp',
+        img_suffix='.jpg',
+        seg_map_suffix='.jpg',
         pipeline=test_pipeline))
 test_dataloader = val_dataloader
 
