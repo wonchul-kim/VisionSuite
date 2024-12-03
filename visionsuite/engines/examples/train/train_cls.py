@@ -7,6 +7,6 @@ if __name__ == "__main__":
     ROOT = FILE.parents[2]
     
     runner = Engine('classification')
-    runner.train(ROOT / "visionsuite/engines/classification/cfgs/datasets/rps.yaml")    
-    # runner.train(ROOT / "visionsuite/engines/classification/cfgs/datasets/cifar10.yaml")    
+    runner.train(ROOT / "classification/cfgs/datasets/rps.yaml")    
+    # runner.train(ROOT / "classification/cfgs/datasets/cifar10.yaml")    
 
