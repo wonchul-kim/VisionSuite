@@ -5,12 +5,13 @@ import json
 import cv2
 from tqdm import tqdm
 from shutil import copyfile
+import numpy as np
 from visionsuite.utils.helpers import get_filename
 
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
 
-def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vis=False):
+def labelme2mask(input_dir, output_dir, class2label, input_format, width=None, height=None, vis=False, output_format='bmp'):
 
     modes = [folder.split("/")[-1] for folder in glob.glob(osp.join(input_dir, "**")) if not osp.isfile(folder)]
 
@@ -31,7 +32,7 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
         json_files = glob.glob(osp.join(input_dir, mode, '*.json'))
         
         for json_file in tqdm(json_files, desc=mode):
-            img_file = osp.splitext(json_file)[0] + '.bmp'
+            img_file = osp.splitext(json_file)[0] + f'.{input_format}'
             filename = get_filename(json_file, False)
             with open(json_file, 'r') as jf:
                 anns = json.load(jf)
@@ -50,8 +51,8 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
             if not osp.exists(image_output_dir):
                 os.mkdir(image_output_dir)
                 
-            cv2.imwrite(osp.join(mask_output_dir, filename + '.bmp'), mask)
-            copyfile(img_file, osp.join(image_output_dir, filename + '.bmp'))
+            cv2.imwrite(osp.join(mask_output_dir, filename + f'.{output_format}'), mask)
+            copyfile(img_file, osp.join(image_output_dir, filename + f'.{output_format}'))
             
             if vis:
                 import numpy as np1
@@ -65,7 +66,7 @@ def labelme2mask(input_dir, output_dir, class2label, width=None, height=None, vi
                 mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
                 vis_img[:, width:, :] = mask 
                 
-                cv2.imwrite(osp.join(vis_dir, filename + '.bmp'), vis_img)
+                cv2.imwrite(osp.join(vis_dir, filename + '.png'), vis_img)
         
             
 if __name__ == '__main__':
@@ -78,7 +79,9 @@ if __name__ == '__main__':
     class2label = {'timber': 1, 'screw': 2}
     width, height = 1024, 1024
     vis = True
+    output_format = 'jpg'
+    input_format = 'jpg'
 
-    labelme2mask(input_dir, output_dir, class2label, width, height, vis)
+    labelme2mask(input_dir, output_dir, class2label, input_format, width, height, vis, output_format)
 
 

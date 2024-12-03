@@ -15,11 +15,15 @@ def get_modules(use_v2):
         return transforms, None, None
 
 
-class TrainTransform:
+class SegmentationPresetTrain:
     def __init__(
         self,
-        resize,
-        normalize,
+        *,
+        base_size,
+        crop_size,
+        hflip_prob=0.5,
+        mean=(0.485, 0.456, 0.406),
+        std=(0.229, 0.224, 0.225),
         backend="pil",
         use_v2=False,
     ):
@@ -34,7 +38,17 @@ class TrainTransform:
         elif backend != "pil":
             raise ValueError(f"backend can be 'tv_tensor', 'tensor' or 'pil', but got {backend}")
 
-        transforms += [T.Resize(size=(resize['height'], resize['width']))]
+        transforms += [T.RandomResize(min_size=int(0.5 * base_size), max_size=int(2.0 * base_size))]
+
+        if hflip_prob > 0:
+            transforms += [T.RandomHorizontalFlip(hflip_prob)]
+
+        if use_v2:
+            # We need a custom pad transform here, since the padding we want to perform here is fundamentally
+            # different from the padding in `RandomCrop` if `pad_if_needed=True`.
+            transforms += [v2_extras.PadIfSmaller(crop_size, fill={tv_tensors.Mask: 255, "others": 0})]
+
+        transforms += [T.RandomCrop(crop_size)]
 
         if backend == "pil":
             transforms += [T.PILToTensor()]
@@ -48,9 +62,7 @@ class TrainTransform:
             # No need to explicitly convert masks as they're magically int64 already
             transforms += [T.ToDtype(torch.float, scale=True)]
 
-        if normalize == 'imagenet':
-            transforms += [T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))]
-            
+        transforms += [T.Normalize(mean=mean, std=std)]
         if use_v2:
             transforms += [T.ToPureTensor()]
 
@@ -60,9 +72,9 @@ class TrainTransform:
         return self.transforms(img, target)
 
 
-class ValTransform:
+class SegmentationPresetEval:
     def __init__(
-        self, resize, normalize, backend="pil", use_v2=False
+        self, *, base_size, mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), backend="pil", use_v2=False
     ):
         T, _, _ = get_modules(use_v2)
 
@@ -75,17 +87,19 @@ class ValTransform:
         elif backend != "pil":
             raise ValueError(f"backend can be 'tv_tensor', 'tensor' or 'pil', but got {backend}")
 
-        transforms += [T.Resize(size=(resize['height'], resize['width']))]
+        if use_v2:
+            transforms += [T.Resize(size=(base_size, base_size))]
+        else:
+            transforms += [T.RandomResize(min_size=base_size, max_size=base_size)]
 
         if backend == "pil":
             # Note: we could just convert to pure tensors even in v2?
             transforms += [T.ToImage() if use_v2 else T.PILToTensor()]
 
-        transforms += [T.ToDtype(torch.float, scale=True)]
-
-        if normalize == 'imagenet':
-            transforms += [T.Normalize(mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225))]
-
+        transforms += [
+            T.ToDtype(torch.float, scale=True),
+            T.Normalize(mean=mean, std=std),
+        ]
         if use_v2:
             transforms += [T.ToPureTensor()]
 

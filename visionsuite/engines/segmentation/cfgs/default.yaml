@@ -31,18 +31,6 @@ loop:
   type: EpochBasedLoop
   case_sensitive: true
 
-dataset: 
-  type: MaskDatasetWrapper
-  case_sensitive: true
-  load_dataset: 
-    type: MaskDataset
-    case_sensitive: true
-  classes:
-    - background
-    - SCRATCH
-    - TEAR
-    - STABBED
-
 dataloader:
   type: TorchDataloader
   case_sensitive: true
@@ -50,7 +38,7 @@ dataloader:
   pin_memory: true
 
   train:
-    batch_size: 16
+    batch_size: 4
     num_workers: 16
     vis: 
       use: false
@@ -61,7 +49,7 @@ dataloader:
       filename_h: 50
 
   val:
-    batch_size: 8
+    batch_size: 1
     num_workers: 8
     vis: 
       use: true
@@ -85,11 +73,11 @@ dataloader:
 model: 
   type: TorchvisionModel
   case_sensitive: true
-  model_name: deeplabv3_resnet101
+  model_name: deeplabv3_resnet50
   # model_name: deeplabv3_efficientnetb3
   aux_loss: true
   weights: null
-  weights_backbone: ResNet101_Weights.IMAGENET1K_V1
+  weights_backbone: ResNet50_Weights.IMAGENET1K_V1
   # weights_backbone: EfficientNet_B3_Weights.IMAGENET1K_V1
 
 augment: 

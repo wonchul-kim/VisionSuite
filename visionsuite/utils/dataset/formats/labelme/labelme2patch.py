@@ -169,7 +169,7 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                             mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
                             vis_img[:, patch_width:, :] = mask 
                             
-                            cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.bmp'), vis_img)
+                            cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.png'), vis_img)
                                     
                         num_patches += 1
 
@@ -188,11 +188,12 @@ if __name__ == '__main__':
     vis = True
     include_positive = True
     input_formats = ['jpg']
+    output_format = 'jpg'
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None
         
-    labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, input_formats,
+    labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, input_formats, output_format=output_format,
                     norm_val=norm_val, vis=vis, include_positive=include_positive, classes_to_include=classes_to_include)
                             
                         
