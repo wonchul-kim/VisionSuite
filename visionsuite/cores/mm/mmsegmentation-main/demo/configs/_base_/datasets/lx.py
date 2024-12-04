@@ -48,6 +48,7 @@ train_dataloader = dict(
         type=dataset_type,
         data_root=data_root,
         data_prefix=dict(img_path='train/images', seg_map_path='train/masks'),
+        classes=('background', 'timber', 'screw'),
         img_suffix='.jpg',
         seg_map_suffix='.jpg',
         pipeline=train_pipeline))
@@ -60,6 +61,7 @@ val_dataloader = dict(
         type=dataset_type,
         data_root=data_root,
         data_prefix=dict(img_path='train/images', seg_map_path='train/masks'),
+        classes=('background', 'timber', 'screw'),
         img_suffix='.jpg',
         seg_map_suffix='.jpg',
         pipeline=test_pipeline))
