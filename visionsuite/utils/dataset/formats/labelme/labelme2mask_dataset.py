@@ -11,9 +11,7 @@ from visionsuite.utils.helpers import get_filename
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
 
-def labelme2mask(input_dir, output_dir, class2label, input_format, width=None, height=None, vis=False, output_format='bmp'):
-
-    modes = [folder.split("/")[-1] for folder in glob.glob(osp.join(input_dir, "**")) if not osp.isfile(folder)]
+def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=None, height=None, vis=False, output_format='bmp'):
 
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
@@ -42,7 +40,12 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, width=None, h
                 width, height = anns['imageWidth'], anns['imageHeight']
             mask = get_mask_from_labelme(json_file, width, height, class2label, 
                                         format='opencv')
-            
+            import numpy as np
+            _mask = np.unique(mask)
+            print(_mask)
+            if 3. in list(_mask):
+                print(_mask)
+                print(json_file)
             mask_output_dir = osp.join(_output_dir, 'masks')
             if not osp.exists(mask_output_dir):
                 os.mkdir(mask_output_dir)
@@ -55,7 +58,7 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, width=None, h
             copyfile(img_file, osp.join(image_output_dir, filename + f'.{output_format}'))
             
             if vis:
-                import numpy as np1
+                import numpy as np
                 import imgviz 
                 
                 img = cv2.imread(img_file)
@@ -70,18 +73,19 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, width=None, h
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_labelme_patch_dataset'
-    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_mask_patch_dataset'
+    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_labelme_patch_dataset'
+    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset_'
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}
     # class2label = {'scratch': 1, 'tear': 2}
     # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
     class2label = {'timber': 1, 'screw': 2}
+    modes = ['train', 'val']
     width, height = 1024, 1024
     vis = True
     output_format = 'jpg'
     input_format = 'jpg'
 
-    labelme2mask(input_dir, output_dir, class2label, input_format, width, height, vis, output_format)
+    labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format)
 
 

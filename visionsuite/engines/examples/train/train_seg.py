@@ -1,6 +1,7 @@
 from visionsuite.engines.segmentation import Engine
 
 
+
 if __name__ == "__main__":
     from pathlib import Path
     FILE = Path(__file__).resolve()

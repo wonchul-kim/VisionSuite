@@ -60,7 +60,7 @@ val_dataloader = dict(
     dataset=dict(
         type=dataset_type,
         data_root=data_root,
-        data_prefix=dict(img_path='train/images', seg_map_path='train/masks'),
+        data_prefix=dict(img_path='val/images', seg_map_path='val/masks'),
         classes=('background', 'timber', 'screw'),
         img_suffix='.jpg',
         seg_map_suffix='.jpg',
