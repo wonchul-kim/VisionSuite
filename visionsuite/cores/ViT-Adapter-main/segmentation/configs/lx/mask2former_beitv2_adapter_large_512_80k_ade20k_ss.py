@@ -112,7 +112,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', reduce_zero_label=True),
-    dict(type='Resize', img_scale=(3584, 512), ratio_range=(0.5, 2.0)),
+    # dict(type='Resize', img_scale=(1024, 512), ratio_range=(0.5, 2.0)),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
@@ -126,7 +126,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(3584, 512),
+        img_scale=(1024, 512),
         # img_ratios=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
         flip=True,
         transforms=[
@@ -152,5 +152,5 @@ data = dict(samples_per_gpu=1,
             val=dict(pipeline=test_pipeline),
             test=dict(pipeline=test_pipeline))
 runner = dict(type='IterBasedRunner')
-checkpoint_config = dict(by_epoch=False, interval=1000, max_keep_ckpts=1)
+checkpoint_config = dict(by_epoch=False, interval=200, max_keep_ckpts=1)
 evaluation = dict(interval=8000, metric='mIoU', save_best='mIoU')
