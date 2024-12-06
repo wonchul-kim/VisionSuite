@@ -5,7 +5,7 @@ _base_ = [
     '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_80k.py'
 ]
-crop_size = (896, 896)
+crop_size = (512, 512)
 # pretrained = 'https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_large_patch16_224_pt1k_ft21k.pth'
 pretrained = '/HDD/weights/beit/beitv2_large_patch16_224_pt1k_ft21k.pth'
 # please download the coco-stuff pre-trained model
@@ -16,7 +16,7 @@ model = dict(
     pretrained=pretrained,
     backbone=dict(
         type='BEiTAdapter',
-        img_size=896,
+        img_size=512,
         patch_size=16,
         embed_dim=1024,
         depth=24,
@@ -112,7 +112,7 @@ img_norm_cfg = dict(
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', reduce_zero_label=True),
-    dict(type='Resize', img_scale=(3584, 896), ratio_range=(0.5, 2.0)),
+    dict(type='Resize', img_scale=(3584, 512), ratio_range=(0.5, 2.0)),
     dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
     dict(type='PhotoMetricDistortion'),
@@ -126,7 +126,7 @@ test_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(
         type='MultiScaleFlipAug',
-        img_scale=(3584, 896),
+        img_scale=(3584, 512),
         # img_ratios=[0.5, 0.75, 1.0, 1.25, 1.5, 1.75],
         flip=True,
         transforms=[
