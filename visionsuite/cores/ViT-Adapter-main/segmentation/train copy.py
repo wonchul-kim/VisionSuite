@@ -19,16 +19,13 @@ from mmseg.datasets import build_dataset
 from mmseg.models import build_segmentor
 from mmseg.utils import collect_env, get_root_logger
 
-from pathlib import Path 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[2]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
-    parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/lx/mask2former_beitv2_adapter_large_896_80k_ade20k_ss.py'))
-    parser.add_argument('--work-dir', default='/HDD/etc/outputs/vit-adapter/train')
+    parser.add_argument('config', help='train config file path')
+    parser.add_argument('--work-dir', help='the dir to save logs and models')
     parser.add_argument(
-        '--load-from', default='/HDD/weights/vit_adapter/mask2former_beitv2_adapter_large_896_80k_ade20k.pth')
+        '--load-from', help='the checkpoint file to load weights from')
     parser.add_argument(
         '--resume-from', help='the checkpoint file to resume from')
     parser.add_argument(
@@ -38,14 +35,12 @@ def parse_args():
     group_gpus = parser.add_mutually_exclusive_group()
     group_gpus.add_argument(
         '--gpus',
-        default=1,
         type=int,
         help='number of gpus to use '
         '(only applicable to non-distributed training)')
     group_gpus.add_argument(
         '--gpu-ids',
         type=int,
-        default=[0],
         nargs='+',
         help='ids of gpus to use '
         '(only applicable to non-distributed training)')
@@ -124,31 +119,10 @@ def main():
         cfg.load_from = args.load_from
     if args.resume_from is not None:
         cfg.resume_from = args.resume_from
-    # if args.gpu_ids is not None:
-    #     cfg.gpu_ids = args.gpu_ids
-    # else:
-    #     cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
-        
-    # -----------------------------------------------------------------------
-    if args.gpus is not None:
-        cfg.gpu_ids = range(1)
-        warnings.warn(
-            "`--gpus` is deprecated because we only support "
-            "single GPU mode in non-distributed training. "
-            "Use `gpus=1` now."
-        )
     if args.gpu_ids is not None:
-        cfg.gpu_ids = args.gpu_ids[0:1]
-        warnings.warn(
-            "`--gpu-ids` is deprecated, please use `--gpu-id`. "
-            "Because we only support single GPU mode in "
-            "non-distributed training. Use the first GPU "
-            "in `gpu_ids` now."
-        )
-    if args.gpus is None and args.gpu_ids is None:
-        cfg.gpu_ids = [args.gpu_id]
-    # -----------------------------------------------------------------------
-    
+        cfg.gpu_ids = args.gpu_ids
+    else:
+        cfg.gpu_ids = range(1) if args.gpus is None else range(args.gpus)
     cfg.auto_resume = args.auto_resume
 
     # init distributed env first, since logger depends on the dist info.
