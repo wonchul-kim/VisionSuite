@@ -16,10 +16,12 @@ ROOT = FILE.parents[2]
 def parse_args():
     parser = argparse.ArgumentParser(
         description='MMSeg test (and eval) a model')
-    parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_lx-1024x1024.py')
-    parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/deeplabv3plus_resnet50/iter_20000.pth')
+    # parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r101-d8_4xb4-20k_lx-1024x1024.py')
+    # parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/deeplabv3plus_resnet101/iter_20000.pth')
+    parser.add_argument('--config', default=ROOT / 'configs/models/mask2former/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_lx-1024x1024.py')
+    parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/mask2former_swin_l/iter_77500.pth')
     parser.add_argument(
-        '--work-dir', default='/HDD/etc/outputs/lx/test/deeplabv3plus',
+        '--work-dir', default='//HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/mask2former_swin-l',
         help=('if specified, the evaluation metric results will be dumped'
               'into the directory as json'))
     parser.add_argument(
@@ -29,7 +31,7 @@ def parse_args():
     parser.add_argument(
         '--show', action='store_true', help='show prediction results')
     parser.add_argument(
-        '--show-dir', default='/HDD/etc/outputs/lx/test/deeplabv3plus',
+        '--show-dir', default='//HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/mask2former_swin-l',
         help='directory where painted images will be saved. '
         'If specified, it will be automatically saved '
         'to the work_dir/timestamp/show_dir')
@@ -107,10 +109,10 @@ def main():
     if args.show or args.show_dir:
         cfg = trigger_visualization_hook(cfg, args)
 
-    # if args.tta:
-    #     cfg.test_dataloader.dataset.pipeline = cfg.tta_pipeline
-    #     cfg.tta_model.module = cfg.model
-    #     cfg.model = cfg.tta_model
+    if args.tta:
+        cfg.test_dataloader.dataset.pipeline = cfg.tta_pipeline
+        cfg.tta_model.module = cfg.model
+        cfg.model = cfg.tta_model
 
     # add output_dir in metric
     if args.out is not None:

@@ -19,8 +19,9 @@ ROOT = FILE.parents[2]
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
     # parser.add_argument('config', help='train config file path')
-    parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r50-d8_4xb4-20k_lx-1024x1024.py')
-    parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/deeplabv3plus_resnet50', help='the dir to save logs and models')
+    # parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r101-d8_4xb4-20k_lx-1024x1024.py')
+    parser.add_argument('--config', default=ROOT / 'configs/models/mask2former/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_lx-1024x1024.py')
+    parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/mask2former_swin_l', help='the dir to save logs and models')
     parser.add_argument(
         '--resume',
         action='store_true',
