@@ -125,7 +125,13 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                         points = ann['points']
                         shape_type = ann['shape_type']
                         
-                        if shape_type == 'rectangle':
+                        if shape_type == 'point':
+                            if not include_positive:
+                                continue
+                            _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], points)
+                            included = True
+                        
+                        elif shape_type == 'rectangle':
                             intersected_points = intersection(window, points)
                             
                             if intersected_points:
@@ -136,8 +142,16 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                     intersected_point[1] -= ymin
                                 _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
                         elif shape_type == 'polygon':
-                            if include_positive and len(points) <= 2:
+                            if include_positive:
+                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], points)
+                            else:
                                 continue
+                            
+                            if len(points) <= 2:
+                                if include_positive:
+                                    _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], points)
+                                else:
+                                    continue
                             intersected_points = intersected_polygon(window, points)
                             if intersected_points:
                                 included = True 
@@ -145,6 +159,8 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                     intersected_point[0] -= xmin
                                     intersected_point[1] -= ymin
                                 _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
+                        
+                            
                             
                     if included:
                         if norm_val is not None:
@@ -176,19 +192,20 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
-    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_labelme_patch_dataset'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_dataset'
+    # output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_labelme_patch_dataset_w_positive'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_labelme_patch_dataset_wo_positive'
     modes = ['train', 'val']
     classes_to_include = None
 
 
-    patch_overlap_ratio = 0.1
+    patch_overlap_ratio = 0.2
     patch_width = 1024
-    patch_height = 1024
+    patch_height = 512
     vis = True
-    include_positive = True
-    input_formats = ['jpg']
-    output_format = 'jpg'
+    include_positive = False
+    input_formats = ['bmp']
+    output_format = 'bmp'
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None

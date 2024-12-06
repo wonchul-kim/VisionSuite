@@ -5,6 +5,7 @@ import json
 import numpy as np
 from visionsuite.utils.dataset.converters.utils import xyxy2xywh
 from tqdm import tqdm
+import warnings
 
 
 def labelme2yolo_hbb(input_dir, output_dir, copy_image=True, 
@@ -57,7 +58,11 @@ def labelme2yolo_hbb(input_dir, output_dir, copy_image=True,
                         class2idx.update({label: len(class2idx)})
                     points = ann['points']
                     xyxy = []
-                    if shape_type == 'rectangle':
+                    
+                    if shape_type == 'point':
+                        warnings.warn(f"Positive point is included")
+                    
+                    elif shape_type == 'rectangle':
                         for point in points:
                             xyxy.append(point[0])
                             xyxy.append(point[1])

@@ -64,12 +64,12 @@ if __name__ == '__main__':
     # converter = DatasetConverter('obb_detection')
     # converter.run(input_dir, copy_image=copy_image, image_ext=image_ext)
     
-    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_labelme_patch_dataset'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_labelme_patch_dataset'
 
     copy_image = True
-    image_ext = 'jpg'
+    image_ext = 'bmp'
        
-    converter = DatasetConverter('instance_segmentation')
+    converter = DatasetConverter('hbb_detection')
     converter.run(input_dir, copy_image=copy_image, image_ext=image_ext)
     
             
