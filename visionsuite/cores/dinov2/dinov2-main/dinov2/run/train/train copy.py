@@ -42,31 +42,18 @@ class Trainer(object):
 
 
 def main():
-    from pathlib import Path 
-    FILE = Path(__file__).resolve()
-    ROOT = FILE.parents[2]
-        
-
     description = "Submitit launcher for DINOv2 training"
     train_args_parser = get_train_args_parser(add_help=False)
     parents = [train_args_parser]
     args_parser = get_args_parser(description=description, parents=parents)
     args = args_parser.parse_args()
 
-    args.nodes = 1
-    args.config_file = ROOT / 'configs/train/vitl16_short.yaml'
-    args.output_dir = '/HDD/etc/outputs/dinov2'
-
     setup_logging()
 
     assert os.path.exists(args.config_file), "Configuration file does not exist!"
-    # submit_jobs(Trainer, args, name="dinov2:train")
-    from dinov2.train import main as train_main
-    args.output_dir = args.output_dir
-    train_main(args)
-
+    submit_jobs(Trainer, args, name="dinov2:train")
     return 0
 
 
-if __name__ == '__main__':
-    main()
+if __name__ == "__main__":
+    sys.exit(main())
