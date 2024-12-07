@@ -18,16 +18,17 @@ from mmseg.apis import multi_gpu_test, single_gpu_test
 from mmseg.datasets import build_dataloader, build_dataset
 from mmseg.models import build_segmentor
 
+from pathlib import Path 
+FILE = Path(__file__).resolve()
+ROOT = FILE.parents[2]
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='mmseg test (and eval) a model')
-    parser.add_argument('config', help='test config file path')
-    parser.add_argument('checkpoint', help='checkpoint file')
-    parser.add_argument(
-        '--work-dir',
-        help=('if specified, the evaluation metric results will be dumped'
-              'into the directory as json'))
+    parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/lx/mask2former_beitv2_adapter_large_512_80k_lx_ss.py'))
+    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/vit-adapter/train/iter_49000.pth')
+    parser.add_argument('--work-dir', default='/HDD/etc/outputs/vit-adapter/test')
+
     parser.add_argument(
         '--aug-test', action='store_true', help='Use Flip and Multi scale aug')
     parser.add_argument('--out', help='output result file in pickle format')
@@ -45,7 +46,7 @@ def parse_args():
         ' for generic datasets, and "cityscapes" for Cityscapes')
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
-        '--show-dir', help='directory where painted images will be saved')
+        '--show-dir', default='/HDD/etc/outputs/vit-adapter/test')
     parser.add_argument(
         '--gpu-collect',
         action='store_true',
