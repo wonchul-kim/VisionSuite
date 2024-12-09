@@ -33,6 +33,7 @@ ROOT = FILE.parents[2]
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
     parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_lx_40k.py'))
+    # parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_ade20k_160k.py'))
     parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/cosnet_uper_r50')
     parser.add_argument(
         '--load-from', default='/HDD/weights/cosnet/cosnet_ade20k_iter_160000.pth')
@@ -167,6 +168,19 @@ def main():
             PALETTE=datasets[0].PALETTE)
     # add an attribute for visualization convenience
     model.CLASSES = datasets[0].CLASSES
+    
+    
+    import cv2 
+    import numpy as np
+    
+    # for dataset in datasets:
+    #     for batch in dataset:
+    #         img = batch['img'].data.cpu().detach().numpy()
+    #         mask = batch['gt_semantic_seg'].data.cpu().detach().numpy()
+    #         print(batch)
+    
+    
+    
     train_segmentor(
         model,
         datasets,

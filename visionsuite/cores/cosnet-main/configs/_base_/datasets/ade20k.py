@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = 'ADE20KDataset'
-data_root = '/datasets/ADEChallengeData2016'  # ade20k dataset path
+data_root = '/HDD/datasets/public/ade20k_2016/ADEChallengeData2016'  # ade20k dataset path
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 crop_size = (512, 512)

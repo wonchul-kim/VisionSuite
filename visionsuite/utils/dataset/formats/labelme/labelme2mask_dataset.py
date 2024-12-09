@@ -42,10 +42,6 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
                                         format='opencv')
             import numpy as np
             _mask = np.unique(mask)
-            print(_mask)
-            if 3. in list(_mask):
-                print(_mask)
-                print(json_file)
             mask_output_dir = osp.join(_output_dir, 'masks')
             if not osp.exists(mask_output_dir):
                 os.mkdir(mask_output_dir)
@@ -74,7 +70,7 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
             
 if __name__ == '__main__':
     input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_labelme_patch_dataset'
-    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset_'
+    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset'
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}
     # class2label = {'scratch': 1, 'tear': 2}
@@ -83,9 +79,25 @@ if __name__ == '__main__':
     modes = ['train', 'val']
     width, height = 1024, 1024
     vis = True
-    output_format = 'jpg'
+    output_format = 'png'
     input_format = 'jpg'
 
     labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format)
+
+
+    # input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/tmp_patch_dataset'
+    # output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/tmp_patch_dataset/vis'
+    # # class2label = {'tear': 1}
+    # # class2label = {'scratch': 1}
+    # # class2label = {'scratch': 1, 'tear': 2}
+    # # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
+    # class2label = {'timber': 1, 'screw': 2}
+    # modes = ['./']
+    # width, height = 1024, 1024
+    # vis = True
+    # output_format = 'png'
+    # input_format = 'jpg'
+
+    # labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format)
 
 

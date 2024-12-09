@@ -2,10 +2,10 @@ dataset_type = 'MaskDataset'
 data_root = "/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset"
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
-crop_size = (512, 512)
+crop_size = (1024, 1024)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
-    dict(type='LoadAnnotations', reduce_zero_label=True),
+    dict(type='LoadAnnotations', reduce_zero_label=False),
     dict(type='Resize', img_scale=crop_size, keep_ratio=True),#ratio_range=(0.8, 1.2)),
     # dict(type='Resize', img_scale=(2048, 512), ratio_range=(0.5, 2.0)),
     # dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
@@ -40,18 +40,18 @@ data = dict(
         data_root=data_root,
         img_dir='train/images',
         ann_dir='train/masks',
-        classes=('background', 'screw', 'timber'),
-        img_suffix='.jpg',
-        seg_map_suffix='.jpg',
+        classes=('background', 'timber', 'screw'),
+        img_suffix='.png',
+        seg_map_suffix='.png',
         pipeline=train_pipeline),
     val=dict(
         type=dataset_type,
         data_root=data_root,
         img_dir='val/images',
         ann_dir='val/masks',
-        classes=('background', 'screw', 'timber'),
-        img_suffix='.jpg',
-        seg_map_suffix='.jpg',
+        classes=('background', 'timber', 'screw'),
+        img_suffix='.png',
+        seg_map_suffix='.png',
         pipeline=test_pipeline),
     test=dict(
         type=dataset_type,
@@ -59,6 +59,6 @@ data = dict(
         img_dir='val/images',
         ann_dir='val/masks',
         classes=('background', 'timber', 'screw'),
-        img_suffix='.jpg',
-        seg_map_suffix='.jpg',
+        img_suffix='.png',
+        seg_map_suffix='.png',
         pipeline=test_pipeline))

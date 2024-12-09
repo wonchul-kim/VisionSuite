@@ -105,8 +105,8 @@ def split_dataset(input_dir, output_dir, image_formats, ratio, figs=True):
 
                 
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/ALL/INNER/2411105/data'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/ALL/INNER/2411105/split_dataset'
+    input_dir = '/HDD/datasets/projects/mr/241209/datasets/raw_dataset'
+    output_dir = '/HDD/datasets/projects/mr/241209/datasets/split_dataset'
     image_formats = ['bmp']
     ratio = 0.1
     figs = True

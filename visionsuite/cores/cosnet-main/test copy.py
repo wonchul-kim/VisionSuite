@@ -16,17 +16,12 @@ import cosnet
 from align_resize import AlignResize
 from zerowaste import ZeroWasteDataset
 from specwaste import SpectralWasteDataset
-from mask_dataset import MaskDataset
-
-from pathlib import Path 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[2]
 
 def parse_args():
     parser = argparse.ArgumentParser(
         description='mmseg test (and eval) a model')
-    parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_lx_40k.py'))
-    parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/cosnet_uper_r50/iter_10000.pth')
+    parser.add_argument('config', help='test config file path')
+    parser.add_argument('checkpoint', help='checkpoint file')
     parser.add_argument(
         '--aug-test', action='store_true', help='Use Flip and Multi scale aug')
     parser.add_argument('--out', help='output result file in pickle format')
@@ -43,9 +38,9 @@ def parse_args():
         help='evaluation metrics, which depends on the dataset, e.g., "mIoU"'
         ' for generic datasets, and "cityscapes" for Cityscapes')
     #parser.add_argument('--show', action='store_true', help='show results')
-    parser.add_argument('--show', default=True, help='show results')
+    parser.add_argument('--show', default=False, help='show results')
     parser.add_argument(
-        '--show-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/cosnet_uper_r50')
+        '--show-dir', default='', help='directory where painted images will be saved')
     parser.add_argument(
         '--gpu-collect',
         default=True,
@@ -70,7 +65,7 @@ def parse_args():
     parser.add_argument(
         '--opacity',
         type=float,
-        default=0.9,
+        default=0.5,
         help='Opacity of painted segmentation map. In (0, 1] range.')
     parser.add_argument('--local_rank', type=int, default=0)
     args = parser.parse_args()

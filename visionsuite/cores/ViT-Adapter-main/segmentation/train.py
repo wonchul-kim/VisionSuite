@@ -25,8 +25,8 @@ ROOT = FILE.parents[2]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
-    # parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/lx/mask2former_beitv2_adapter_large_512_80k_lx_ss.py'))
-    parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/ade20k/mask2former_beitv2_adapter_large_896_80k_ade20k_ss.py'))
+    parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/lx/mask2former_beitv2_adapter_large_512_80k_lx_ss.py'))
+    # parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/ade20k/mask2former_beitv2_adapter_large_896_80k_ade20k_ss.py'))
     parser.add_argument('--work-dir', default='/HDD/etc/outputs/vit-adapter/train')
     parser.add_argument(
         '--load-from', default='/HDD/weights/vit_adapter/mask2former_beitv2_adapter_large_896_80k_ade20k.pth')
