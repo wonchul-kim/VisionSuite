@@ -21,9 +21,7 @@ from dinov2.utils.config import setup
 from dinov2.utils.utils import CosineScheduler
 
 from dinov2.train.ssl_meta_arch import SSLMetaArch
-from pathlib import Path 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[2]
+
 
 torch.backends.cuda.matmul.allow_tf32 = True  # PyTorch 1.12 sets this to False by default
 logger = logging.getLogger("dinov2")
@@ -31,7 +29,7 @@ logger = logging.getLogger("dinov2")
 
 def get_args_parser(add_help: bool = True):
     parser = argparse.ArgumentParser("DINOv2 training", add_help=add_help)
-    parser.add_argument("--config-file", default=str(ROOT / "dinov2/configs/train/vitl16_short.yaml"))
+    parser.add_argument("--config-file", default="", metavar="FILE", help="path to config file")
     parser.add_argument(
         "--no-resume",
         action="store_true",
@@ -51,7 +49,8 @@ For python-based LazyConfig, use "path.key=value".
     )
     parser.add_argument(
         "--output-dir",
-        default='/HDD/etc/outputs/dinov2/train',
+        "--output_dir",
+        default="",
         type=str,
         help="Output directory to save logs and checkpoints",
     )

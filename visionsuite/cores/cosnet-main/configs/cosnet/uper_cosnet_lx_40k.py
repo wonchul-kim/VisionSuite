@@ -25,7 +25,7 @@ model = dict(
 
 
 
-gpu_multiples = 1  # we used 1 gpu
+gpu_multiples = 4  # we used 1 gpu
 # optimizer
 optimizer = dict(type='AdamW', lr=0.00009*gpu_multiples, betas=(0.9, 0.999), weight_decay=0.01)
 optimizer_config = dict()
@@ -33,6 +33,8 @@ optimizer_config = dict()
 lr_config = dict(policy='poly', warmup='linear', warmup_iters=1500,
                  warmup_ratio=1e-6, power=1.0, min_lr=1e-8, by_epoch=False)
 # runtime settings
-runner = dict(type='IterBasedRunner', max_iters=160000//gpu_multiples)
-checkpoint_config = dict(by_epoch=False, interval=16000//gpu_multiples)
-evaluation = dict(interval=8000//gpu_multiples, metric='mIoU', save_best='mIoU')
+runner = dict(type='IterBasedRunner', max_iters=40000//gpu_multiples)
+# checkpoint_config = dict(by_epoch=False, interval=16000//gpu_multiples)
+# evaluation = dict(interval=8000//gpu_multiples, metric='mIoU', save_best='mIoU')
+checkpoint_config = dict(by_epoch=False, interval=200, create_symlink=False)
+evaluation = dict(interval=200, metric='mIoU', save_best='mIoU')
