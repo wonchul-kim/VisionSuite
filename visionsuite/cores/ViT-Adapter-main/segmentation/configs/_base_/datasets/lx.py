@@ -1,7 +1,7 @@
 # dataset settings
 dataset_type = 'MaskDataset'
 data_root = "/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset"
-crop_size = (1024, 1024)
+crop_size = (768, 768)
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 train_pipeline = [

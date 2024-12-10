@@ -5,7 +5,7 @@ _base_ = [
     '../_base_/default_runtime.py',
     '../_base_/schedules/schedule_80k.py'
 ]
-crop_size = (512, 512)
+crop_size = (768, 768)
 # pretrained = 'https://conversationhub.blob.core.windows.net/beit-share-public/beitv2/beitv2_large_patch16_224_pt1k_ft21k.pth'
 pretrained = '/HDD/weights/beit/beitv2_large_patch16_224_pt1k_ft21k.pth'
 # please download the coco-stuff pre-trained model
@@ -16,7 +16,7 @@ model = dict(
     pretrained=pretrained,
     backbone=dict(
         type='BEiTAdapter',
-        img_size=512,
+        img_size=768,
         patch_size=16,
         embed_dim=1024,
         depth=24,

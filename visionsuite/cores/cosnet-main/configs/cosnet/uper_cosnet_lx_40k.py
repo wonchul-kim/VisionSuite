@@ -33,7 +33,7 @@ optimizer_config = dict()
 lr_config = dict(policy='poly', warmup='linear', warmup_iters=1500,
                  warmup_ratio=1e-6, power=1.0, min_lr=1e-8, by_epoch=False)
 # runtime settings
-runner = dict(type='IterBasedRunner', max_iters=80000//gpu_multiples)
+runner = dict(type='IterBasedRunner', max_iters=160000//gpu_multiples)
 # checkpoint_config = dict(by_epoch=False, interval=16000//gpu_multiples)
 # evaluation = dict(interval=8000//gpu_multiples, metric='mIoU', save_best='mIoU')
 checkpoint_config = dict(by_epoch=False, interval=1000, create_symlink=False)

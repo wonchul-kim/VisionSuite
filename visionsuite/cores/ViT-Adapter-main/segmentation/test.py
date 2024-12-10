@@ -26,8 +26,8 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='mmseg test (and eval) a model')
     parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/lx/mask2former_beitv2_adapter_large_512_80k_lx_ss.py'))
-    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/vit-adapter/train/iter_49000.pth')
-    parser.add_argument('--work-dir', default='/HDD/etc/outputs/vit-adapter/test')
+    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/vit-adapter/train/iter_40000.pth')
+    parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/vit-adapter')
 
     parser.add_argument(
         '--aug-test', action='store_true', help='Use Flip and Multi scale aug')
@@ -46,7 +46,7 @@ def parse_args():
         ' for generic datasets, and "cityscapes" for Cityscapes')
     parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument(
-        '--show-dir', default='/HDD/etc/outputs/vit-adapter/test')
+        '--show-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/vit-adapter')
     parser.add_argument(
         '--gpu-collect',
         action='store_true',
@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument(
         '--opacity',
         type=float,
-        default=0.5,
+        default=0.8,
         help='Opacity of painted segmentation map. In (0, 1] range.')
     parser.add_argument('--local_rank', type=int, default=0)
     args = parser.parse_args()
