@@ -200,7 +200,7 @@ class Dinov2ForSemanticSegmentation(Dinov2PreTrainedModel):
     if labels is not None:
       # important: we're going to use 0 here as ignore index instead of the default -100
       # as we don't want the model to learn to predict background
-      loss_fct = torch.nn.CrossEntropyLoss(ignore_index=0)
+      loss_fct = torch.nn.CrossEntropyLoss(ignore_index=255)
       loss = loss_fct(logits.squeeze(), labels.squeeze())
 
     return SemanticSegmenterOutput(
