@@ -26,7 +26,7 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description='mmseg test (and eval) a model')
     parser.add_argument('--config', default= str(ROOT / 'ViT-Adapter-main/segmentation/configs/lx/mask2former_beitv2_adapter_large_512_80k_lx_ss.py'))
-    parser.add_argument('--checkpoint', default='/HDD/etc/outputs/vit-adapter/train/iter_40000.pth')
+    parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/vit-adapter/iter_80000.pth')
     parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/vit-adapter')
 
     parser.add_argument(

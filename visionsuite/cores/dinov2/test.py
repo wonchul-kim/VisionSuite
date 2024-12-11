@@ -55,9 +55,8 @@ class SegmentationDataset(Dataset):
 
     return image, target, original_image, original_segmentation_map, item['filename']
 
-# weights = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/dinov2/weights/80.pth'
-weights = None
-epochs = 301
+weights = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/dinov2/weights/80.pth'
+epochs = 100
 batch_size = 8
 model_height = 980
 model_width = 980
@@ -215,7 +214,6 @@ model = Dinov2ForSemanticSegmentation.from_pretrained("facebook/dinov2-base", id
 if weights is not None and osp.exists(weights): 
     state_dict = torch.load(weights)
     model.load_state_dict(state_dict)
-    print(f">>> LOADED model: {weights}")
     
 
 for name, param in model.named_parameters():

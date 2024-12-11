@@ -4,11 +4,11 @@ optimizer_config = dict()
 # learning policy
 lr_config = dict(policy="poly", power=0.9, min_lr=1e-5, by_epoch=False)
 # runtime settings
-runner = dict(type="EpochBasedRunner", max_epochs=200)
-# runner = dict(type="IterBasedRunner", max_iters=2100)
-checkpoint_config = dict(by_epoch=True, interval=10, create_symlink=False)
-evaluation = dict(interval=2000, metric="mIoU", pre_eval=True)
-evaluation_edge = dict(interval=2000, metric="Fscore", pre_eval=True)
+# runner = dict(type="EpochBasedRunner", max_epochs=200)
+runner = dict(type="IterBasedRunner", max_iters=2000)
+checkpoint_config = dict(by_epoch=False, interval=10, create_symlink=False)
+evaluation = dict(interval=1, metric="mIoU", pre_eval=True)
+evaluation_edge = dict(interval=1000, metric="Fscore", pre_eval=True)
 
 default_hooks = dict(
     timer=dict(type='IterTimerHook'),
