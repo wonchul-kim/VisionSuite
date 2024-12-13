@@ -150,7 +150,7 @@ model = dict(
 
 # optimizer
 embed_multi = dict(lr_mult=1.0, decay_mult=0.0)
-max_iters = 90000
+max_iters = 40000
 train_cfg = dict(type='IterBasedTrainLoop', max_iters=max_iters, val_interval=max_iters/300)
 
 optimizer = dict(

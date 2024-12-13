@@ -69,8 +69,8 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_labelme_patch_dataset'
-    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset'
+    input_dir = '/HDD/datasets/projects/LX/24.12.12/split_labelme_patch_dataset'
+    output_dir = '/HDD/datasets/projects/LX/24.12.12/split_mask_patch_dataset'
     # class2label = {'tear': 1}
     # class2label = {'scratch': 1}
     # class2label = {'scratch': 1, 'tear': 2}
@@ -80,7 +80,7 @@ if __name__ == '__main__':
     width, height = 1024, 1024
     vis = True
     output_format = 'png'
-    input_format = 'jpg'
+    input_format = 'png'
 
     labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format)
 
