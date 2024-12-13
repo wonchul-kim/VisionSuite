@@ -37,11 +37,8 @@ class Decoder(nn.Module):
         return self.decoder(x)
 
 class LinearProbingSam2(nn.Module):
-    def __init__(self, in_channels, num_classes):
+    def __init__(self, in_channels, num_classes, sam2_checkpoint, model_cfg):
         super().__init__()
-        sam2_checkpoint = "/HDD/weights/sam2/sam2_hiera_tiny.pt"  # @param ["sam2_hiera_tiny.pt", "sam2_hiera_small.pt", "sam2_hiera_base_plus.pt", "sam2_hiera_large.pt"]
-        # model_cfg = "/HDD/sam2-main/sam2/configs/sam2/sam2_hiera_s.yaml" # @param ["sam2_hiera_t.yaml", "sam2_hiera_s.yaml", "sam2_hiera_b+.yaml", "sam2_hiera_l.yaml"]
-        model_cfg = "sam2_hiera_t.yaml" # @param ["sam2_hiera_t.yaml", "sam2_hiera_s.yaml", "sam2_hiera_b+.yaml", "sam2_hiera_l.yaml"]
 
         model = build_sam2(model_cfg, sam2_checkpoint, device="cpu")
         print(model.image_encoder)

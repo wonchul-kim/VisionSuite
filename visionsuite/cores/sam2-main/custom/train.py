@@ -59,11 +59,11 @@ class SegmentationDataset(Dataset):
 # weights = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/dinov2/weights/80.pth'
 weights = None
 epochs = 301
-batch_size = 8
+batch_size = 16
 model_height = 1024
 model_width = 1024
 input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset'
-output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/sam2'
+output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/sam2/large'
 if not osp.exists(output_dir):
     os.mkdir(output_dir)
 freq_save_model = 20
