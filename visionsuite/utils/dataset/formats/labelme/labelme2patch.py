@@ -142,11 +142,6 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
                                     intersected_point[1] -= ymin
                                 _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
                         elif shape_type == 'polygon':
-                            if include_positive:
-                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], points)
-                            else:
-                                continue
-                            
                             if len(points) <= 2:
                                 if include_positive:
                                     _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], points)
@@ -192,20 +187,19 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_dataset'
-    # output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_labelme_patch_dataset_w_positive'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_labelme_patch_dataset_wo_positive'
+    input_dir = '/HDD/datasets/projects/LX/24.12.12/split_dataset'
+    output_dir = '/HDD/datasets/projects/LX/24.12.12/split_labelme_patch_dataset'
     modes = ['train', 'val']
     classes_to_include = None
 
 
     patch_overlap_ratio = 0.2
     patch_width = 1024
-    patch_height = 512
+    patch_height = 1024
     vis = True
-    include_positive = False
-    input_formats = ['bmp']
-    output_format = 'bmp'
+    include_positive = True
+    input_formats = ['jpg']
+    output_format = 'png'
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None
