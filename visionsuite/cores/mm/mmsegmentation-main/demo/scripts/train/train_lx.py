@@ -21,7 +21,7 @@ def parse_args():
     # parser.add_argument('config', help='train config file path')
     # parser.add_argument('--config', default=ROOT / 'configs/models/deeplabv3plus/deeplabv3plus_r101-d8_4xb4-20k_lx-1024x1024.py')
     parser.add_argument('--config', default=ROOT / 'configs/models/mask2former/mask2former_swin-l-in22k-384x384-pre_8xb2-90k_lx-1024x1024.py')
-    parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.12.12/mask2former_swin_l', help='the dir to save logs and models')
+    parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.12.12/outputs/mask2former_swin_l', help='the dir to save logs and models')
     parser.add_argument(
         '--resume',
         action='store_true',

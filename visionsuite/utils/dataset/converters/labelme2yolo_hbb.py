@@ -98,8 +98,8 @@ def labelme2yolo_object_detection(input_dir, output_dir, copy_image, image_exts)
             
             
 if __name__ == '__main__':
-    input_dir = '/storage/projects/ktg/24.07.10/split_dataset'
-    output_dir = '/storage/projects/ktg/24.07.10/split_datasets_yolo_hbb'
+    input_dir = '/DeepLearning/_athena_tests/datasets/rectangle2/split_dataset'
+    output_dir = '/DeepLearning/_athena_tests/datasets/rectangle2/split_yolo_hbb_dataset'
 
     copy_image = True
     image_ext = 'bmp'

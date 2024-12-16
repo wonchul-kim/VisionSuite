@@ -1,16 +1,16 @@
 dataset_type = 'MaskDataset'
-data_root = "/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset"
+data_root = "/HDD/datasets/projects/LX/24.12.12/split_mask_patch_dataset"
 img_norm_cfg = dict(
     mean=[123.675, 116.28, 103.53], std=[58.395, 57.12, 57.375], to_rgb=True)
 crop_size = (1024, 1024)
 train_pipeline = [
     dict(type='LoadImageFromFile'),
     dict(type='LoadAnnotations', reduce_zero_label=False),
-    dict(type='Resize', img_scale=crop_size, keep_ratio=True),#ratio_range=(0.8, 1.2)),
-    # dict(type='Resize', img_scale=(2048, 512), ratio_range=(0.5, 2.0)),
-    # dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
+    # dict(type='Resize', img_scale=crop_size, keep_ratio=True),#ratio_range=(0.8, 1.2)),
+    dict(type='Resize', img_scale=(2048, 512), ratio_range=(0.5, 2.0)),
+    dict(type='RandomCrop', crop_size=crop_size, cat_max_ratio=0.75),
     dict(type='RandomFlip', prob=0.5),
-    # dict(type='PhotoMetricDistortion'),
+    dict(type='PhotoMetricDistortion'),
     dict(type='Normalize', **img_norm_cfg),
     dict(type='Pad', size=crop_size, pad_val=0, seg_pad_val=255),
     dict(type='DefaultFormatBundle'),

@@ -25,8 +25,9 @@ ROOT = FILE.parents[2]
 def parse_args():
     parser = argparse.ArgumentParser(
         description='mmseg test (and eval) a model')
-    parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_lx_40k.py'))
-    parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/train/cosnet_uper_r50/iter_10000.pth')
+    # parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_lx_40k.py'))
+    parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_lx_40k_1024x1024.py'))
+    parser.add_argument('--checkpoint', default='/HDD/datasets/projects/LX/24.12.12/outputs/cosnet_uper_r101/train/iter_10000.pth')
     parser.add_argument(
         '--aug-test', action='store_true', help='Use Flip and Multi scale aug')
     parser.add_argument('--out', help='output result file in pickle format')
@@ -45,7 +46,7 @@ def parse_args():
     #parser.add_argument('--show', action='store_true', help='show results')
     parser.add_argument('--show', default=True, help='show results')
     parser.add_argument(
-        '--show-dir', default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/mm/test/cosnet_uper_r50')
+        '--show-dir', default='/HDD/datasets/projects/LX/24.12.12/outputs/cosnet_uper_r101/test')
     parser.add_argument(
         '--gpu-collect',
         default=True,
