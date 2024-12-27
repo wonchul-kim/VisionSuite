@@ -8,7 +8,7 @@ from mmseg.registry import MODELS
 from mmseg.utils import register_all_modules
 from mmengine.config import Config
 from mmengine.runner import load_checkpoint
-
+from mmseg.apis import init_model, inference_model
 import dinov2.eval.segmentation.models
 
 class CenterPadding(torch.nn.Module):
@@ -35,7 +35,8 @@ register_all_modules()
 
 def create_segmenter(cfg, backbone_model):
     # Initialize model from configuration
-    model = MODELS.build(cfg.model)
+    # model = MODELS.build(cfg.model)
+    model = init_model(cfg)
     # Replace backbone forward method with custom method
     model.backbone.forward = partial(
         backbone_model.get_intermediate_layers,
@@ -63,7 +64,7 @@ backbone_name = f"dinov2_{backbone_arch}"
 
 backbone_model = torch.hub.load(repo_or_dir="facebookresearch/dinov2", model=backbone_name)
 backbone_model.eval()
-# backbone_model.cuda()
+backbone_model.cuda()
 print(backbone_model)
 
 
@@ -93,10 +94,11 @@ cfg = Config.fromstring(cfg_str, file_format=".py")
 if HEAD_TYPE == "ms":
     cfg.data.test.pipeline[1]["img_ratios"] = cfg.data.test.pipeline[1]["img_ratios"][:HEAD_SCALE_COUNT]
     print("scales:", cfg.data.test.pipeline[1]["img_ratios"])
-
+del cfg.test_pipeline[1]
+cfg.test_pipeline.append(dict(type='PackSegInputs'))
 model = create_segmenter(cfg, backbone_model=backbone_model)
 load_checkpoint(model, head_checkpoint_url, map_location="cpu")
-# model.cuda()
+model.cuda()
 model.eval()
 print(model)
 
@@ -119,30 +121,45 @@ image = load_image_from_url(EXAMPLE_IMAGE_URL)
 image.save("/HDD/etc/ori.png")
 
 
-# # Semantic segmentation on sample image =======================================================
-# # ================================================================================]
-# import numpy as np
+# Semantic segmentation on sample image =======================================================
+# ================================================================================]
+import numpy as np
 
-# import dinov2.eval.segmentation.utils.colormaps as colormaps
-
-
-# DATASET_COLORMAPS = {
-#     "ade20k": colormaps.ADE20K_COLORMAP,
-#     "voc2012": colormaps.VOC2012_COLORMAP,
-# }
+import dinov2.eval.segmentation.utils.colormaps as colormaps
 
 
-# def render_segmentation(segmentation_logits, dataset):
-#     colormap = DATASET_COLORMAPS[dataset]
-#     colormap_array = np.array(colormap, dtype=np.uint8)
-#     segmentation_values = colormap_array[segmentation_logits + 1]
-#     return Image.fromarray(segmentation_values)
+DATASET_COLORMAPS = {
+    "ade20k": colormaps.ADE20K_COLORMAP,
+    "voc2012": colormaps.VOC2012_COLORMAP,
+}
 
 
-# array = np.array(image)[:, :, ::-1] # BGR
+def render_segmentation(segmentation_logits, dataset):
+    colormap = DATASET_COLORMAPS[dataset]
+    colormap_array = np.array(colormap, dtype=np.uint8)
+    segmentation_values = colormap_array[segmentation_logits + 1][0]
+    return Image.fromarray(segmentation_values)
+
+
+array = np.array(image)[:, :, ::-1] # BGR
 # segmentation_logits = inference_segmentor(model, array)[0]
 # segmented_image = render_segmentation(segmentation_logits, HEAD_DATASET)
-# segmented_image.save("/HDD/etc/segmented_image.png")
+# Preprocess image for the model
+arr = array.copy()
+img_tensor = torch.from_numpy(arr).permute(2, 0, 1).unsqueeze(0).float()  # Convert to Tensor and add batch dimension
+img_tensor = img_tensor / 255.0  # Normalize if needed
+img_tensor = img_tensor.cuda()
+
+with torch.no_grad():
+    # result = inference_model(model, array)
+    result = model.predict(img_tensor)
+
+segmentation_logits = result[0]
+
+from mmseg.apis import show_result_pyplot
+segmented_image = render_segmentation(segmentation_logits.pred_sem_seg.data.cpu().detach(), HEAD_DATASET)
+
+segmented_image.save("/HDD/etc/segmented_image.png")
 
 # Load pretrained segmentation model (Mask2Former) =======================================================
 # ================================================================================]
@@ -156,7 +173,7 @@ cfg = Config.fromstring(cfg_str, file_format=".py")
 
 model = MODELS.build(cfg.model)
 load_checkpoint(model, CHECKPOINT_URL, map_location="cpu")
-# model.cuda()
+model.cuda()
 model.eval()
 
 # Semantic segmentation on sample image =======================================================

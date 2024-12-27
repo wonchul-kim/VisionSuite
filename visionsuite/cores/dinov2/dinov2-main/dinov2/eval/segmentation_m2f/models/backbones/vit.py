@@ -507,7 +507,7 @@ class TIMMVisionTransformer(BaseModule):
         if isinstance(pretrained, str):
             # logger = get_root_logger()
             # logger = MMLogger.get_instance(name='mmseg', log_file='train.log', log_level='INFO')
-            logger = MMLogger.get_instance()
+            logger = MMLogger.get_instance(name='VT')
             load_checkpoint(self, pretrained, map_location="cpu", strict=False, logger=logger)
 
     def forward_features(self, x):
