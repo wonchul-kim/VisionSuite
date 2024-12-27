@@ -37,9 +37,12 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from mmcv.runner import BaseModule, load_checkpoint
-from mmseg.ops import resize
-from mmseg.utils import get_root_logger
+from mmengine.model import BaseModule
+from mmengine.runner import load_checkpoint
+
+from mmseg.models.utils import resize
+from mmengine.logging import MMLogger
+# from mmseg.utils import get_root_logger
 from torch import Tensor
 
 from .drop_path import DropPath
@@ -502,7 +505,9 @@ class TIMMVisionTransformer(BaseModule):
 
     def init_weights(self, pretrained=None):
         if isinstance(pretrained, str):
-            logger = get_root_logger()
+            # logger = get_root_logger()
+            # logger = MMLogger.get_instance(name='mmseg', log_file='train.log', log_level='INFO')
+            logger = MMLogger.get_instance()
             load_checkpoint(self, pretrained, map_location="cpu", strict=False, logger=logger)
 
     def forward_features(self, x):

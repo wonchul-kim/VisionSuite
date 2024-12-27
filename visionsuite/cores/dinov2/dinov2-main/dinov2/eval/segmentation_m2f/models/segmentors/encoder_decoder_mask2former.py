@@ -6,11 +6,11 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmseg.core import add_prefix
+from mmseg.utils import add_prefix
 from mmseg.models import builder
 from mmseg.models.builder import SEGMENTORS
 from mmseg.models.segmentors.base import BaseSegmentor
-from mmseg.ops import resize
+from mmseg.models.utils import resize
 
 
 @SEGMENTORS.register_module()
@@ -49,6 +49,18 @@ class EncoderDecoderMask2Former(BaseSegmentor):
         self.test_cfg = test_cfg
 
         assert self.with_decode_head
+
+    def _forward(self, inputs, data_samples=None):
+        pass
+
+    def loss(self, inputs, data_samples):
+        """Calculate losses from a batch of inputs and data samples."""
+        pass
+
+    def predict(self, inputs, data_samples=None):
+        """Predict results from a batch of inputs and data samples with post-
+        processing."""
+        pass
 
     def _init_decode_head(self, decode_head):
         """Initialize ``decode_head``"""

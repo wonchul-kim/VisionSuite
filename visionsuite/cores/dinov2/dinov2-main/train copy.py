@@ -4,10 +4,7 @@ from functools import partial
 
 import torch
 import torch.nn.functional as F
-from mmseg.registry import MODELS
-from mmseg.utils import register_all_modules
-from mmengine.config import Config
-from mmengine.runner import load_checkpoint
+from mmseg.apis import init_segmentor, inference_segmentor
 
 import dinov2.eval.segmentation.models
 
@@ -29,14 +26,9 @@ class CenterPadding(torch.nn.Module):
         output = F.pad(x, pads)
         return output
 
-# Register all modules in mmsegmentation
-register_all_modules()
-
 
 def create_segmenter(cfg, backbone_model):
-    # Initialize model from configuration
-    model = MODELS.build(cfg.model)
-    # Replace backbone forward method with custom method
+    model = init_segmentor(cfg)
     model.backbone.forward = partial(
         backbone_model.get_intermediate_layers,
         n=cfg.model.backbone.out_indices,
@@ -72,6 +64,7 @@ print(backbone_model)
 import urllib
 
 import mmcv
+from mmcv.runner import load_checkpoint
 
 
 def load_config_from_url(url: str) -> str:
@@ -89,7 +82,7 @@ head_config_url = f"{DINOV2_BASE_URL}/{backbone_name}/{backbone_name}_{HEAD_DATA
 head_checkpoint_url = f"{DINOV2_BASE_URL}/{backbone_name}/{backbone_name}_{HEAD_DATASET}_{HEAD_TYPE}_head.pth"
 
 cfg_str = load_config_from_url(head_config_url)
-cfg = Config.fromstring(cfg_str, file_format=".py")
+cfg = mmcv.Config.fromstring(cfg_str, file_format=".py")
 if HEAD_TYPE == "ms":
     cfg.data.test.pipeline[1]["img_ratios"] = cfg.data.test.pipeline[1]["img_ratios"][:HEAD_SCALE_COUNT]
     print("scales:", cfg.data.test.pipeline[1]["img_ratios"])
@@ -152,36 +145,16 @@ CONFIG_URL = f"{DINOV2_BASE_URL}/dinov2_vitg14/dinov2_vitg14_ade20k_m2f_config.p
 CHECKPOINT_URL = f"{DINOV2_BASE_URL}/dinov2_vitg14/dinov2_vitg14_ade20k_m2f.pth"
 
 cfg_str = load_config_from_url(CONFIG_URL)
-cfg = Config.fromstring(cfg_str, file_format=".py")
+cfg = mmcv.Config.fromstring(cfg_str, file_format=".py")
 
-model = MODELS.build(cfg.model)
+model = init_segmentor(cfg)
 load_checkpoint(model, CHECKPOINT_URL, map_location="cpu")
 # model.cuda()
 model.eval()
 
 # Semantic segmentation on sample image =======================================================
 # ================================================================================]
-import numpy as np
 array = np.array(image)[:, :, ::-1] # BGR
-# segmentation_logits = inference_segmentor(model, array)[0]
-# segmented_image = render_segmentation(segmentation_logits, "ade20k")
-# segmented_image.save('/HDD/etc/segmented_image_m2f.png')
-
-# Preprocess image for the model
-img_tensor = torch.from_numpy(array).permute(2, 0, 1).unsqueeze(0).float()  # Convert to Tensor and add batch dimension
-img_tensor = img_tensor / 255.0  # Normalize if needed
-
-# Forward pass through the model
-with torch.no_grad():
-    result = model.simple_test(img_tensor)
-
-# Post-process the result (e.g., obtain logits, segmentation map)
-segmentation_logits = result[0]['pred_sem_seg']  # Adjust based on output format
-
-from mmseg.apis import show_result_pyplot
-segmented_image = show_result_pyplot(
-    image, segmentation_logits, cfg, palette='ade20k', show=False
-)
-
-# Save segmented image
+segmentation_logits = inference_segmentor(model, array)[0]
+segmented_image = render_segmentation(segmentation_logits, "ade20k")
 segmented_image.save('/HDD/etc/segmented_image_m2f.png')

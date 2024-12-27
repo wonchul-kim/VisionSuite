@@ -11,12 +11,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.utils.checkpoint as cp
-from mmcv.cnn import Linear, build_activation_layer, build_norm_layer, xavier_init
+from mmcv.cnn import Linear, build_activation_layer, build_norm_layer#, xavier_init
+from mmengine.model import xavier_init, ModuleList#, force_fp32
+
 from mmcv.cnn.bricks.drop import build_dropout
-from mmcv.cnn.bricks.registry import FEEDFORWARD_NETWORK, TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE
+# from mmcv.cnn.bricks.registry import FEEDFORWARD_NETWORK, TRANSFORMER_LAYER, TRANSFORMER_LAYER_SEQUENCE
+from mmseg.registry import MODELS
 from mmcv.cnn.bricks.transformer import BaseTransformerLayer, TransformerLayerSequence, build_transformer_layer_sequence
-from mmcv.runner.base_module import BaseModule, Sequential
-from mmcv.utils import deprecated_api_warning, to_2tuple
+from mmengine.model import BaseModule, Sequential
+from mmengine.utils import deprecated_api_warning, to_2tuple
 from torch.nn.init import normal_
 
 from ..builder import TRANSFORMER
@@ -239,7 +242,7 @@ def inverse_sigmoid(x, eps=1e-5):
     return torch.log(x1 / x2)
 
 
-@FEEDFORWARD_NETWORK.register_module(force=True)
+@MODELS.register_module(force=True)
 class FFN(BaseModule):
     """Implements feed-forward networks (FFNs) with identity connection.
     Args:
@@ -312,7 +315,7 @@ class FFN(BaseModule):
         return identity + self.dropout_layer(out)
 
 
-@TRANSFORMER_LAYER.register_module()
+@MODELS.register_module()
 class DetrTransformerDecoderLayer(BaseTransformerLayer):
     """Implements decoder layer in DETR transformer.
 
@@ -360,7 +363,7 @@ class DetrTransformerDecoderLayer(BaseTransformerLayer):
         assert set(operation_order) == set(["self_attn", "norm", "cross_attn", "ffn"])
 
 
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
+@MODELS.register_module()
 class DetrTransformerEncoder(TransformerLayerSequence):
     """TransformerEncoder of DETR.
 
@@ -389,7 +392,7 @@ class DetrTransformerEncoder(TransformerLayerSequence):
         return x
 
 
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
+@MODELS.register_module()
 class DetrTransformerDecoder(TransformerLayerSequence):
     """Implements the decoder in DETR transformer.
 
@@ -513,7 +516,7 @@ class Transformer(BaseModule):
         return out_dec, memory
 
 
-@TRANSFORMER_LAYER_SEQUENCE.register_module()
+@MODELS.register_module()
 class DeformableDetrTransformerDecoder(TransformerLayerSequence):
     """Implements the decoder in DETR transformer.
 

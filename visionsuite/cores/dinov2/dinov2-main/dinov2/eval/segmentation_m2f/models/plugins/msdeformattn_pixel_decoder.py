@@ -6,15 +6,17 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import PLUGIN_LAYERS, Conv2d, ConvModule, caffe2_xavier_init, normal_init, xavier_init
+from mmcv.cnn import Conv2d, ConvModule
+from mmseg.registry import MODELS
+from mmengine.model import caffe2_xavier_init, normal_init, xavier_init
 from mmcv.cnn.bricks.transformer import build_positional_encoding, build_transformer_layer_sequence
-from mmcv.runner import BaseModule, ModuleList
+from mmengine.model import BaseModule, ModuleList
 
 from ...core.anchor import MlvlPointGenerator
 from ..utils.transformer import MultiScaleDeformableAttention
 
 
-@PLUGIN_LAYERS.register_module()
+@MODELS.register_module()
 class MSDeformAttnPixelDecoder(BaseModule):
     """Pixel decoder with multi-scale deformable attention.
 

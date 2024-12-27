@@ -7,11 +7,12 @@ import math
 
 import torch
 import torch.nn as nn
-from mmcv.cnn.bricks.transformer import POSITIONAL_ENCODING
-from mmcv.runner import BaseModule
+# from mmcv.cnn.bricks.transformer import POSITIONAL_ENCODING
+from mmseg.registry import MODELS
+from mmengine.model import BaseModule
 
 
-@POSITIONAL_ENCODING.register_module()
+@MODELS.register_module()
 class SinePositionalEncoding(BaseModule):
     """Position encoding with sine and cosine functions.
 
@@ -95,7 +96,7 @@ class SinePositionalEncoding(BaseModule):
         return repr_str
 
 
-@POSITIONAL_ENCODING.register_module()
+@MODELS.register_module()
 class LearnedPositionalEncoding(BaseModule):
     """Position embedding with learnable embedding weights.
 

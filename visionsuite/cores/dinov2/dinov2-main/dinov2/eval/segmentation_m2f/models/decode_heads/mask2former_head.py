@@ -8,10 +8,12 @@ import copy
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from mmcv.cnn import Conv2d, build_plugin_layer, caffe2_xavier_init
+from mmcv.cnn import Conv2d, build_plugin_layer#, caffe2_xavier_init
+from mmengine.model import caffe2_xavier_init, ModuleList#, force_fp32
 from mmcv.cnn.bricks.transformer import build_positional_encoding, build_transformer_layer_sequence
 from mmcv.ops import point_sample
-from mmcv.runner import ModuleList, force_fp32
+# from mmengine.runner import ModuleList, force_fp32
+from .fp16_utils import force_fp32
 from mmseg.models.builder import HEADS, build_loss
 from mmseg.models.decode_heads.decode_head import BaseDecodeHead
 
@@ -20,7 +22,7 @@ from ..builder import build_assigner
 from ..utils import get_uncertain_point_coords_with_randomness
 
 
-@HEADS.register_module()
+@HEADS.register_module(force=True)
 class Mask2FormerHead(BaseDecodeHead):
     """Implements the Mask2Former head.
 
@@ -338,7 +340,7 @@ class Mask2FormerHead(BaseDecodeHead):
 
         return loss_cls, loss_mask, loss_dice
 
-    @force_fp32(apply_to=("all_cls_scores", "all_mask_preds"))
+    # @force_fp32(apply_to=("all_cls_scores", "all_mask_preds"))
     def loss(self, all_cls_scores, all_mask_preds, gt_labels_list, gt_masks_list, img_metas):
         """Loss function.
 
