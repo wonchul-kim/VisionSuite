@@ -32,9 +32,9 @@ ROOT = FILE.parents[2]
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Train a segmentor')
-    parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_lx_40k_1024x1024.py'))
+    parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_tenneco_outer_40k_1120x768.py'))
     # parser.add_argument('--config', default=str(ROOT / 'cores/cosnet-main/configs/cosnet/uper_cosnet_ade20k_160k.py'))
-    parser.add_argument('--work-dir', default='/HDD/datasets/projects/LX/24.12.12/outputs/cosnet_uper_r101')
+    parser.add_argument('--work-dir', default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/241120/outputs/cosnet/train')
     parser.add_argument(
         '--load-from', default='/HDD/weights/cosnet/cosnet_ade20k_iter_160000.pth')
     parser.add_argument(
