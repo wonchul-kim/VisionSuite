@@ -7,8 +7,8 @@ from threading import Thread
 
 import numpy as np
 
-from athena.src.data.slice.src.base_slicer import BaseSlicer
-from athena.src.data.slice.src.make_patches import get_imgs_info_from_patches
+from visionsuite.engines.data.slicer.src.base_slicer import BaseSlicer
+from visionsuite.engines.data.slicer.src.make_patches import get_imgs_info_from_patches
 
 
 class Slicer(BaseSlicer):

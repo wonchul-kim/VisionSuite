@@ -15,7 +15,7 @@ from shapely.geometry import (
 )
 from shapely.ops import polygonize, unary_union
 
-from athena.src.data.slice.utils.helpers import plot_poinsts_list  # , plot_polygons
+from visionsuite.engines.data.slicer.utils.helpers import plot_poinsts_list  # , plot_polygons
 
 
 def handle_self_intersection(points):

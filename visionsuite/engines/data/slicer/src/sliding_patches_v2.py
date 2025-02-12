@@ -1,4 +1,4 @@
-from athena.src.data.slice.utils.functional import get_intersected_points, get_points_in_patch
+from visionsuite.engines.data.slicer.utils.functional import get_intersected_points, get_points_in_patch
 
 
 def get_sliding_patches_v2(

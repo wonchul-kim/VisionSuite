@@ -5,7 +5,7 @@ import warnings
 import numpy as np
 from aivcommon.annotations.labelme import get_polygon_points_from_labelme_shape
 
-from athena.src.data.slice.utils.polygons import get_intersected_points
+from visionsuite.engines.data.slicer.utils.polygons import get_intersected_points
 
 
 def get_roi_image(roi, img_width, img_height):

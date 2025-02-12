@@ -1,11 +1,11 @@
-from athena.src.data.slice.src.background_patches import get_background_patches
-from athena.src.data.slice.src.centric_patches import get_centric_patches
-from athena.src.data.slice.src.sliding_patches import get_sliding_patches
-from athena.src.data.slice.utils.functional import (
+from visionsuite.engines.data.slicer.src.background_patches import get_background_patches
+from visionsuite.engines.data.slicer.src.centric_patches import get_centric_patches
+from visionsuite.engines.data.slicer.src.sliding_patches import get_sliding_patches
+from visionsuite.engines.data.slicer.utils.functional import (
     get_annotations_from_labelme_json,
     get_available_points_from_annotations,
 )
-from athena.src.data.slice.utils.polygons import handle_self_intersection
+from visionsuite.engines.data.slicer.utils.polygons import handle_self_intersection
 
 
 # TODO: Need to add logger

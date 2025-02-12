@@ -1,6 +1,6 @@
 import numpy as np
 
-from athena.src.data.slice.utils.functional import (
+from visionsuite.engines.data.slicer.utils.functional import (
     finetune_patch_for_roi,
     get_center_point_from_points,
     get_points_in_patch,
