@@ -3,7 +3,7 @@ import os.path as osp
 import warnings
 
 import numpy as np
-from aivcommon.annotations.labelme import get_polygon_points_from_labelme_shape
+from visionsuite.utils.dataset.formats.labelme.utils import get_polygon_points_from_labelme_shape
 
 from visionsuite.engines.data.slicer.utils.polygons import get_intersected_points
 

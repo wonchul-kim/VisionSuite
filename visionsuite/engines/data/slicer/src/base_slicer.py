@@ -1,6 +1,6 @@
 import os.path as osp
 
-from aivcommon.loggings.logger import Logger
+from visionsuite.engines.utils.loggers import Logger
 from omegaconf.listconfig import ListConfig
 
 
