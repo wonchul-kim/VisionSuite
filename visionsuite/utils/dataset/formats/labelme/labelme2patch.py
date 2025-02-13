@@ -63,8 +63,9 @@ def min_max_normalize(image_array, min_val, max_val):
     return np.clip(normalized_array, 0, 1)  # 값을 0과 1 사이로 클리핑
 
 
-def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height, 
-                    image_ext='bmp', patch_overlap_ratio = 0.2,
+def labelme2patch(input_dir, output_dir, modes, rois, patch_width, patch_height, 
+                    input_formats = ['bmp'],
+                    output_format='bmp', patch_overlap_ratio = 0.2,
                     norm_val=None, vis=False, include_positive=True, classes_to_include=None):
 
     if not osp.exists(output_dir):
@@ -83,7 +84,9 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
         if not osp.exists(_output_dir):
             os.mkdir(_output_dir)
         
-        img_files = glob.glob(osp.join(input_dir, mode, '*.bmp'))
+        img_files = []
+        for input_format in input_formats:
+            img_files += glob.glob(osp.join(input_dir, mode, f'*.{input_format}'))
         for img_file in tqdm(img_files):
             filename = osp.split(osp.splitext(img_file)[0])[-1]
             json_file = osp.splitext(img_file)[0] + '.json'
@@ -93,102 +96,126 @@ def labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
             img = cv2.imread(img_file)
             img_h, img_w, img_c = img.shape
             
-            num_patches = 0
-            for y0 in range(0, img_h, dy):
-                for x0 in range(0, img_w, dx):
-                    if y0 + patch_height > img_h:
-                        y = img_h - patch_height
-                    else:
-                        y = y0
-
-                    if x0 + patch_width > img_w:
-                        x = img_w - patch_width
-                    else:
-                        x = x0
+            if len(rois) == 0:
+                rois = [[0, 0, img_w, img_h]]
             
-                    _labelme = init_labelme_json(filename + f'_{num_patches}.{image_ext}', img_w, img_h)
-                    xmin, xmax, ymin, ymax = x, x + patch_width, y, y + patch_height
-                    window = [[xmin, ymin], [xmax, ymax]]
-
-                    for ann in anns:
-                        included = False
-                        label = ann['label'].lower()
-                        if classes_to_include:
-                            if label not in classes_to_include:
-                                continue
-                        
-                        if label not in class2label:
-                            class2label[label] = len(class2label) + 1
-                        points = ann['points']
-                        shape_type = ann['shape_type']
-                        
-                        if shape_type == 'rectangle':
-                            intersected_points = intersection(window, points)
-                            
-                            if intersected_points:
-                                included = True 
-                                
-                                for intersected_point in intersected_points:
-                                    intersected_point[0] -= xmin
-                                    intersected_point[1] -= ymin
-                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
-                        elif shape_type == 'polygon':
-                            if include_positive and len(points) <= 2:
-                                continue
-                            intersected_points = intersected_polygon(window, points)
-                            if intersected_points:
-                                included = True 
-                                for intersected_point in intersected_points:
-                                    intersected_point[0] -= xmin
-                                    intersected_point[1] -= ymin
-                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
-                            
-                    if included:
-                        if norm_val is not None:
-                            if norm_val['type'] == 'min_max':
-                                patch = min_max_normalize(deepcopy(img[ymin:ymax, xmin:xmax, :]), norm_val['min_val'], norm_val['max_val'])
-                                patch = (patch * 255).astype(np.uint8)
+            num_patches = 0
+            for roi in rois:
+                for y0 in range(roi[1], roi[3], dy):
+                    for x0 in range(roi[0], roi[2], dx):
+                        if y0 + patch_height > roi[3]:
+                            y = roi[3] - patch_height
                         else:
-                            patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
-                        cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{image_ext}'), patch)
-                        with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
-                            json.dump(_labelme, jf)
+                            y = y0
+
+                        if x0 + patch_width > roi[2]:
+                            x = roi[2] - patch_width
+                        else:
+                            x = x0
+                
+                        _labelme = init_labelme_json(filename + f'_{num_patches}.{output_format}', img_w, img_h)
+                        xmin, xmax, ymin, ymax = x, x + patch_width, y, y + patch_height
+                        window = [[xmin, ymin], [xmax, ymax]]
+
+                        for ann in anns:
+                            included = False
+                            label = ann['label'].lower()
+                            if classes_to_include:
+                                if label not in classes_to_include:
+                                    continue
                             
-                        if vis:
-                            import imgviz
+                            if label not in class2label:
+                                class2label[label] = len(class2label) + 1
+                            points = ann['points']
+                            shape_type = ann['shape_type']
+                                                        
+                            if shape_type == 'point':
+                                if not include_positive:
+                                    continue
+                                _points = []
+                                for point in points:
+                                    _points.append([point[0] - xmin, point[1] -ymin])
+                                _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], _points)
+                                included = True
                             
-                            mask = get_mask_from_labelme(osp.join(_output_dir, filename + f'_{num_patches}.json'),
-                                                        patch_width, patch_height, class2label, format='opencv')
-                            
-                            vis_img = np.zeros((patch_height, patch_width*2, 3))
-                            vis_img[:, :patch_width, :] = patch
-                            color_map = imgviz.label_colormap(50)
-                            mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
-                            vis_img[:, patch_width:, :] = mask 
-                            
-                            cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.bmp'), vis_img)
+                            elif shape_type == 'rectangle':
+                                intersected_points = intersection(window, points)
+                                
+                                if intersected_points:
+                                    included = True 
                                     
-                        num_patches += 1
+                                    for intersected_point in intersected_points:
+                                        intersected_point[0] -= xmin
+                                        intersected_point[1] -= ymin
+                                    
+                                    _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
+                            elif shape_type == 'polygon':
+                                if len(points) <= 2:
+                                    if include_positive:
+                                        _points = []
+                                        for point in points:
+                                            _points.append([point[0] - xmin, point[1] -ymin])
+                                        _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], _points)
+                                    continue
+                                intersected_points = intersected_polygon(window, points)
+                                if intersected_points:
+                                    included = True 
+                                    for intersected_point in intersected_points:
+                                        intersected_point[0] -= xmin
+                                        intersected_point[1] -= ymin
+                                    _labelme = add_labelme_element(_labelme, ann['shape_type'], ann['label'], intersected_points)
+                            
+                                
+                                
+                        if included:
+                            if norm_val is not None:
+                                if norm_val['type'] == 'min_max':
+                                    patch = min_max_normalize(deepcopy(img[ymin:ymax, xmin:xmax, :]), norm_val['min_val'], norm_val['max_val'])
+                                    patch = (patch * 255).astype(np.uint8)
+                            else:
+                                patch = deepcopy(img[ymin:ymax, xmin:xmax, :])
+                            cv2.imwrite(osp.join(_output_dir, filename + f'_{num_patches}.{output_format}'), patch)
+                            with open(osp.join(_output_dir, filename + f'_{num_patches}.json'), 'w') as jf:
+                                json.dump(_labelme, jf)
+                                
+                            if vis:
+                                import imgviz
+                                
+                                mask = get_mask_from_labelme(osp.join(_output_dir, filename + f'_{num_patches}.json'),
+                                                            patch_width, patch_height, class2label, format='opencv')
+                                
+                                vis_img = np.zeros((patch_height, patch_width*2, 3))
+                                vis_img[:, :patch_width, :] = patch
+                                color_map = imgviz.label_colormap(50)
+                                mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
+                                vis_img[:, patch_width:, :] = mask 
+                                
+                                cv2.imwrite(osp.join(vis_dir, filename + f'_{num_patches}.png'), vis_img)
+                                        
+                            num_patches += 1
 
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_labelme_dataset'
-    output_dir = '/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/raw_labelme_patch_dataset'
-    modes = ['./']
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_patch_dataset'
+    modes = ['train', 'val']
     classes_to_include = None
 
 
-    patch_overlap_ratio = 0.1
-    patch_width = 512
-    patch_height = 512
-    vis = True
+    patch_overlap_ratio = 0.2
+    patch_width = 1120
+    patch_height = 768
+    rois = [[220, 60, 220 + 1120, 60 + 768]]
+    vis = False
     include_positive = True
+    input_formats = ['bmp']
+    output_format = 'bmp'
 
     # norm_val = {'type': 'min_max', 'min_val': 44, 'max_val': 235}
     norm_val = None
         
-    labelme2patches(input_dir, output_dir, modes, patch_width, patch_height,
+    labelme2patch(input_dir, output_dir, modes, rois, patch_width, patch_height, input_formats, output_format=output_format,
                     norm_val=norm_val, vis=vis, include_positive=include_positive, classes_to_include=classes_to_include)
                             
                         

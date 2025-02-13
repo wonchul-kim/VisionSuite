@@ -52,3 +52,7 @@ class JsonEncoder(json.JSONEncoder):
             return obj.tolist()
         else:
             return super(JsonEncoder, self).default(obj)
+        
+        
+# def check_corrupt_image():
+    

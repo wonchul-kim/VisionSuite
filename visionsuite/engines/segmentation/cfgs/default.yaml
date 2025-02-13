@@ -31,18 +31,6 @@ loop:
   type: EpochBasedLoop
   case_sensitive: true
 
-dataset: 
-  type: MaskDatasetWrapper
-  case_sensitive: true
-  load_dataset: 
-    type: MaskDataset
-    case_sensitive: true
-  classes:
-    - background
-    - SCRATCH
-    - TEAR
-    - STABBED
-
 dataloader:
   type: TorchDataloader
   case_sensitive: true
@@ -50,25 +38,46 @@ dataloader:
   pin_memory: true
 
   train:
-    batch_size: 32
+    batch_size: 4
     num_workers: 16
+    vis: 
+      use: false
+      sampling_ratio: 0.05
+      resize_ratio: 0.5
+      grid_rows: 2
+      grid_cols: 2
+      filename_h: 50
 
   val:
-    batch_size: 4
+    batch_size: 1
     num_workers: 8
+    vis: 
+      use: false
+      sampling_ratio: 0.05
+      resize_ratio: 0.5
+      filename_h: 50
+      grid_rows: 2
+      grid_cols: 2
 
   test:
     batch_size: 1
     num_workers: 0
+    vis: 
+      use: false
+      sampling_ratio: 0.2
+      resize_ratio: 0.5
+      filename_h: 50
+      grid_rows: 2
+      grid_cols: 2
 
 model: 
   type: TorchvisionModel
   case_sensitive: true
-  model_name: deeplabv3_resnet101
+  model_name: deeplabv3_resnet50
   # model_name: deeplabv3_efficientnetb3
   aux_loss: true
   weights: null
-  weights_backbone: ResNet101_Weights.IMAGENET1K_V1
+  weights_backbone: ResNet50_Weights.IMAGENET1K_V1
   # weights_backbone: EfficientNet_B3_Weights.IMAGENET1K_V1
 
 augment: 
@@ -86,7 +95,7 @@ train:
   trainer:
     type: BaseTrainer
     case_sensitive: true
-  device_ids: 0,1,2,3
+  device_ids: 0,1
   device: cuda
   use_deterministic_algorithms: False
   sync_bn: true
@@ -107,24 +116,20 @@ test:
   tester:
     type: BaseTester
     case_sensitive: true 
-  device_ids: 0
+  device_ids: 0,1,2,3
   device: cuda
-  use_deterministic_algorithms: True
+  use_deterministic_algorithms: false
   sync_bn: true
   print_freq: 10
 
-  output_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/test
-  seed_model: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/2024_11_12_18_46_21/weights/last.pth
+  output_dir: null
+  seed_model: /HDD/_projects/benchmark/semantic_segmentation/new_model/outputs/torch/2024_11_16_10_51_57/train/weights/model_190.pth
 
   dataset: 
     input_dir: /HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset/val
     type: MaskDataset 
     case_sensitive: true 
-    classes:
-      - background
-      - SCRATCH
-      - TEAR
-      - STABBED
+
   loop:
     type: TestLoop
     case_sensitive: true

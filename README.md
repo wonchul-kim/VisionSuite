@@ -8,9 +8,10 @@ This is just personal repository to easily use oepn source algorithms.
 ```cmd
 git add .
 git commit -m 'publish v1.x.x'
-git tag v.1.x.x
+git tag v1.x.x
 git push origin --tags
 ```
+
 ----------------------------------------------------------------------------------------------
 ## Cores
 

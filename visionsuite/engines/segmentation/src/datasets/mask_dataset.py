@@ -3,17 +3,16 @@ import os.path as osp
 import torch 
 import glob 
 from PIL import Image 
+import torchvision
+from torchvision.transforms import functional as F, InterpolationMode
 
 from visionsuite.engines.segmentation.utils.registry import DATASETS
 from visionsuite.engines.classification.src.datasets.base_dataset import BaseDataset
-
-import torchvision
-from torchvision.transforms import functional as F, InterpolationMode
 import visionsuite.engines.utils.torch_utils.presets as presets
 
 def get_transform(is_train, args):
     if is_train:
-        return presets.SegmentationPresetTrain(base_size=512, crop_size=480, backend=args['backend'], use_v2=args['use_v2'])
+        return presets.TrainTransform(resize=args['resize'], normalize=args['normalize'], backend=args['backend'], use_v2=args['use_v2'])
     elif args['weights'] and args['test_only']:
         weights = torchvision.models.get_weight(args['weights'])
         trans = weights.transforms()
@@ -26,7 +25,7 @@ def get_transform(is_train, args):
 
         return preprocessing
     else:
-        return presets.SegmentationPresetEval(base_size=512, backend=args['backend'], use_v2=args['use_v2'])
+        return presets.ValTransform(resize=args['resize'], normalize=args['normalize'], backend=args['backend'], use_v2=args['use_v2'])
     
 
 
@@ -39,30 +38,44 @@ class MaskDatasetWrapper(BaseDataset):
                 
             import torchvision.transforms as transforms
             transform = transforms.Compose(
-                                            [transforms.ToTensor(),
-                                            transforms.Normalize(mean=mean, std=std)])
+                                [transforms.ToTensor(),
+                                transforms.Normalize(mean=mean, std=std)]
+                        )
             
         super().__init__(name=name, transform=transform)
 
     def load_dataset(self, train_folder_name='train', val_folder_name='val'):
         super().load_dataset()
         
-        self.train_dataset =  DATASETS.get(self.args['load_dataset']['type'], 
-                                           case_sensitive=self.args['load_dataset']['case_sensitive']
-                                )(osp.join(self.args['input_dir'], train_folder_name), 
-                                    get_transform(True, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}))
-                                    # self._transform)
-        self.log_info(f"LOADED train_dataset: {self.args['load_dataset']['type']}", self.build.__name__, __class__.__name__)
+        
+        self.train_dataset =  DATASETS.get(self.args['train']['type'], 
+                                           case_sensitive=self.args['train']['case_sensitive']
+                                )(input_dir=osp.join(self.args['input_dir'], train_folder_name), 
+                                    transform=get_transform(True, 
+                                                    {**self.args['train']['transform'], 
+                                                     **{"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}
+                                                    }
+                                            ),
+                                    image_formats=self.args['train']['image_formats'],
+                                    mask_format=self.args['train']['mask_format']
+                                )
+        self.log_info(f"LOADED train_dataset: {self.args['train']['type']}", self.build.__name__, __class__.__name__)
         self.log_info(f"- input_dir: {self.args['input_dir']}", self.build.__name__, __class__.__name__)
         self.log_info(f"- number of images: {len(self.train_dataset)}", self.build.__name__, __class__.__name__)
         self.log_info(f"- transforms: TODO", self.build.__name__, __class__.__name__)
         
-        self.val_dataset =  DATASETS.get(self.args['load_dataset']['type'], 
-                                         case_sensitive=self.args['load_dataset']['case_sensitive']
-                                )(osp.join(self.args['input_dir'], val_folder_name), 
-                                  get_transform(False, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}))
-                                    # self._transform)
-        self.log_info(f"LOADED val_dataset: {self.args['load_dataset']['type']}", self.build.__name__, __class__.__name__)
+        self.val_dataset =  DATASETS.get(self.args['val']['type'], 
+                                         case_sensitive=self.args['val']['case_sensitive']
+                                )(input_dir=osp.join(self.args['input_dir'], val_folder_name), 
+                                    transform=get_transform(False, 
+                                                    {**self.args['val']['transform'], 
+                                                    **{"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False}
+                                                    }
+                                                ),
+                                    image_formats=self.args['val']['image_formats'],
+                                    mask_format=self.args['val']['mask_format']
+                                )
+        self.log_info(f"LOADED val_dataset: {self.args['val']['type']}", self.build.__name__, __class__.__name__)
         self.log_info(f"- input_dir: {self.args['input_dir']}", self.build.__name__, __class__.__name__)
         self.log_info(f"- number of images:: {len(self.val_dataset)}", self.build.__name__, __class__.__name__)
         self.log_info(f"- transforms: TODO", self.build.__name__, __class__.__name__)
@@ -75,24 +88,30 @@ class MaskDatasetWrapper(BaseDataset):
         
 @DATASETS.register()
 class MaskDataset(torch.utils.data.Dataset):
-    def __init__(self, input_dir, transform=None, img_exts=['png', 'bmp']):
+    def __init__(self, input_dir, transform=None, image_formats=['png', 'bmp', 'jpg'], mask_format=None, **kwargs):
         self.input_dir = input_dir
         self.transform = transform
+        self.image_formats = image_formats
+        self.mask_format = mask_format
 
         self.img_files = []
-        for img_ext in img_exts:
-            self.img_files += glob.glob(os.path.join(self.input_dir, "images/*.{}".format(img_ext)))
+        for image_format in image_formats:
+            self.img_files += glob.glob(os.path.join(self.input_dir, "images/*.{}".format(image_format)))
         print(f"  - There are {len(self.img_files)} image files")
     
     def __len__(self):
         return len(self.img_files)
 
     def __getitem__(self, idx): 
-        print(idx)
         img_file = self.img_files[idx]
+        img_ext = osp.splitext(img_file)[-1].replace('.', '')
         fname = osp.split(osp.splitext(img_file)[0])[-1]
 
-        mask_file = osp.join(self.input_dir, 'masks/{}.bmp'.format(fname))
+        if self.mask_format is None:
+            mask_file = osp.join(self.input_dir, f'masks/{fname}.{img_ext}'.format(fname))
+        else:
+            mask_file = osp.join(self.input_dir, f'masks/{fname}.{self.mask_format}'.format(fname))
+            
         assert osp.exists(mask_file), RuntimeError(f"There is no such mask image: {mask_file}")
 
         image = Image.open(img_file)

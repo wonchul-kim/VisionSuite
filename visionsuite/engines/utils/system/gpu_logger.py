@@ -1,5 +1,6 @@
 import pynvml
 import numpy as np
+import time
 
 class GPULogger:
     def __init__(self, device_ids=[0]):
@@ -26,14 +27,32 @@ class GPULogger:
                 self.data[f'GPU {device_id}']["Power (W)"].append(float(round(power_info / 1000, 2)))
 
     def mean(self):
-        mean_data = {}
+        ret = {}
         for key1, val1 in self.data.items():
-            mean_data[key1] = {}
+            ret[key1] = {}
             for key2, val2 in val1.items():
-                mean_data[key1].update({key2: round(np.mean(val2), 3)})
+                ret[key1].update({key2: round(np.mean(val2), 3)})
             
-        return mean_data
+        return ret
+    
+    def max(self):
+        ret = {}
+        for key1, val1 in self.data.items():
+            ret[key1] = {}
+            for key2, val2 in val1.items():
+                ret[key1].update({key2: round(max(val2), 3)})
+            
+        return ret
 
+    def min(self):
+        ret = {}
+        for key1, val1 in self.data.items():
+            ret[key1] = {}
+            for key2, val2 in val1.items():
+                ret[key1].update({key2: round(min(val2), 3)})
+            
+        return ret
+    
     def clear(self):
         self.data = {}
 
@@ -43,8 +62,9 @@ class GPULogger:
 if __name__ == '__main__':
     logger = GPULogger([0, 1])
     
-    for _ in range(10):
+    for _ in range(3600):
         logger.update()
+        time.sleep(1)
         
-    print(logger.mean())
-    
+        print(logger.max())
+

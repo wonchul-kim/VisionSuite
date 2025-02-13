@@ -9,7 +9,7 @@ from .callbacks import test_callbacks
 @RUNNERS.register()
 class TestRunner(BaseTestRunner, Callbacks):
     def __init__(self, task):
-        BaseTestRunner.__init__(self, task)
+        BaseTestRunner.__init__(self, name='TestRunner', task=task)
         Callbacks.__init__(self)
         
         self.add_callbacks(test_callbacks)
@@ -28,7 +28,7 @@ class TestRunner(BaseTestRunner, Callbacks):
         super().run()
         
         from visionsuite.engines.segmentation.src.datasets.mask_dataset import get_transform
-        transform = get_transform(True, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False})
+        transform = get_transform(False, {"weights": None, "test_only": False, "backend": 'PIL', "use_v2": False})
         self.run_callbacks('on_runner_run_start')
         dataset = build_dataset(**self.args['test']['dataset'], transform=transform)
         self.log_info(f"Dataset is LOADED and BUILT", self.run.__name__, __class__.__name__)
@@ -38,7 +38,8 @@ class TestRunner(BaseTestRunner, Callbacks):
                     num_classes=len(self.args['test']['dataset']['classes']), 
                     train=self.args['test'], 
                     distributed=self.args['distributed']['use'],
-                    _logger=self.args['model'].get('logger', None)
+                    _logger=self.args['model'].get('logger', None),
+                    seed_model=self.args['test']['seed_model']
         )
         self.log_info(f"Model is LOADED and BUILT", self.run.__name__, __class__.__name__)
         

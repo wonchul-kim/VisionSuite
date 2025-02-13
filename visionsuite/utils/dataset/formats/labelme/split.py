@@ -12,7 +12,7 @@ def split_dataset(input_dir, output_dir, image_formats, ratio, figs=True):
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
 
-    img_files = [file for image_format in image_formats for file in glob.glob(osp.join(input_dir, f'*.{image_format}'))]
+    img_files = [file for image_format in image_formats for file in glob.glob(osp.join(input_dir, f'*/*.{image_format}'))]
 
     label2idx = {}
     label2cnt, train_label2cnt, val_label2cnt = {}, {}, {}
@@ -105,10 +105,10 @@ def split_dataset(input_dir, output_dir, image_formats, ratio, figs=True):
 
                 
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/ALL/INNER/2411105/data'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/ALL/INNER/2411105/split_dataset'
+    input_dir = '/DeepLearning/_athena_tests/datasets/rectangle2/raw_dataset'
+    output_dir = '/DeepLearning/_athena_tests/datasets/rectangle2/split_dataset'
     image_formats = ['bmp']
-    ratio = 0.1
+    ratio = 0.3
     figs = True
     
     split_dataset(input_dir, output_dir, image_formats, ratio, figs=True)

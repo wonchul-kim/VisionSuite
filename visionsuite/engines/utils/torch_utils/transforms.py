@@ -25,7 +25,6 @@ class Compose:
             image, target = t(image, target)
         return image, target
 
-
 class RandomResize:
     def __init__(self, min_size, max_size=None):
         self.min_size = min_size
@@ -38,7 +37,16 @@ class RandomResize:
         image = F.resize(image, size, antialias=True)
         target = F.resize(target, size, interpolation=T.InterpolationMode.NEAREST)
         return image, target
+    
+class Resize:
+    def __init__(self, size):
+        self.size = size
 
+    def __call__(self, image, target):
+        image = F.resize(image, self.size, antialias=True)
+        target = F.resize(target, self.size, interpolation=T.InterpolationMode.NEAREST)
+        
+        return image, target
 
 class RandomHorizontalFlip:
     def __init__(self, flip_prob):

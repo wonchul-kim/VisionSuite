@@ -2,11 +2,37 @@ import os.path as osp
 import cv2 
 import numpy as np
 import warnings
-from mlearning.utils.metrics.iou import get_iou
 from shapely.geometry import (GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon,
                               mapping)
 from shapely.ops import polygonize, unary_union
 from copy import deepcopy
+
+def points2polygon(points):
+    
+    if isinstance(points, list):
+        points = np.array(points)
+        
+    if isinstance(points, np.ndarray):
+        points = Polygon(points)
+    
+    return points
+
+def get_iou(points1, points2, filename=None):
+
+    polygon1 = points2polygon(points1)
+    polygon2 = points2polygon(points2)
+    
+    if not polygon1.is_valid:
+        polygon1 = polygon1.buffer(0)  # 폴리곤의 유효성 수정
+
+    if not polygon2.is_valid:
+        polygon2 = polygon2.buffer(0)  # 폴리곤의 유효성 수정
+
+    intersection_area = polygon1.intersection(polygon2).area
+    union_area = polygon1.union(polygon2).area
+    iou = intersection_area / union_area
+
+    return iou
 
 def get_text_coords(points, width, height, offset_w=0, offset_h=10):
     text_coord_x, text_coord_y = int(np.min(points, axis=0)[0]), int(np.min(points, axis=0)[1] - 10)

@@ -147,8 +147,8 @@ if __name__ == '__main__':
     
     # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
     
-    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
-    output_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/sfaw'
+    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
+    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
 
     project_name = 'SFAW'
     title = "Dataset Analysis"

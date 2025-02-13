@@ -56,12 +56,20 @@ class DatasetConverter:
             
         
 if __name__ == '__main__':
-    input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset'
+    # input_dir = '/HDD/_projects/benchmark/obb_detection/doosan_cj_rich/dataset/split_dataset'
+
+    # copy_image = True
+    # image_ext = 'bmp'
+       
+    # converter = DatasetConverter('obb_detection')
+    # converter.run(input_dir, copy_image=copy_image, image_ext=image_ext)
+    
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/warp/TOP_BOT_CHAMFER_WARP_ALL/241204/split_labelme_patch_dataset'
 
     copy_image = True
     image_ext = 'bmp'
        
-    converter = DatasetConverter('obb_detection')
+    converter = DatasetConverter('hbb_detection')
     converter.run(input_dir, copy_image=copy_image, image_ext=image_ext)
     
             

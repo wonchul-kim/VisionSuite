@@ -1,6 +1,6 @@
 # dataset settings
 dataset_type = "MaskDataset"
-data_root = "/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/split_datasets/mask/split_dataset"
+data_root = "/HDD/_projects/benchmark/semantic_segmentation/new_model/datasets/sungwoo_bottom/split_patch_mask_dataset"
 classes=['scratch', 'stabbed', 'tear'],
 
 img_norm_cfg = dict(
@@ -67,7 +67,7 @@ test_pipeline = [
 ]
 data = dict(
     samples_per_gpu=8,
-    workers_per_gpu=8,
+    workers_per_gpu=16,
     train=dict(
         type=dataset_type,
         data_root=data_root,
@@ -86,7 +86,7 @@ data = dict(
         img_suffix='.bmp',
         seg_map_suffix='.bmp',
         classes=classes,
-        pipeline=train_pipeline,
+        pipeline=val_pipeline,
     ),
     test=dict(
         type=dataset_type,

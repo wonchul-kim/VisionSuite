@@ -1,3 +1,4 @@
+import os.path as osp
 from visionsuite.engines.utils.bases import BaseTrainLoop
 
 
@@ -13,13 +14,20 @@ class TrainLoop(BaseTrainLoop):
                                                     **self.args['dataloader'], 
                                                     augment=self.args['augment'] if 'augment' in self.args else None)
             self.log_info(f"BUILT train_dataloader: {self.train_dataloader}", self.build.__name__, __class__.__name__)
+            if self.args['dataloader']['train']['vis']:
+                self.train_dataloader.vis(output_dir=osp.join(self.archive.output_dir, 'dataloader/train'),
+                                          **self.args['dataloader']['train']['vis'])          
             
             self.val_dataloader = build_dataloader(dataset=self.dataset, mode='val', 
                                                     **self.args['dataloader'], 
                                                     augment=self.args['augment'] if 'augment' in self.args else None)
+            if self.args['dataloader']['val']['vis']:
+                self.val_dataloader.vis(output_dir=osp.join(self.archive.output_dir, 'dataloader/val'),
+                                        **self.args['dataloader']['val']['vis'])
             self.log_info(f"BUILT val_dataloader: {self.val_dataloader}", self.build.__name__, __class__.__name__)    
         else:
             self.log_warning(f"NO dataloader", self.build.__name__, __class__.__name__)    
+
 
         if 'loss' in self.args and self.args['loss'] is not None:
             from visionsuite.engines.segmentation.src.losses.build import build_loss
