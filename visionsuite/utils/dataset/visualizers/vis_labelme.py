@@ -5,17 +5,18 @@ import os.path as osp
 import numpy as np
 import cv2
 
-input_dir = "/HDD/datasets/projects/sungjin/body/test/patches"
-output_dir = "/HDD/datasets/projects/sungjin/body/test/vis"
+input_dir = "/Data/01.Image/ctr/2_CMFB/4_TEST/gt_bgra/gt_bgra_mask"
+output_dir = "/Data/01.Image/ctr/2_CMFB/4_TEST/gt_bgra/gt_bgra_mask"
 
 if not osp.exists(output_dir):
     os.mkdir(output_dir)
 
 # TODO: need to consider all shape-types
 
-img_files = glob.glob(osp.join(input_dir, '*.bmp'))
+img_files = glob.glob(osp.join(input_dir, '*.png'))
 
 for img_file in img_files:
+    img_file = '/Data/01.Image/ctr/2_CMFB/4_TEST/gt_bgra/gt_bgra_mask/0065.png'
     filename = osp.split(osp.splitext(img_file)[0])[-1]
     json_file = osp.splitext(img_file)[0] + '.json'
 
