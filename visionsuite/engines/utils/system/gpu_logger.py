@@ -18,12 +18,12 @@ class GPULogger:
 
             if f'GPU {device_id}' not in self.data:
                 self.data[f'GPU {device_id}'] = {"Util (%)": [utilization.gpu],
-                                                 "Mem. (MB)": [float(round(memory_info.used / 1024**2, 2))],
+                                                 "Mem. (GB)": [float(round(memory_info.used / 1024**3, 2))],
                                                  "Power (W)": [float(round(power_info / 1000, 2))]
                                             }
             else:
                 self.data[f'GPU {device_id}']["Util (%)"].append(utilization.gpu),
-                self.data[f'GPU {device_id}']["Mem. (MB)"].append(float(round(memory_info.used / 1024**2, 2)))
+                self.data[f'GPU {device_id}']["Mem. (GB)"].append(float(round(memory_info.used / 1024**3, 2)))
                 self.data[f'GPU {device_id}']["Power (W)"].append(float(round(power_info / 1000, 2)))
 
     def mean(self):
