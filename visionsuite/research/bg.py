@@ -5,7 +5,7 @@ import json
 import numpy as np
 import cv2
 
-def create_crops(input_dir, output_dir, offset):
+def create_bg_crops(input_dir, output_dir, offset):
 
     output_dir = osp.join(output_dir, f'offset_{offset}')
     if not osp.exists(output_dir):
@@ -55,15 +55,15 @@ def create_crops(input_dir, output_dir, offset):
                 roi[3] = img_h
                 
             roi = list(map(int, roi))
-            crop = img[roi[1]:roi[3], roi[0]:roi[2]]
+            img[roi[1]:roi[3], roi[0]:roi[2]] = 0
             
-            cv2.imwrite(osp.join(output_dir, filename + f'_{idx}.png'), crop)
+        cv2.imwrite(osp.join(output_dir, filename + f'_{idx}.png'), img)
             
     
 if __name__ == '__main__':
     input_dir = '/HDD/research/clustering/datasets/tenneco_outer/images'
-    output_dir = '/HDD/research/clustering/datasets/tenneco_outer/crop'
+    output_dir = '/HDD/research/clustering/datasets/tenneco_outer/bg_crops'
     offset = 'auto'
     # offset = 100
 
-    create_crops(input_dir, output_dir, offset)
+    create_bg_crops(input_dir, output_dir, offset)

@@ -5,52 +5,17 @@ from PIL import Image
 from pathlib import Path
 from collections import defaultdict
 from transformers import CLIPProcessor, CLIPModel, Dinov2Model
-from torchvision import transforms
 import argparse
 from tqdm.auto import tqdm
 from annoy import AnnoyIndex
 from scipy.cluster.hierarchy import linkage, fcluster
 from scipy.spatial.distance import squareform
+import os
+import os.path as osp
+import cv2 
+from torchvision import transforms
 
-def process_images(image_directory, dinov2_model_name, threshold, batch_size):
-    image_directory = Path(image_directory)
-    device = "cuda" if torch.cuda.is_available() else "cpu"
 
-    embeddings_file = image_directory / 'embeddings.npy'
-    regenerate_embeddings = check_and_load_embeddings(embeddings_file)
-
-    # DINOv2 모델 로드
-    model = Dinov2Model.from_pretrained(dinov2_model_name).to(device)
-    model.eval()
-
-    # DINOv2 이미지 변환 정의
-    transform = transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
-    ])
-
-    allowed_extensions = {".jpeg", ".jpg", ".png", ".webp", ".bmp"}
-    images_to_paths, all_image_ids = get_images_to_paths(image_directory, allowed_extensions)
-
-    damaged_image_ids, all_embeddings = generate_dinov2_embeddings(
-        all_image_ids, images_to_paths, model, transform, device, batch_size, regenerate_embeddings, embeddings_file
-    )
-
-    print("Building Annoy index...")
-    annoy_index = build_annoy_index(all_embeddings)
-
-    print("Computing distance matrix...")
-    distances = compute_distance_matrix(all_embeddings, annoy_index)
-
-    print("Applying hierarchical clustering...")
-    labels = apply_clustering(distances, threshold)
-    print(len(np.unique(labels)), len(labels), labels)
-
-    image_id_clusters = build_image_clusters(all_image_ids, labels)
-    organize_images(images_to_paths, image_directory, image_id_clusters, damaged_image_ids)
-
-# DINOv2용 임베딩 생성 함수
 def generate_dinov2_embeddings(image_ids, image_paths, model, transform, device, batch_size, regenerate, embeddings_file):
     if not regenerate and embeddings_file.exists():
         return [], np.load(embeddings_file)
@@ -80,14 +45,95 @@ def generate_dinov2_embeddings(image_ids, image_paths, model, transform, device,
     np.save(embeddings_file, all_embeddings)
     return damaged_image_ids, all_embeddings
 
-# Check for existing embeddings file and load it if found, otherwise generate new embeddings
+
+def get_embeddings(model_dict, device, image_directory, batch_size, regenerate_embeddings, embeddings_file):
+    
+    allowed_extensions = {".jpeg", ".jpg", ".png", ".webp", '.bmp'}
+    images_to_paths, all_image_ids = get_images_to_paths(image_directory, allowed_extensions)
+    
+    if model_dict['model_name'] == 'clip':
+        model = CLIPModel.from_pretrained(model_dict['ckpt']).to(device)
+        processor = CLIPProcessor.from_pretrained(model_dict['ckpt'])
+
+        images_to_paths, all_image_ids = get_images_to_paths(image_directory, allowed_extensions)
+        damaged_image_ids, all_embeddings = generate_embeddings(all_image_ids, images_to_paths, model, 
+                                                                processor, device, batch_size, regenerate_embeddings, embeddings_file)
+
+    elif model_dict['model_name'] == 'dinov2':
+        model = Dinov2Model.from_pretrained(model_dict['ckpt']).to(device)
+        model.eval()
+
+        # DINOv2 이미지 변환 정의
+        transform = transforms.Compose([
+            transforms.Resize((224, 224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ])
+
+        allowed_extensions = {".jpeg", ".jpg", ".png", ".webp", ".bmp"}
+
+        damaged_image_ids, all_embeddings = generate_dinov2_embeddings(
+            all_image_ids, images_to_paths, model, transform, device, batch_size, regenerate_embeddings, embeddings_file
+        )
+
+    return damaged_image_ids, all_embeddings, all_image_ids, images_to_paths
+
+def process_images(image_directory, model_dict, threshold, batch_size, output_dir, device, offset):
+    
+    output_dir = osp.join(output_dir, f"{model_dict['model_name']}_{model_dict['ckpt']}", f"offset_{offset}", f"th_{threshold}")
+    if not osp.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    image_directory = Path(image_directory)
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+
+    embeddings_file = image_directory / 'embeddings.npy'
+    regenerate_embeddings = check_and_load_embeddings(embeddings_file)
+
+    damaged_image_ids, all_embeddings, all_image_ids, images_to_paths = get_embeddings(model_dict, device, image_directory, batch_size,
+                                                       regenerate_embeddings, embeddings_file)
+
+    # if regenerate_embeddings:
+    #     np.save(embeddings_file, all_embeddings)
+
+    print("Building Annoy index...")
+    annoy_index = build_annoy_index(all_embeddings)
+
+    print("Computing distance matrix...")
+    distances = compute_distance_matrix(all_embeddings, annoy_index)
+
+    print("Applying hierarchical clustering...")
+    labels = apply_clustering(distances, threshold)
+    print(len(np.unique(labels)), len(labels), labels)
+
+    image_id_clusters = build_image_clusters(all_image_ids, labels)
+    print(image_id_clusters)
+
+    for idx, image_id_cluster in image_id_clusters.items():
+        mosaic = np.zeros((1024, 1024, 3))
+        cnt, jdx = 0, 0
+        for image in image_id_cluster:
+            img = cv2.imread(images_to_paths[image])
+            
+            img = cv2.resize(img, (256, 256))
+            mosaic[int(256*(cnt//4)):int(256*(cnt//4 + 1)), int(256*(cnt%4)):int(256*(cnt%4 + 1))] += img
+            cnt += 1
+            if cnt > 15:
+                cv2.imwrite(osp.join(output_dir, f"{idx}_{jdx}.png"), mosaic)
+                jdx += 1
+                cnt = 0
+                mosaic = np.zeros((1024, 1024, 3))
+                
+        cv2.imwrite(osp.join(output_dir, f"{idx}_{jdx}.png"), mosaic)
+        
 def check_and_load_embeddings(embeddings_file):
-    if embeddings_file.exists():
-        use_existing_embeddings = input("Embeddings file found. Do you want to use existing embeddings? (Y/N) ").strip().lower()
-        if use_existing_embeddings in ('', 'y', 'yes'):
-            print("Loading embeddings from file...")
-            all_embeddings = np.load(embeddings_file)
-            return False
+    # if embeddings_file.exists():
+    #     use_existing_embeddings = input("Embeddings file found. Do you want to use existing embeddings? (Y/N) ").strip().lower()
+    #     if use_existing_embeddings in ('', 'y', 'yes'):
+    #         print("Loading embeddings from file...")
+    #         all_embeddings = np.load(embeddings_file)
+    #         return False
+    # return True
     return True
 
 # Get the paths of all images in the given directory and return the image ids and their paths
@@ -175,39 +221,20 @@ def build_image_clusters(all_image_ids, labels):
 
     return image_id_clusters
 
-# Organize images into separate folders for clusters, unique images, and corrupted images
-def organize_images(images_to_paths, image_directory, image_id_clusters, damaged_image_ids):
-    for idx, image_id_cluster in enumerate(image_id_clusters.values()):
-        if len(image_id_cluster) < 2:
-            continue
-
-        move_images_to_directory(image_directory, f"cluster_{idx}", image_id_cluster, images_to_paths)
-
-    unique_image_ids = set(images_to_paths.keys()) - set(damaged_image_ids) - {image_id for cluster in image_id_clusters.values() for image_id in cluster if len(cluster) >= 2}
-    move_images_to_directory(image_directory, "unique", unique_image_ids, images_to_paths)
-
-    if damaged_image_ids:
-        move_images_to_directory(image_directory, "corrupted", damaged_image_ids, images_to_paths)
-
-# Move images to the specified folder within the image_directory
-def move_images_to_directory(image_directory, folder_name, image_ids, images_to_paths):
-    output_directory = image_directory / folder_name
-    output_directory.mkdir(parents=True, exist_ok=True)
-
-    for image_id in image_ids:
-        source = images_to_paths[image_id]
-        destination = output_directory / source.name
-        shutil.move(source, destination)
-
 def main():
-    parser = argparse.ArgumentParser(description="Finding conceptually similar images using CLIP and Annoy-based hierarchical clustering.")
-    parser.add_argument("--image_directory", default='/HDD/research/clustering/datasets/tenneco_outer/crop')
-    parser.add_argument("--clip_model", type=str, default="openai/clip-vit-large-patch14-336", help="openai/clip-vit-base-patch16, openai/clip-vit-base-patch32, openai/clip-vit-large-patch14, openai/clip-vit-large-patch14-336 (default)")
-    parser.add_argument("--threshold", type=float, default=0.55, help="Threshold for hierarchical clustering. Lower values will reduce false positives but may miss more. (default: 0.22)")
-    parser.add_argument("--batch_size", type=int, default=1, help="Batch size for generating CLIP embeddings. Higher values will require more VRAM. (default: 192)")
-    args = parser.parse_args()
 
-    process_images(args.image_directory, args.clip_model, args.threshold, args.batch_size)
+    input_dir = '/HDD/research/clustering/datasets/tenneco_outer/bg_crops'
+    output_dir = '/HDD/research/clustering/datasets/tenneco_outer/outputs_bg'
+    threshold = 0.7
+    batch_size = 1
+    device = 'cuda:0'
+    # model_dict = {'model_name': 'clip', 'ckpt': 'openai/clip-vit-large-patch14-336', }
+    model_dict = {'model_name': 'dinov2', 'ckpt': 'facebook/dinov2-large', }
+    offset = 'auto'
+    # offset = 100
+
+    process_images(osp.join(input_dir, f'offset_{offset}'), model_dict, threshold, 
+                   batch_size, output_dir, device, offset)
 
 if __name__ == "__main__":
     main()
