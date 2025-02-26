@@ -4,16 +4,17 @@ import os
 import json
 import numpy as np
 import cv2
+from tqdm import tqdm
 
 def create_crops(input_dir, output_dir, offset):
 
     output_dir = osp.join(output_dir, f'offset_{offset}')
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
-
         
     img_files = glob(osp.join(input_dir, '*.bmp'))
-    for img_file in img_files:
+    print(f"There are {len(img_files)} images at {input_dir}")
+    for img_file in tqdm(img_files):
         filename = osp.split(osp.splitext(img_file)[0])[-1]
         json_file = osp.splitext(img_file)[0] + '.json'
         
@@ -27,6 +28,11 @@ def create_crops(input_dir, output_dir, offset):
         
         for idx, ann in enumerate(anns):
             label = ann['label']
+            
+            _output_dir = osp.join(output_dir, label)
+            if not osp.exists(_output_dir):
+                os.mkdir(_output_dir)
+            
             shape_type = ann['shape_type']
             points = np.array(ann['points'])
             
@@ -57,12 +63,12 @@ def create_crops(input_dir, output_dir, offset):
             roi = list(map(int, roi))
             crop = img[roi[1]:roi[3], roi[0]:roi[2]]
             
-            cv2.imwrite(osp.join(output_dir, filename + f'_{idx}.png'), crop)
+            cv2.imwrite(osp.join(_output_dir, filename + f'_{idx}.png'), crop)
             
     
 if __name__ == '__main__':
-    input_dir = '/HDD/research/clustering/datasets/tenneco_outer/images'
-    output_dir = '/HDD/research/clustering/datasets/tenneco_outer/crop'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset/train'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/crop/defects'
     offset = 'auto'
     # offset = 100
 
