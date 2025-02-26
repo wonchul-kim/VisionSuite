@@ -39,7 +39,7 @@ def preds2metrics(preds_json, class2idx):
         
     
 if __name__ == '__main__':
-    preds_json = '/DeepLearning/_projects/sungjin_body/tests/yolov8_patch_v2/winter/w_json/학습/preds.json'
-        
-    detections = preds2metrics(preds_json)
+    preds_json = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_100epochs/test/preds.json'
+    class2idx = {"CHAMFER_MARK": 1, "LINE": 2, "MARK": 3}
+    detections = preds2metrics(preds_json, class2idx)
     print(detections)

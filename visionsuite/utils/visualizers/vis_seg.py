@@ -47,7 +47,7 @@ def get_key_by_value(dictionary, value):
     return None
 
 def vis_seg(img_file, idx2xyxys, idx2class, output_dir, color_map, 
-            seg_type='instance', 
+            seg_type='semantic', 
             json_dir=None, compare_mask=True, 
             iou_threshold=0.2, font_scale=1, line_width=1, draw_rect=True):
    

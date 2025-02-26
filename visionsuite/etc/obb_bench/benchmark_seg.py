@@ -9,15 +9,15 @@ import os.path as osp
 # model_name = 'w_patch_ratio_0.2_1_1_300'
 # model_name = 'w_patch_ratio_0.2_1_1_600'
 # model_name = 'w_patch_ratio_0.4_1_1_300'
-model_name = 'w_patch_ratio_0.4_1_1_600'
+model_name = 'tf_deeplabv3plus_100epochs'
 
-output_dir = f'/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/tests/{model_name}'
+output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}'
 
-input_dir = '/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/datasets/split_dataset/val'
+input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val_'
 ground_truths, class2idx = labelme2metrics(input_dir)
 print(class2idx)
 
-preds_json = f'/HDD/_projects/benchmark/semantic_segmentation/sungwoo_bottom/tests/{model_name}/preds.json'
+preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_100epochs/test/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 
