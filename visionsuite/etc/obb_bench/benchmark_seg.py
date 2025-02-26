@@ -5,11 +5,7 @@ from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by
 import os.path as osp
 
 
-# model_name = 'wo_patch_ratio'
-# model_name = 'w_patch_ratio_0.2_1_1_300'
-# model_name = 'w_patch_ratio_0.2_1_1_600'
-# model_name = 'w_patch_ratio_0.4_1_1_300'
-model_name = 'tf_deeplabv3plus_100epochs'
+model_name = 'm2f_100epochs'
 
 output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}'
 
@@ -17,7 +13,7 @@ input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val_'
 ground_truths, class2idx = labelme2metrics(input_dir)
 print(class2idx)
 
-preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_100epochs/test/preds.json'
+preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/m2f_100epochs/test/preds/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 
