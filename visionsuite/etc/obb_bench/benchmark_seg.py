@@ -5,15 +5,17 @@ from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by
 import os.path as osp
 
 
-model_name = 'm2f_100epochs'
+model_name = 'tf_deeplabv3plus_epochs100'
+# model_name = 'm2f_epochs100'
+# model_name = 'pidnet_epochs100'
+# model_name = 'cosnet_epochs100'
 
-output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}'
+output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
 
-input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val_'
+input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
-print(class2idx)
 
-preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/m2f_100epochs/test/preds/preds.json'
+preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 
@@ -30,6 +32,7 @@ print(class2idx)
 iou_threshold = 0.1
 classes = class2idx.values()
 idx2class = {idx: _class for _class, idx in class2idx.items()}
+print(idx2class)
 
 pf = get_performance(detections, ground_truths, classes, iou_threshold, shape_type='polygon')
 pf_by_image = pf['by_image']

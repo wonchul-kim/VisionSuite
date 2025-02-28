@@ -256,8 +256,8 @@ def calculateAveragePrecision(rec, prec):
 
 def get_performance(detections, ground_truths, classes, iou_threshold=0.3, method='ap', shape_type='rectangle'):
     '''
-        detections: ['image filename', class-index, confidence, (x1, y1, x2, y2)]
-        ground_truths: ['image filename', class-index, confidence, (x1, y1, x2, y2)]
+        detections: ['image filename', class-index, confidence, (x1, y1, x2, y2, ...)]
+        ground_truths: ['image filename', class-index, confidence, (x1, y1, x2, y2, ...)]
     '''
     
     results_by_class = []
@@ -335,11 +335,14 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
             else:
                 fp[det_index] = 1
                 
-        if len(gt_box_detected_map) != 0:
-            if isinstance(gt_box_detected_map[det[0]] , int) and gt_box_detected_map[det[0]] != 0:
-                results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
-            elif isinstance(gt_box_detected_map[det[0]] , np.ndarray):
-                results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
+            # false negative
+            results_by_image[det[0]][_class]['fn'] = results_by_image[det[0]][_class]['total_gt'] - results_by_image[det[0]][_class]['tp']
+            
+        # if len(gt_box_detected_map) != 0:
+        #     if isinstance(gt_box_detected_map[det[0]] , int) and gt_box_detected_map[det[0]] != 0:
+        #         results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
+        #     elif isinstance(gt_box_detected_map[det[0]] , np.ndarray):
+        #         results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
                     
         accumulated_tp = np.cumsum(tp)
         accumulated_fp = np.cumsum(fp)

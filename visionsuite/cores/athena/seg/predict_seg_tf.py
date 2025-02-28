@@ -6,6 +6,7 @@ import imgviz
 import json
 import cv2
 import numpy as np
+from tqdm import tqdm
 import pandas as pd
 from visionsuite.utils.visualizers.vis_seg import vis_seg
 from athena.src.tasks.segmentation.frameworks.tensorflow.models.tf_model_v2 import TFModelv2
@@ -26,7 +27,7 @@ def get_mask_from_pred(pred, conf=0.5, contour_thres=50):
     return mask, points
 
 compare_mask = False
-weights = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_100epochs/train/weights/last_weights.h5'
+weights = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_epochs100/train/weights/last_weights.h5'
 model = TFModelv2(model_name='deeplabv3plus', backbone='efficientnetb3', backbone_weights='imagenet', backbone_trainable=True, 
                   batch_size=1, width=1120, height=768, channel=3, num_classes=4,
                   weights=weights)
@@ -34,9 +35,9 @@ classes = ["CHAMFER_MARK", "LINE", "MARK"]
 idx2class = {idx: cls for idx, cls in enumerate(classes)}
 _classes = ["CHAMFER_MARK", "LINE", "MARK"]
 _idx2class = {idx: cls for idx, cls in enumerate(_classes)}
-input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val_'
-json_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val_'
-output_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_100epochs/test'
+input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
+json_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
+output_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_epochs100/test/exp'
 
 roi = [220, 60, 1340, 828]
 
@@ -47,7 +48,7 @@ img_files = glob.glob(osp.join(input_dir, '*.bmp'))
 
 results = {}
 compare = {}
-for img_file in img_files:
+for img_file in tqdm(img_files):
     filename = osp.split(osp.splitext(img_file)[0])[-1]
     img = cv2.imread(img_file)
     
@@ -58,7 +59,7 @@ for img_file in img_files:
     
     idx2xyxys = {}
     for idx in idx2class.keys():
-        mask, points = get_mask_from_pred(preds[:, :, idx + 1], conf=0.2)
+        mask, points = get_mask_from_pred(preds[:, :, idx + 1], conf=0.5)
     
         for _points in points:
             for _point in _points:

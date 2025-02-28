@@ -6,23 +6,8 @@ from visionsuite.utils.metrics.iou import get_iou
 from shapely.geometry import (GeometryCollection, LineString, MultiLineString, MultiPoint, MultiPolygon, Point, Polygon,
                               mapping)
 from shapely.ops import polygonize, unary_union
+from visionsuite.utils.helpers import get_text_coords
 
-def get_text_coords(points, width, height, offset_w=0, offset_h=10):
-    text_coord_x, text_coord_y = int(np.min(points, axis=0)[0]), int(np.min(points, axis=0)[1] - 10)
-    if text_coord_x < offset_w:
-        text_coord_x = int(np.max(points, axis=0)[0] + offset_w)
-        
-    if text_coord_x > width - 100:
-        text_coord_x = 10
-        
-    if text_coord_y < offset_h:
-        text_coord_y = int(np.max(points, axis=0)[1] + offset_h)
-        
-    if text_coord_y > height - 100:
-        text_coord_y = 10
-        
-    return (text_coord_x, text_coord_y)
-    
 def handle_self_intersection(points):
     new_points = []
     line = LineString([[int(x), int(y)] for x, y in points + [points[0]]])
