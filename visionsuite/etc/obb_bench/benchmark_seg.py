@@ -10,12 +10,12 @@ model_name = 'tf_deeplabv3plus_epochs100'
 # model_name = 'pidnet_epochs100'
 # model_name = 'cosnet_epochs100'
 
-output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
+output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp2'
 
 input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
 
-preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/preds.json'
+preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp2/preds.json'
 detections, class2idx = preds2metrics(preds_json, class2idx)
 print(class2idx)
 

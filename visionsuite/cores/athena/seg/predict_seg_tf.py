@@ -37,7 +37,7 @@ _classes = ["CHAMFER_MARK", "LINE", "MARK"]
 _idx2class = {idx: cls for idx, cls in enumerate(_classes)}
 input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
 json_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
-output_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_epochs100/test/exp'
+output_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/tf_deeplabv3plus_epochs100/test/exp2'
 
 roi = [220, 60, 1340, 828]
 
@@ -59,7 +59,7 @@ for img_file in tqdm(img_files):
     
     idx2xyxys = {}
     for idx in idx2class.keys():
-        mask, points = get_mask_from_pred(preds[:, :, idx + 1], conf=0.5)
+        mask, points = get_mask_from_pred(preds[:, :, idx + 1], conf=0.8)
     
         for _points in points:
             for _point in _points:
