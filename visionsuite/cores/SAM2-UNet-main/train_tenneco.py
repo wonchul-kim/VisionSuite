@@ -3,6 +3,7 @@ import argparse
 import random
 import numpy as np
 import torch
+import torch.nn as nn
 import torch.optim as opt
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
@@ -13,15 +14,23 @@ from SAM2UNet import SAM2UNet
 
 parser = argparse.ArgumentParser("SAM2-UNet")
 parser.add_argument("--hiera_path", default="/HDD/weights/sam2/sam2_hiera_large.pt")
-parser.add_argument("--train_image_path", default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset/train/images/')
-parser.add_argument("--train_mask_path", default='/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/split_mask_patch_dataset/train/masks/')
-parser.add_argument('--output_dir', default="/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/outputs/sam2_unet/train")
-parser.add_argument("--epoch", type=int, default=200, 
+# parser.add_argument("--train_image_path", default='/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_mask_dataset/train/images/')
+# parser.add_argument("--train_mask_path", default='/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_mask_dataset/train/masks/')
+parser.add_argument("--train_image_path", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset/train/images/')
+parser.add_argument("--train_mask_path", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset/train/masks/')
+parser.add_argument('--output_dir', default="/HDD/etc/etc/outputs")
+parser.add_argument("--epoch", type=int, default=101, 
                     help="training epochs")
 parser.add_argument("--lr", type=float, default=0.001, help="learning rate")
-parser.add_argument("--batch_size", default=2, type=int)
+parser.add_argument("--batch_size", default=1, type=int)
 parser.add_argument("--weight_decay", default=5e-4, type=float)
 args = parser.parse_args()
+# args.device_ids = [0, 1, 2, 3]
+args.device_ids = [0]
+size = (768, 1120)
+# size = (256, 512)
+weights = '/HDD/etc/etc/outputs/weights/SAM2-UNet-101.pth'
+# weights = None
 
 
 def structure_loss(pred, mask):
@@ -39,10 +48,10 @@ def main(args):
     import os.path as osp  
     import imgviz
     import cv2
-    classes = ['background', 'timber', 'screw']
+    classes = ['background', 'chamfer_mark', 'line', 'mark']
     color_map = imgviz.label_colormap()[1:len(classes) + 1]
-    freq_vis_val = 20
-    freq_save_model = 20
+    freq_vis_val = 10
+    freq_save_model = 10
     vis_dir = osp.join(args.output_dir, 'vis')
     if not osp.exists(vis_dir):
         os.mkdir(vis_dir),
@@ -51,11 +60,19 @@ def main(args):
     if not osp.exists(weights_dir):
         os.mkdir(weights_dir)
 
-    dataset = FullDataset(args.train_image_path, args.train_mask_path, (512, 512), mode='train')
+    dataset = FullDataset(args.train_image_path, args.train_mask_path, size, mode='train')
     dataloader = DataLoader(dataset, batch_size=args.batch_size, shuffle=True, num_workers=8)
     device = torch.device("cuda")
-    model = SAM2UNet(args.hiera_path)
+    if weights is not None:
+        model = SAM2UNet()
+        checkpoint = torch.load(weights)
+        model.load_state_dict(checkpoint, strict=True)
+    else:
+        model = SAM2UNet(args.hiera_path)
+
     model.to(device)
+    if len(args.device_ids) > 1:
+        model = nn.DataParallel(model)
     optim = opt.AdamW([{"params":model.parameters(), "initia_lr": args.lr}], lr=args.lr, weight_decay=args.weight_decay)
     scheduler = CosineAnnealingLR(optim, args.epoch, eta_min=1.0e-7)
     os.makedirs(args.output_dir, exist_ok=True)
@@ -76,7 +93,7 @@ def main(args):
             if i % 50 == 0:
                 print("epoch:{}-{}: loss:{}".format(epoch + 1, i + 1, loss.item()))
                 
-            # if epoch != 0 and epoch%freq_vis_val == 0:
+            # # if epoch != 0 and epoch%freq_vis_val == 0:
             if True:
                 _vis_dir = osp.join(vis_dir, str(epoch))
                 if not osp.exists(_vis_dir):

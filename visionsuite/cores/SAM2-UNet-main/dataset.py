@@ -66,13 +66,13 @@ class Normalize(object):
 
 class FullDataset(Dataset):
     def __init__(self, image_root, gt_root, size, mode):
-        self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png')]
-        self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png')]
+        self.images = [image_root + f for f in os.listdir(image_root) if f.endswith('.jpg') or f.endswith('.png') or f.endswith('.bmp')]
+        self.gts = [gt_root + f for f in os.listdir(gt_root) if f.endswith('.png') or f.endswith('.bmp')]
         self.images = sorted(self.images)
         self.gts = sorted(self.gts)
         if mode == 'train':
             self.transform = transforms.Compose([
-                Resize((size, size)),
+                Resize(size),
                 RandomHorizontalFlip(p=0.5),
                 RandomVerticalFlip(p=0.5),
                 ToTensor(),
@@ -80,7 +80,7 @@ class FullDataset(Dataset):
             ])
         else:
             self.transform = transforms.Compose([
-                Resize((size, size)),
+                Resize(size),
                 ToTensor(),
                 Normalize()
             ])
