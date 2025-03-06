@@ -81,11 +81,6 @@ def get_iou(box_1, box_2, shape_type, return_dict=False):
         else:
             return iou
     elif shape_type == 'polygon':
-        if len(box_1) < 4*3:
-            if return_dict:
-                return {'iou': 0, 'area_1': 0, 'area_2': 0, 'overlap_area': 0}
-            else:
-                return 0
         iou, area_1, area_2, overlap_area = get_polygon_iou(box_1, box_2)
         
         if return_dict:
@@ -304,6 +299,8 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                     Within the same image, compare all gt-boxes for each det-box and then, calculate iou.
                     match the det-box and gt-box by the maximum iou.
                 '''
+                if len(det[3]) < 2*3:
+                    continue
                 iou = get_iou(det[3], _gt[3], shape_type)
                 if iou > max_iou:
                     max_iou = iou 
