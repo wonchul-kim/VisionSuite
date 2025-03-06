@@ -336,7 +336,11 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                 fp[det_index] = 1
                 
             # false negative
-            results_by_image[det[0]][_class]['fn'] = results_by_image[det[0]][_class]['total_gt'] - results_by_image[det[0]][_class]['tp']
+            fn = results_by_image[det[0]][_class]['total_gt'] - results_by_image[det[0]][_class]['tp']
+            if fn < 0:
+                results_by_image[det[0]][_class]['fn'] = 0
+            else:
+                results_by_image[det[0]][_class]['fn'] = fn
             
         # if len(gt_box_detected_map) != 0:
         #     if isinstance(gt_box_detected_map[det[0]] , int) and gt_box_detected_map[det[0]] != 0:
