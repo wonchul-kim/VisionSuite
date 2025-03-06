@@ -5,9 +5,9 @@ from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by
 import os.path as osp
 
 
-model_name = 'tf_deeplabv3plus_epochs100'
+# model_name = 'tf_deeplabv3plus_epochs100'
 # model_name = 'm2f_epochs100'
-# model_name = 'pidnet_epochs100'
+model_name = 'pidnet_epochs100'
 # model_name = 'cosnet_epochs100'
 
 output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp2'
