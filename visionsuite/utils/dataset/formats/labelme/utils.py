@@ -204,9 +204,13 @@ def get_mask_from_labelme(json_file, width, height, class2label, format='pil', m
         NotImplementedError(f'There is no such case for {format}')
 
 
-def get_points_from_image(image, class_list, roi, ltp, _labelme, contour_thres):
+def get_points_from_image(pred, class_list, roi, ltp, _labelme, contour_thres, conf=0.5, ret_points=False):
+    label_points = {}
     for idx, cls_name in enumerate(class_list):
-        new_mask = (image == idx + 1).astype(np.uint8)
+        
+        points_dict = {'polygon': [], 'bbox': []}
+        new_mask = (pred == idx + 1).astype(np.uint8)
+        new_mask = (new_mask > conf).astype(np.uint8)
         contours, _ = cv2.findContours(new_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         for contour in contours:
             if len(contour) < contour_thres:
@@ -230,7 +234,14 @@ def get_points_from_image(image, class_list, roi, ltp, _labelme, contour_thres):
                                                    label=cls_name,
                                                    points=polygon,
                                                    bbox=bbox)
-    return _labelme
+                    points_dict["polygon"].append(polygon)
+                    points_dict["bbox"].append(bbox)
+        label_points[cls_name] = points_dict
+        
+    if ret_points:
+        return _labelme, label_points
+    else:
+        return _labelme
 
 
 def get_labeled_gt_image(gt_img, json_file, classes, color_map, logger=None):

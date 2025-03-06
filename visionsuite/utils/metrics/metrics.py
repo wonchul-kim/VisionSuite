@@ -256,8 +256,8 @@ def calculateAveragePrecision(rec, prec):
 
 def get_performance(detections, ground_truths, classes, iou_threshold=0.3, method='ap', shape_type='rectangle'):
     '''
-        detections: ['image filename', class-index, confidence, (x1, y1, x2, y2)]
-        ground_truths: ['image filename', class-index, confidence, (x1, y1, x2, y2)]
+        detections: ['image filename', class-index, confidence, (x1, y1, x2, y2, ...)]
+        ground_truths: ['image filename', class-index, confidence, (x1, y1, x2, y2, ...)]
     '''
     
     results_by_class = []
@@ -299,6 +299,8 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
                     Within the same image, compare all gt-boxes for each det-box and then, calculate iou.
                     match the det-box and gt-box by the maximum iou.
                 '''
+                if len(det[3]) < 2*3:
+                    continue
                 iou = get_iou(det[3], _gt[3], shape_type)
                 if iou > max_iou:
                     max_iou = iou 
@@ -335,11 +337,18 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
             else:
                 fp[det_index] = 1
                 
-        if len(gt_box_detected_map) != 0:
-            if isinstance(gt_box_detected_map[det[0]] , int) and gt_box_detected_map[det[0]] != 0:
-                results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
-            elif isinstance(gt_box_detected_map[det[0]] , np.ndarray):
-                results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
+            # false negative
+            fn = results_by_image[det[0]][_class]['total_gt'] - results_by_image[det[0]][_class]['tp']
+            if fn < 0:
+                results_by_image[det[0]][_class]['fn'] = 0
+            else:
+                results_by_image[det[0]][_class]['fn'] = fn
+            
+        # if len(gt_box_detected_map) != 0:
+        #     if isinstance(gt_box_detected_map[det[0]] , int) and gt_box_detected_map[det[0]] != 0:
+        #         results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
+        #     elif isinstance(gt_box_detected_map[det[0]] , np.ndarray):
+        #         results_by_image[det[0]][_class]['fn'] = len(gt_box_detected_map[det[0]]) - np.sum(gt_box_detected_map[det[0]])
                     
         accumulated_tp = np.cumsum(tp)
         accumulated_fp = np.cumsum(fp)

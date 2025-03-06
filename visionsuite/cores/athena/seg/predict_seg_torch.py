@@ -7,7 +7,7 @@ import json
 import cv2
 import numpy as np
 import pandas as pd
-from mlearning.utils.vis.vis_seg import vis_seg
+from visionsuite.utils.visualizers.vis_seg import vis_seg
 from athena.src.tasks.segmentation.frameworks.pytorch.models.torch_model_v2 import TorchModelV2
 
 

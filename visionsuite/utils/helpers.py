@@ -3,6 +3,22 @@ import json
 import numpy as np
 import os.path as osp
 
+def get_text_coords(points, width, height, offset_w=0, offset_h=10):
+    text_coord_x, text_coord_y = int(np.min(points, axis=0)[0]), int(np.min(points, axis=0)[1] - 10)
+    if text_coord_x < offset_w:
+        text_coord_x = int(np.max(points, axis=0)[0] + offset_w)
+        
+    if text_coord_x > width - 100:
+        text_coord_x = 10
+        
+    if text_coord_y < offset_h:
+        text_coord_y = int(np.max(points, axis=0)[1] + offset_h)
+        
+    if text_coord_y > height - 100:
+        text_coord_y = 10
+        
+    return (text_coord_x, text_coord_y)
+
 def get_filename(file_path, include_ext=False):
     if not include_ext:
         return osp.split(osp.splitext(file_path)[0])[-1]

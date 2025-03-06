@@ -11,7 +11,7 @@ from visionsuite.utils.helpers import get_filename
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
 
-def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=None, height=None, vis=False, output_format='bmp'):
+def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=None, height=None, vis=False, output_format='bmp', rois=[[]]):
 
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
@@ -20,7 +20,6 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
         _output_dir = osp.join(output_dir, mode)
         if not osp.exists(_output_dir):
             os.mkdir(_output_dir)
-            
             
         if vis:
             vis_dir = osp.join(_output_dir, 'vis')
@@ -31,17 +30,19 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
         
         for json_file in tqdm(json_files, desc=mode):
             img_file = osp.splitext(json_file)[0] + f'.{input_format}'
+            img = cv2.imread(img_file)
             filename = get_filename(json_file, False)
             with open(json_file, 'r') as jf:
                 anns = json.load(jf)
                 
-                
             if width is None and height is None:
                 width, height = anns['imageWidth'], anns['imageHeight']
+                
+            if rois == [[]]:
+                rois = [[0, 0, width, height]]
             mask = get_mask_from_labelme(json_file, width, height, class2label, 
                                         format='opencv')
             import numpy as np
-            _mask = np.unique(mask)
             mask_output_dir = osp.join(_output_dir, 'masks')
             if not osp.exists(mask_output_dir):
                 os.mkdir(mask_output_dir)
@@ -50,39 +51,43 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
             if not osp.exists(image_output_dir):
                 os.mkdir(image_output_dir)
                 
-            cv2.imwrite(osp.join(mask_output_dir, filename + f'.{output_format}'), mask)
-            copyfile(img_file, osp.join(image_output_dir, filename + f'.{output_format}'))
-            
-            if vis:
-                import numpy as np
-                import imgviz 
+            for roi in rois:
+                roi_img = img[roi[1]:roi[3], roi[0]:roi[2]]
+                roi_mask = mask[roi[1]:roi[3], roi[0]:roi[2]]
                 
-                img = cv2.imread(img_file)
+                cv2.imwrite(osp.join(mask_output_dir, filename + f'.{output_format}'), roi_mask)
+                cv2.imwrite(osp.join(image_output_dir, filename + f'.{output_format}'), roi_img)
+                # copyfile(img_file, osp.join(image_output_dir, filename + f'.{output_format}'))
                 
-                vis_img = np.zeros((height, width*2, 3))
-                vis_img[:, :width, :] = img
-                color_map = imgviz.label_colormap(50)
-                mask = color_map[mask.astype(np.uint8)].astype(np.uint8)
-                vis_img[:, width:, :] = mask 
-                
-                cv2.imwrite(osp.join(vis_dir, filename + '.png'), vis_img)
+                if vis:
+                    import numpy as np
+                    import imgviz 
+                    
+                    vis_img = np.zeros((roi[3] - roi[1], (roi[2] - roi[0])*2, 3))
+                    vis_img[:, :roi[2] - roi[0], :] = roi_img
+                    color_map = imgviz.label_colormap(50)
+                    vis_img[:, roi[2] - roi[0]:, :] = color_map[roi_mask.astype(np.uint8)].astype(np.uint8) 
+                    
+                    cv2.imwrite(osp.join(vis_dir, filename + '.png'), vis_img)
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/LX/24.12.12/split_labelme_patch_dataset'
-    output_dir = '/HDD/datasets/projects/LX/24.12.12/split_mask_patch_dataset'
-    # class2label = {'tear': 1}
-    # class2label = {'scratch': 1}
-    # class2label = {'scratch': 1, 'tear': 2}
-    # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
-    class2label = {'timber': 1, 'screw': 2}
+    input_dir = '/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_dataset'
+    output_dir = '/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_mask_dataset'
+    # input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing_outer/split_dataset_'
+    # output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing_outer/split_mask_dataset_'
+    class2label = {'chamfer_mark': 1, 'line': 2, 'mark': 3}
+    # class2label = {"stabbed": 1}
+    # class2label = {'CHAMFER_MASK': 1, 'LINE': 2, 'MASK': 3}
     modes = ['train', 'val']
-    width, height = 1024, 1024
+    # width, height = 1120, 768
+    width, height = None, None
     vis = True
-    output_format = 'png'
-    input_format = 'png'
+    output_format = 'bmp'
+    input_format = 'bmp'
+    roi = [[220, 60, 1340, 828]]
 
-    labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format)
+    labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format, roi)
 
 
     # input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/tmp_patch_dataset'
