@@ -1,8 +1,11 @@
 import os.path as osp
 import glob 
 import json
+from visionsuite.utils.metrics.geometry import merge_polygons
 
-def preds2metrics(preds_json, class2idx):
+
+
+def preds2metrics(preds_json, class2idx, nms=0):
     with open(preds_json, 'r') as jf:
         anns = json.load(jf)
     
@@ -21,19 +24,22 @@ def preds2metrics(preds_json, class2idx):
                             class2idx[ann['idx2class'][_class]] = len(class2idx)
                         detections.append([filename, int(class2idx[ann['idx2class'][_class]]), float(conf), tuple([_point for __point in box for _point in __point])])
                 else:
-                    for polygons in zip(val['polygon']):
-                        if ann['idx2class'][_class] not in class2idx:
-                            class2idx[ann['idx2class'][_class]] = len(class2idx)
-                            
-                        # dets = []
-                        # for polygon in polygons:
-                        #     for points in polygon:
-                        #         dets.append(points[0])
-                        #         dets.append(points[1])
+                    if nms:
+                        nms_polygons = merge_polygons(val['polygon'], nms)
+                        for polygon in nms_polygons:
+                            if ann['idx2class'][_class] not in class2idx:
+                                class2idx[ann['idx2class'][_class]] = len(class2idx)
                                 
-                        detections.append([filename, int(class2idx[ann['idx2class'][_class]]), None, tuple(coord for polygon in polygons for points in polygon for coord in points)])
-
-
+                            detections.append([filename, int(class2idx[ann['idx2class'][_class]]), None, 
+                                               tuple(coord for points in polygon for coord in points)])
+                    
+                    else:    
+                        for polygons in zip(val['polygon']):
+                            if ann['idx2class'][_class] not in class2idx:
+                                class2idx[ann['idx2class'][_class]] = len(class2idx)
+                                
+                            detections.append([filename, int(class2idx[ann['idx2class'][_class]]), None, 
+                                               tuple(coord for polygon in polygons for points in polygon for coord in points)])
                     
     return detections, class2idx
         
