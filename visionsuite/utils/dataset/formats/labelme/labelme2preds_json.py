@@ -35,10 +35,11 @@ def labelme2preds_json(input_dir, output_dir, class2idx):
         json.dump(results, json_file, ensure_ascii=False, indent=4)
     
 if __name__ == '__main__':
-    input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/dinov2_epochs50/test/exp/labels'
-    output_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/dinov2_epochs50/test/exp'
-    # classes = ['DUST', 'STABBED']
-    classes = ['CHAMFER_MARK', 'LINE', 'MARK']
+    input_dir = '/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/m2f_epochs20/test/exp/labels'
+    output_dir = '/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/m2f_epochs20/test/exp'
+    classes = ['DUST', 'STABBED']
+    # classes = ["STABBED", "DUST"]
+    # classes = ['CHAMFER_MARK', 'LINE', 'MARK']
     idx2class = {idx: cls for idx, cls in enumerate(classes)}
     class2idx = {cls: idx for idx, cls in enumerate(classes)}
 

@@ -14,23 +14,24 @@ import os.path as osp
 
 # model_name = 'deeplabv3plus'
 # model_name = 'pidnet_epochs300'
-model_name = 'dinov2_epochs50'
+# model_name = 'dinov2_epochs50'
+model_name = 'm2f_epochs20'
 
-output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
-input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
+output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
+input_dir = '/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/val'
 ground_truths, class2idx = labelme2metrics(input_dir)
-
-preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/preds.json'
-detections, class2idx = preds2metrics(preds_json, class2idx, nms=0)
-# detections, class2idx = preds2metrics(preds_json, class2idx, nms=0.25)
+# class2idx = {'DUST': 0, "STABBED": 1}
+preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/preds.json'
+# detections, class2idx = preds2metrics(preds_json, class2idx, nms=0)
+detections, class2idx = preds2metrics(preds_json, class2idx, nms=0.2)
 print(class2idx)
 
 # _detections, _ground_truths = [], []
 # for detection in detections:
-#     if detection[0] == '14_124060517095294_1_rgb':
+#     if detection[0] == '1182_1_angle_20241212161927203':
 #         _detections.append(detection)
 # for ground_truth in ground_truths:
-#     if ground_truth[0] == '14_124060517095294_1_rgb':
+#     if ground_truth[0] == '1182_1_angle_20241212161927203':
 #         _ground_truths.append(ground_truth)
 # detections = _detections
 # ground_truths = _ground_truths
