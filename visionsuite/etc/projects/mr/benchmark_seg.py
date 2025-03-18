@@ -4,33 +4,22 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf
 import os.path as osp
 
-# model_name = 'tf_deeplabv3plus_epochs100'
-# model_name = 'tf_deeplabv3plus_epochs200'
-# model_name = 'tf_deeplabv3plus_frozen_epochs100'
-# model_name = 'm2f_epochs100'
-# model_name = 'cosnet_epochs100'
-# model_name = 'pidnet_epochs100'
-# model_name = 'gcnet_epochs100'
-# output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
-# input_dir = '/DeepLearning//etc/_athena_tests/benchmark/tenneco/outer/val'
-
 # model_name = 'deeplabv3plus'
 # model_name = 'pidnet_epochs300'
 # model_name = 'dinov2_epochs50'
 # model_name = 'm2f_epochs20'
 model_name = 'gcnet_epochs200'
+# model_name = 'mask2former_epochs200'
 
-# output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
-output_dir = f'/HDD/etc/repeatablility/gcnet_epochs100/test/exp'
-input_dir = '/HDD/etc/repeatablility/gcnet_epochs100/test/exp2/labels'
-
+# output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp_conf0.7'
+output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
+input_dir = '/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/val'
 
 ground_truths, class2idx = labelme2metrics(input_dir)
-# class2idx = {'DUST': 0, "STABBED": 1}
-# preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/preds.json'
-preds_json = f'/HDD/etc/repeatablility/gcnet_epochs100/test/exp/preds.json'
-detections, class2idx = preds2metrics(preds_json, class2idx, nms=0)
-# detections, class2idx = preds2metrics(preds_json, class2idx, nms=0.2)
+class2idx = {'DUST': 0, "STABBED": 1}
+# preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp_conf0.7/preds.json'
+preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/preds.json'
+detections, class2idx = preds2metrics(preds_json, class2idx, nms=0.2)
 print(class2idx)
 
 # _detections, _ground_truths = [], []

@@ -33,7 +33,7 @@ dy = int((1. - patch_overlap_ratio) * patch_height)
 
 os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 compare_mask = False
-weights = '/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/deeplabv3plus/BOTTOM.h5'
+weights = '/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/deeplabv3plus/last_weights.h5'
 model = TFModelv2(model_name='deeplabv3plus', backbone='efficientnetb3', backbone_weights='imagenet', backbone_trainable=True,
                   freeze_block='block3',
                   batch_size=1, width=patch_width, height=patch_height, channel=3, num_classes=3,
