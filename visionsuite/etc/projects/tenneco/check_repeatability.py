@@ -70,15 +70,19 @@ def compare_two(anns1, anns2):
 
 base_dir = '/HDD/etc/repeatablility'
 dir_names = ['gcnet_epochs100', 'mask2former_epochs140', 'pidnet_l_epochs300']
-dir_names = ['pidnet_l_epochs300']
 iou_threshold = 0.25
 for dir_name in dir_names:
     json_files1 = sorted(glob(osp.join(base_dir, dir_name, 'test/exp/labels', '*.json')))
 
+    no_diff_no_points = 0
+    no_diff_points = 0
+    no_diff_points_files = []
+    diff_points = 0
+    
     for json_file1 in tqdm(json_files1, desc=dir_name):
         filename = osp.split(osp.splitext(json_file1)[0])[-1]
         json_file2 = osp.join(base_dir, dir_name, 'test/exp2/labels', f'{filename}.json')
-        json_file3 = osp.join(base_dir, dir_name, 'test/exp2/labels', f'{filename}.json')
+        json_file3 = osp.join(base_dir, dir_name, 'test/exp3/labels', f'{filename}.json')
         
         assert osp.exists(json_file2), ValueError(f"There is no such file: {json_file2}")
         assert osp.exists(json_file3), ValueError(f"There is no such file: {json_file3}")
@@ -92,28 +96,53 @@ for dir_name in dir_names:
         with open(json_file1, 'r') as jf:
             anns3 = json.load(jf)['shapes']
         
-        
         is_different = False
         
         if len(anns1) != len(anns2) or len(anns1) != len(anns3) or len(anns2) != len(anns3):
             is_different = True 
         else:
-            if compare_two(anns1, anns2) or compare_two(anns1, anns3) or compare_two(anns2, anns1) or compare_two(anns2, anns3) or compare_two(anns3, anns1) or compare_two(anns3, anns2):
+            if len(anns1) == 0 and len(anns2) == 0 and len(anns3) == 0:
+                no_diff_no_points += 1
+                is_different = False
+            elif compare_two(anns1, anns2) or compare_two(anns1, anns3) or compare_two(anns2, anns1) or compare_two(anns2, anns3) or compare_two(anns3, anns1) or compare_two(anns3, anns2):
                 is_different = True 
-                    
+                diff_points += 1
+            else:
+                is_different = False
+                no_diff_points += 1
+                no_diff_points_files.append(filename)
                         
         if is_different:
             img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}_3_0.png'))
             img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}_3_0.png'))
             img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}_3_0.png'))
             
-            diff_dir = osp.join(base_dir, dir_name, 'diff')
+            diff_dir = osp.join(base_dir, dir_name, 'diff_w_points')
             if not osp.exists(diff_dir):
                 os.mkdir(diff_dir)
             
             cv2.imwrite(osp.join(diff_dir, f'{filename}.png'), np.vstack([img1, img2, img3]))
-            
         
+                        
+        if filename in no_diff_points_files:
+            img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}_3_0.png'))
+            img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}_3_0.png'))
+            img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}_3_0.png'))
+            
+            no_diff_dir = osp.join(base_dir, dir_name, 'no_diff_w_points')
+            if not osp.exists(no_diff_dir):
+                os.mkdir(no_diff_dir)
+            
+            cv2.imwrite(osp.join(no_diff_dir, f'{filename}.png'), np.vstack([img1, img2, img3]))
+        
+            
+    assert len(json_files1) == no_diff_no_points + no_diff_points + diff_points
+            
+    txt = open(osp.join(base_dir, dir_name, 'diff.txt'), 'w')
+    txt.write(f"No diff. b/c no points: {no_diff_no_points}\n")
+    txt.write(f"No diff. even with points: {no_diff_points}\n")
+    txt.write(f"diff. with points: {diff_points}\n")
+    txt.close()
         
             
             
