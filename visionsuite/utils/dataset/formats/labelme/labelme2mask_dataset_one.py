@@ -11,7 +11,7 @@ from visionsuite.utils.helpers import get_filename
 from visionsuite.utils.dataset.formats.labelme.utils import get_mask_from_labelme
 
 
-def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=None, height=None, vis=False, output_format='bmp', rois=[[]]):
+def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=None, height=None, vis=False, output_format='bmp', rois=[[]], one_class=False):
 
     if not osp.exists(output_dir):
         os.makedirs(output_dir)
@@ -41,7 +41,7 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
             if rois == [[]]:
                 rois = [[0, 0, width, height]]
             mask = get_mask_from_labelme(json_file, width, height, class2label, 
-                                        format='opencv')
+                                        format='opencv', one_class=one_class)
             import numpy as np
             mask_output_dir = osp.join(_output_dir, 'masks')
             if not osp.exists(mask_output_dir):
@@ -72,37 +72,17 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
         
             
 if __name__ == '__main__':
-    input_dir = '/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_dataset'
-    output_dir = '/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_mask_dataset'
-    # input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing_outer/split_dataset_'
-    # output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing_outer/split_mask_dataset_'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_mask_dataset_one_class'
     class2label = {'chamfer_mark': 1, 'line': 2, 'mark': 3}
-    # class2label = {"stabbed": 1}
-    # class2label = {'CHAMFER_MASK': 1, 'LINE': 2, 'MASK': 3}
     modes = ['train', 'val']
     # width, height = 1120, 768
     width, height = None, None
-    vis = True
-    output_format = 'bmp'
+    vis = False
+    output_format = 'png'
     input_format = 'bmp'
     roi = [[220, 60, 1340, 828]]
+    one_class = True
 
-    labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format, roi)
-
-
-    # input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/tmp_patch_dataset'
-    # output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/datasets/tmp_patch_dataset/vis'
-    # # class2label = {'tear': 1}
-    # # class2label = {'scratch': 1}
-    # # class2label = {'scratch': 1, 'tear': 2}
-    # # class2label = {'scratch': 1, 'tear': 2, 'stabbed': 3}
-    # class2label = {'timber': 1, 'screw': 2}
-    # modes = ['./']
-    # width, height = 1024, 1024
-    # vis = True
-    # output_format = 'png'
-    # input_format = 'jpg'
-
-    # labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format)
-
+    labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format, roi, one_class)
 
