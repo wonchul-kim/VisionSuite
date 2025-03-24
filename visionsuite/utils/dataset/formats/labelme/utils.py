@@ -178,7 +178,7 @@ def get_mask_from_labelme(json_file, width, height, class2label, format='pil', o
                     if not one_class:
                         cv2.circle(mask, (int(cx), int(cy)), int(radius), class2label[label], -1)
                     else:
-                        cv2.circle(mask, (int(cx), int(cy)), int(radius), 1, -1)
+                        cv2.circle(mask, (int(cx), int(cy)), int(radius), one_class, -1)
                 elif shape_type in ['rectangle']:
                     if len(_points) == 2:
                         arr = np.array(_points, dtype=np.int32)
@@ -187,7 +187,7 @@ def get_mask_from_labelme(json_file, width, height, class2label, format='pil', o
                     if not one_class:
                         cv2.fillPoly(mask, [arr], color=(class2label[label]))
                     else:
-                        cv2.fillPoly(mask, [arr], color=(1))
+                        cv2.fillPoly(mask, [arr], color=(one_class))
                 elif shape_type in ['polygon', 'watershed']:
                     if len(_points) > 2:  # handle cases for 1 point or 2 points
                         arr = np.array(_points, dtype=np.int32)
@@ -196,7 +196,7 @@ def get_mask_from_labelme(json_file, width, height, class2label, format='pil', o
                     if not one_class:
                         cv2.fillPoly(mask, [arr], color=(class2label[label]))
                     else:
-                        cv2.fillPoly(mask, [arr], color=(1))
+                        cv2.fillPoly(mask, [arr], color=(one_class))
                 elif shape_type in ['point']:
                     pass
                 else:

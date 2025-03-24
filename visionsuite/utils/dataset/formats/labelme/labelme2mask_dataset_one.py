@@ -82,7 +82,7 @@ if __name__ == '__main__':
     output_format = 'png'
     input_format = 'bmp'
     roi = [[220, 60, 1340, 828]]
-    one_class = True
+    one_class = 255
 
     labelme2mask(input_dir, output_dir, class2label, input_format, modes, width, height, vis, output_format, roi, one_class)
 
