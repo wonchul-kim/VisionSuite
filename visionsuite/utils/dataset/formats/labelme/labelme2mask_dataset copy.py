@@ -34,6 +34,8 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes,
             img_file = osp.splitext(json_file)[0] + f'.{input_format}'
             img = cv2.imread(img_file)
             filename = get_filename(json_file, False)
+            # if filename == '723_1852_124062811280335_3_Outer':
+            #     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>")
             with open(json_file, 'r') as jf:
                 anns = json.load(jf)
                 
@@ -111,21 +113,22 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes,
                         if isinstance(crop['offset'], float) and crop['offset'] <= 1 and crop['offset'] >= 0:
                             offset_x, offset_y = (x2 - x1) * crop['offset'], (y2 - y1) * crop['offset']
                             case = 1
+                            do_resize = False
                         elif isinstance(crop['offset'], (tuple, list)):
                             assert len(crop['offset']) == 2, ValueError(f"Offset for crop must be 2 values as x and y")
                             offset_x, offset_y = crop['offset'][0], crop['offset'][1]
                             case = 1
+                            do_resize = True
                         elif isinstance(crop['offset'], int):
                             offset_x, offset_y = crop['offset'], crop['offset']
                             case = 2
+                            do_resize = True
                             
                             if offset_x < obj_width:
                                 offset_x = obj_width + 20
-                                case = 3
                                 
                             if offset_y < obj_height:
                                 offset_y = obj_height + 20
-                                case = 3
                             
                         else:
                             raise NotImplementedError(f"NOT yet Considered: {crop['offset']}")
@@ -134,9 +137,9 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes,
                         if case == 1:
                             x1 = x1 - offset_x if x1 - offset_x >= 0 else 0
                             y1 = y1 - offset_y if y1 - offset_y >= 0 else 0
-                            x2 = x2 + offset_x if x1 + offset_x <= width else width
-                            y2 = y2 + offset_y if y1 + offset_y <= height else height
-                        elif case == 2 or case == 3:
+                            x2 = x2 + offset_x if x1 + offset_x <= roi[2] - roi[0] else roi[2] - roi[0]
+                            y2 = y2 + offset_y if y1 + offset_y <= roi[3] - roi[1] else roi[3] - roi[1]
+                        elif case == 2:
                             cx, cy = (x2 - x1)/2 + x1, (y2 - y1)/2 + y1
                             x1 = cx - offset_x/2 
                             y1 = cy - offset_y/2 
@@ -147,24 +150,28 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes,
                                 x2 -= x1
                                 x1 = 0
                             
-                            if x2 > width:
-                                x1 -= (x2 - width)
-                                x2 = width 
+                            if x2 > ( roi[2] - roi[0]):
+                                x1 -= (x2 - ( roi[2] - roi[0]))
+                                x2 = ( roi[2] - roi[0]) 
                             
                             if y1 < 0:
                                 y2 -= y1
                                 y1 = 0
                             
-                            if y2 > height:
-                                y1 -= (y2 - height)
-                                y2 = height 
+                            if y2 > (roi[3] - roi[1]):
+                                y1 -= (y2 - (roi[3] - roi[1]))
+                                y2 = (roi[3] - roi[1]) 
                             
                         _roi_img = roi_img[int(y1):int(y2), int(x1):int(x2)]
                         _roi_mask = roi_mask[int(y1):int(y2), int(x1):int(x2)]
                         
-                        if case == 3:
+                        if do_resize:
                             _roi_img = cv2.resize(_roi_img, (int(crop['offset']), int(crop['offset'])))
                             _roi_mask = cv2.resize(_roi_mask, (int(crop['offset']), int(crop['offset'])))
+                            
+                        assert _roi_img.shape[:2] == (int(crop['offset']), int(crop['offset']))
+                        assert _roi_mask.shape[:2] == (int(crop['offset']), int(crop['offset']))
+                            
                         cv2.imwrite(osp.join(image_output_dir, filename + f'_{ann_id}.{output_format}'), _roi_img)
                         cv2.imwrite(osp.join(mask_output_dir, filename + f'_{ann_id}.{output_format}'), _roi_mask)
                 
