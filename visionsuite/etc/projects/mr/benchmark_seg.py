@@ -10,7 +10,8 @@ import os.path as osp
 # model_name = 'm2f_epochs20'
 # model_name = 'gcnet_epochs200'
 # model_name = 'mask2former_epochs200'
-model_name = 'sam2unet_epochs300'
+# model_name = 'sam2unet_epochs300'
+model_name = 'sam2_epochs200'
 
 # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp_conf0.7'
 output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'

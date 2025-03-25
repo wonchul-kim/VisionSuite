@@ -26,8 +26,6 @@ def get_polygon_iou(point1, point2):
         
     # 교집합 영역 계산
     intersection_area = poly1.intersection(poly2).area
-    
-    
     union_area = poly1.union(poly2).area
     
     # IoU 계산
@@ -35,22 +33,44 @@ def get_polygon_iou(point1, point2):
     
     return iou, poly1.area,poly2.area, intersection_area
 
-def compare_two(anns1, anns2, iou_threshold, area_threshold=0):
+def polygon2rect(points, offset=0):
+    xs, ys = [], []
+    for x, y in points:
+        xs.append(x)
+        ys.append(y)
+    
+    return [[min(xs) - offset, min(ys) - offset], [max(xs) + offset, min(ys) - offset], 
+            [max(xs) + offset, max(ys) + offset], [min(xs) - offset, max(ys) + offset]]
+
+def compare_two(anns1, anns2, iou_threshold, area_threshold=0, rect_iou=False, offset=0):
     
     is_different = False
+    
+    if len(anns1) == 0:
+        return True 
+    
     for ann1 in anns1:
                 
         label1 = ann1['label']
         points1 = ann1['points']
         
+        if rect_iou:
+            points1 = polygon2rect(points1, offset=offset)
+        
         if len(points1) < 3:
             continue
+            
+        if len(anns2) == 0:
+            is_different = True 
+            break
             
         for ann2 in anns2:
             
             label2 = ann2['label']
             points2 = ann2['points']
-            
+            if rect_iou:
+                points1 = polygon2rect(points2, offset=offset)
+
             
             if label1 != label2:
                 is_different = True 
@@ -79,13 +99,10 @@ def compare_two(anns1, anns2, iou_threshold, area_threshold=0):
             
             if poly1.area < area_threshold:
                 is_different = False 
-            else:
-                is_different = True
-                break
 
     return is_different
 
-def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=True):
+def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=True, rect_iou=False, offset=0):
        
     for dir_name in dir_names:
         results = {}
@@ -100,6 +117,10 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=Tr
                 
                 for json_file1 in tqdm(json_files1, desc=f"{dir_name}: IoU({iou_threshold}) & Area({area_threshold})"):
                     filename = osp.split(osp.splitext(json_file1)[0])[-1]
+                    
+                    # if filename == '125020717054728_7_Outer_1_Image': 
+                    if filename == '125020717054826_4_Outer_1_Image':
+                        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                     
                     json_file2 = osp.join(base_dir, dir_name, 'test/exp2/labels', f'{filename}.json')
                     json_file3 = osp.join(base_dir, dir_name, 'test/exp3/labels', f'{filename}.json')
@@ -121,7 +142,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=Tr
                         # all cases are no points
                         no_diff_no_points += 1
                         is_different = False
-                    elif compare_two(anns1, anns2, iou_threshold, area_threshold) or compare_two(anns1, anns3, iou_threshold, area_threshold) or compare_two(anns2, anns1, iou_threshold, area_threshold) or compare_two(anns2, anns3, iou_threshold, area_threshold) or compare_two(anns3, anns1, iou_threshold, area_threshold) or compare_two(anns3, anns2, iou_threshold, area_threshold):
+                    elif compare_two(anns1, anns2, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset) or compare_two(anns1, anns3, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset) or compare_two(anns2, anns1, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset) or compare_two(anns2, anns3, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset) or compare_two(anns3, anns1, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset) or compare_two(anns3, anns2, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset):
                         # different predicted points
                         is_different = True 
                         diff_points += 1
@@ -214,19 +235,36 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=Tr
 if __name__ == '__main__':
 
     base_dir = '/HDD/etc/repeatablility'
-    dir_names = ['gcnet_epochs100', 'mask2former_epochs140', 'pidnet_l_epochs300', 'sam2unet_epochs100']
-    # dir_names = ['gcnet_epochs100']
-    # iou_thresholds = [0.05, 0.1, 0.2]
-    # area_thresholds = [10, 50, 100]
-    # figs = True 
-    # vis = False
+    dir_names = ['gcnet_epochs100', 'mask2former_epochs140', 'pidnet_l_epochs300', 'sam2_epochs300']
+    rect_iou = True 
+    offset = 10
+    
+    ### ===================================
+    iou_thresholds = [0.05, 0.1, 0.2, 0.3]
+    area_thresholds = [10, 50, 100, 150, 200]
+    figs = True 
+    vis = False
+    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, offset=offset)
+    ### ===================================
     iou_thresholds = [0.05]
     area_thresholds = [100]
-    vis = True
     figs = False
+    vis = True
+    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, offset=offset)
                    
-    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs)
-            
+    
+    # base_dir = '/HDD/etc/repeatablility'
+    # dir_names = ['sam2_epochs300']
+    
+    # iou_thresholds = [0.05]
+    # area_thresholds = [100]
+    # figs = True
+    # vis = True
+    # rect_iou = True 
+    # offset = 10
+    # run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, offset=offset)
+                   
+    
                             
             
                 

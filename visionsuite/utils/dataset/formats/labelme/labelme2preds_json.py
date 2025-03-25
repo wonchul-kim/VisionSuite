@@ -35,7 +35,7 @@ def labelme2preds_json(input_dir, output_dir, class2idx):
         json.dump(results, json_file, ensure_ascii=False, indent=4)
     
 if __name__ == '__main__':
-    model_name = 'sam2unet_epochs300'
+    model_name = 'sam2_epochs200'
     input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/labels'
     output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
     classes = ['STABBED', 'DUST']
