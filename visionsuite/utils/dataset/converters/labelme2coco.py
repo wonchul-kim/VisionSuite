@@ -16,6 +16,7 @@ import numpy.typing as npt
 import PIL
 import math
 from tqdm import tqdm
+import warnings
 
 
 try:
@@ -28,39 +29,44 @@ def shape_to_mask(img_shape: tuple[int, ...],
                     points: list[list[float]],
                     shape_type: Optional[str] = None,
                     line_width: int = 10,
-                    point_size: int = 5) -> npt.NDArray[np.bool_]:
+                    point_size: int = 5,
+                    ignore_shape_types=['point', 'line', 'linestrip']) -> npt.NDArray[np.bool_]:
     
     mask = PIL.Image.fromarray(np.zeros(img_shape[:2], dtype=np.uint8))
     draw = PIL.ImageDraw.Draw(mask)
     xy = [tuple(point) for point in points]
     
-    if shape_type == "circle":
-        assert len(xy) == 2, "Shape of shape_type=circle must have 2 points"
-        (cx, cy), (px, py) = xy
-        d = math.sqrt((cx - px) ** 2 + (cy - py) ** 2)
-        draw.ellipse([cx - d, cy - d, cx + d, cy + d], outline=1, fill=1)
-    elif shape_type == "rectangle":
-        assert len(xy) == 2, "Shape of shape_type=rectangle must have 2 points"
-        x1, y1 = min(xy[0][0], xy[1][0]), min(xy[0][1], xy[1][1])
-        x2, y2 = max(xy[0][0], xy[1][0]), max(xy[0][1], xy[1][1])
-        xy = [(x1, y1), (x2, y2)]
-        draw.rectangle(xy, outline=1, fill=1)
-    elif shape_type == "line":
-        assert len(xy) == 2, "Shape of shape_type=line must have 2 points"
-        draw.line(xy=xy, fill=1, width=line_width)
-    elif shape_type == "linestrip":
-        draw.line(xy=xy, fill=1, width=line_width)
-    elif shape_type == "point":
-        assert len(xy) == 1, "Shape of shape_type=point must have 1 points"
-        cx, cy = xy[0]
-        r = point_size
-        draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=1, fill=1)
-    elif shape_type in [None, "polygon"]:
-        assert len(xy) > 2, "Polygon must have points more than 2"
-        draw.polygon(xy=xy, outline=1, fill=1)
-    else:
-        raise ValueError(f"shape_type={shape_type!r} is not supported.")
-    
+    if shape_type not in ignore_shape_types:
+        if shape_type == "circle":
+            assert len(xy) == 2, "Shape of shape_type=circle must have 2 points"
+            (cx, cy), (px, py) = xy
+            d = math.sqrt((cx - px) ** 2 + (cy - py) ** 2)
+            draw.ellipse([cx - d, cy - d, cx + d, cy + d], outline=1, fill=1)
+        elif shape_type == "rectangle":
+            assert len(xy) == 2, "Shape of shape_type=rectangle must have 2 points"
+            x1, y1 = min(xy[0][0], xy[1][0]), min(xy[0][1], xy[1][1])
+            x2, y2 = max(xy[0][0], xy[1][0]), max(xy[0][1], xy[1][1])
+            xy = [(x1, y1), (x2, y2)]
+            draw.rectangle(xy, outline=1, fill=1)
+        elif shape_type == "line":
+            assert len(xy) == 2, "Shape of shape_type=line must have 2 points"
+            draw.line(xy=xy, fill=1, width=line_width)
+        elif shape_type == "linestrip":
+            draw.line(xy=xy, fill=1, width=line_width)
+        elif shape_type == "point":
+            assert len(xy) == 1, "Shape of shape_type=point must have 1 points"
+            cx, cy = xy[0]
+            r = point_size
+            draw.ellipse([cx - r, cy - r, cx + r, cy + r], outline=1, fill=1)
+        elif shape_type in [None, "polygon"]:
+            if len(xy) <= 2:
+                warnings.warn(f'There are less than 2 points with polygon shape-type') 
+            else:
+                assert len(xy) > 2, "Polygon must have points more than 2"
+                draw.polygon(xy=xy, outline=1, fill=1)
+        else:
+            raise ValueError(f"shape_type={shape_type!r} is not supported.")
+        
     return np.array(mask, dtype=bool)
 
 
@@ -68,11 +74,12 @@ def main():
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
-    parser.add_argument("--input_dir", default='/DeepLearning/etc/_athena_tests/benchmark/interojo/rect/split_dataset')
-    parser.add_argument("--output_dir", default='/DeepLearning/etc/_athena_tests/benchmark/interojo/rect/split_coco_dataset')
-    parser.add_argument("--noviz", default=True)
+    parser.add_argument("--input_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset')
+    parser.add_argument("--output_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_coco_dataset')
+    parser.add_argument("--noviz", default=False)
+    parser.add_argument("--assert-image-path", default=False)
     args = parser.parse_args()
-    args.mode = 'val'
+    args.modes = 'val'
 
     # if osp.exists(args.output_dir):
     #     print("Output directory already exists:", args.output_dir)
@@ -122,7 +129,8 @@ def main():
 
         
         base = osp.splitext(osp.basename(filename))[0]
-        assert base == osp.splitext(label_file['imagePath'])[0]
+        if args.assert_image_path:
+            assert base == osp.splitext(label_file['imagePath'])[0]
         image_ext = osp.splitext(label_file['imagePath'])[-1]
         out_img_file = osp.join(args.output_dir, args.mode, base + image_ext)
 
