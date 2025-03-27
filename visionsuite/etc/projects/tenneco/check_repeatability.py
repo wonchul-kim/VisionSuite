@@ -69,12 +69,12 @@ def compare_two(anns1, anns2, iou_threshold, area_threshold=0, rect_iou=False, o
             label2 = ann2['label']
             points2 = ann2['points']
             if rect_iou:
-                points1 = polygon2rect(points2, offset=offset)
+                points2 = polygon2rect(points2, offset=offset)
 
             
             if label1 != label2:
                 is_different = True 
-                break
+                continue
             
             if len(points2) < 3:
                 continue
@@ -102,7 +102,9 @@ def compare_two(anns1, anns2, iou_threshold, area_threshold=0, rect_iou=False, o
 
     return is_different
 
-def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=True, rect_iou=False, offset=0):
+def run(base_dir, dir_names, iou_thresholds, area_thresholds, 
+        vis=False, figs=True, rect_iou=False, offset=0,
+        filename_postfix='_3_0'):
        
     for dir_name in dir_names:
         results = {}
@@ -153,9 +155,9 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=Tr
                         no_diff_points_files.append(filename)
                     
                     if vis and is_different:
-                        img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}_3_0.png'))
-                        img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}_3_0.png'))
-                        img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}_3_0.png'))
+                        img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}{filename_postfix}.png'))
+                        img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}{filename_postfix}.png'))
+                        img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}{filename_postfix}.png'))
                         
                         diff_dir = osp.join(base_dir, dir_name, f'iou{iou_threshold}_area{area_threshold}', 'diff_w_points')
                         if not osp.exists(diff_dir):
@@ -165,9 +167,9 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=Tr
                     
                                     
                     if vis and filename in no_diff_points_files:
-                        img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}_3_0.png'))
-                        img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}_3_0.png'))
-                        img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}_3_0.png'))
+                        img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}{filename_postfix}.png'))
+                        img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}{filename_postfix}.png'))
+                        img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}{filename_postfix}.png'))
                         
                         no_diff_dir = osp.join(base_dir, dir_name,  f'iou{iou_threshold}_area{area_threshold}', 'no_diff_w_points')
                         if not osp.exists(no_diff_dir):
@@ -232,44 +234,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds, vis=False, figs=Tr
             plt.tight_layout(rect=[0, 0, 1, 0.97])
             plt.savefig(osp.join(base_dir, dir_name, 'diff.png'))
             
-if __name__ == '__main__':
 
-    base_dir = '/HDD/etc/repeatablility'
-    dir_names = ['gcnet_epochs100', 'mask2former_epochs140', 'pidnet_l_epochs300', 'sam2_epochs300']
-    rect_iou = True 
-    offset = 10
-    
-    ### ===================================
-    iou_thresholds = [0.05, 0.1, 0.2, 0.3]
-    area_thresholds = [10, 50, 100, 150, 200]
-    figs = True 
-    vis = False
-    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, offset=offset)
-    ### ===================================
-    iou_thresholds = [0.05]
-    area_thresholds = [100]
-    figs = False
-    vis = True
-    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, offset=offset)
-                   
-    
-    # base_dir = '/HDD/etc/repeatablility'
-    # dir_names = ['sam2_epochs300']
-    
-    # iou_thresholds = [0.05]
-    # area_thresholds = [100]
-    # figs = True
-    # vis = True
-    # rect_iou = True 
-    # offset = 10
-    # run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, offset=offset)
-                   
-    
-                            
-            
-                
-                    
-                    
                
                 
     
