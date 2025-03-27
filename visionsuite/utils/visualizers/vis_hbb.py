@@ -113,23 +113,34 @@ def vis_hbb(img_file, idx2xyxys, idx2class, output_dir, color_map, json_dir=None
                 points = ann['points']
                 shape_type = ann['shape_type']
                 
-                if len(points) == 2:
-                    cv2.rectangle(vis_gt, (int(points[0][0]), int(points[0][1])), (int(points[1][0]), int(points[1][1])), 
-                                  tuple(map(int, color_map[-1])), line_width + 1)
-                    cv2.putText(vis_gt, label, get_text_coords(points, width, height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
-                                tuple(map(int, color_map[-1])), line_width)
+                if shape_type in ['polygon', 'watershed']:
+                    if len(points) < 3:
+                        continue
+                    assert len(points) > 3, ValueError(f'For shape_type({shape_type}), the number of points must be more than 3, not {len(points)}')
+                    xs, ys = [], []
+                    for point in points:
+                        xs.append(point[0])
+                        ys.append(point[1])
+                    points = [[min(xs), min(ys)], [max(xs), max(ys)]]
+                elif shape_type == 'point':
+                    continue
+                    
+                
+                assert len(points) == 2, ValueError(f'For shape_type({shape_type}), the number of points must be 2, not {len(points)}')
+                cv2.rectangle(vis_gt, (int(points[0][0]), int(points[0][1])), (int(points[1][0]), int(points[1][1])), 
+                                tuple(map(int, color_map[-1])), line_width + 1)
+                cv2.putText(vis_gt, label, get_text_coords(points, width, height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
+                            tuple(map(int, color_map[-1])), line_width)
 
-                    if compare_gt:
-                        cv2.rectangle(vis_compare, (int(points[0][0]), int(points[0][1])), (int(points[1][0]), int(points[1][1])),
-                                    tuple(map(int, color_map[-1])), line_width + 1)
-                        cv2.putText(vis_compare, label, get_text_coords(points, width, height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
-                                    tuple(map(int, color_map[-1])), line_width)
-                        if label in points_dict['gt']:
-                            points_dict['gt'][label].append(points)
-                        else:
-                            points_dict['gt'].update({label: [points]})
-                else:
-                    raise RuntimeError(f"The points is {points} with {shape_type}")
+                if compare_gt:
+                    cv2.rectangle(vis_compare, (int(points[0][0]), int(points[0][1])), (int(points[1][0]), int(points[1][1])),
+                                tuple(map(int, color_map[-1])), line_width + 1)
+                    cv2.putText(vis_compare, label, get_text_coords(points, width, height), cv2.FONT_HERSHEY_SIMPLEX, font_scale, 
+                                tuple(map(int, color_map[-1])), line_width)
+                    if label in points_dict['gt']:
+                        points_dict['gt'][label].append(points)
+                    else:
+                        points_dict['gt'].update({label: [points]})
                 
         vis_gt = vis_gt.astype(np.uint8)
         vis_gt = cv2.vconcat([text_gt, vis_gt])
