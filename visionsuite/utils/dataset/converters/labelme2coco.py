@@ -70,7 +70,9 @@ def shape_to_mask(img_shape: tuple[int, ...],
     return np.array(mask, dtype=bool)
 
 
-def labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_json=False):
+def labelme2coco(input_dir, output_dir, noviz, 
+                 assert_image_path, modes, only_json=False, 
+                 ignore_shape_types=['point', 'line', 'linestrip']):
     # if osp.exists(args.output_dir):
     #     print("Output directory already exists:", args.output_dir)
     #     sys.exit(1)
@@ -122,6 +124,8 @@ def labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_js
 
             
             base = osp.splitext(osp.basename(filename))[0]
+            if base == '3_5_124071615341242_12_Outer':
+                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
             if assert_image_path:
                 assert base == osp.splitext(label_file['imagePath'])[0]
             image_ext = osp.splitext(label_file['imagePath'])[-1]
@@ -151,7 +155,7 @@ def labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_js
                 label = shape["label"]
                 group_id = shape.get("group_id")
                 shape_type = shape.get("shape_type", "polygon")
-                mask = shape_to_mask(img.shape[:2], points, shape_type)
+                mask = shape_to_mask(img.shape[:2], points, shape_type, ignore_shape_types=ignore_shape_types)
 
         
                 if label not in class_name_to_id:
@@ -175,23 +179,26 @@ def labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_js
                 else:
                     masks[instance] = mask
 
-                if shape_type == "rectangle":
-                    (x1, y1), (x2, y2) = points
-                    x1, x2 = sorted([x1, x2])
-                    y1, y2 = sorted([y1, y2])
-                    points = [x1, y1, x2, y1, x2, y2, x1, y2]
-                if shape_type == "circle":
-                    (x1, y1), (x2, y2) = points
-                    r = np.linalg.norm([x2 - x1, y2 - y1])
-                    # r(1-cos(a/2))<x, a=2*pi/N => N>pi/arccos(1-x/r)
-                    # x: tolerance of the gap between the arc and the line segment
-                    n_points_circle = max(int(np.pi / np.arccos(1 - 1 / r)), 12)
-                    i = np.arange(n_points_circle)
-                    x = x1 + r * np.sin(2 * np.pi / n_points_circle * i)
-                    y = y1 + r * np.cos(2 * np.pi / n_points_circle * i)
-                    points = np.stack((x, y), axis=1).flatten().tolist()
+                if shape_type not in ignore_shape_types:
+                    if shape_type == "rectangle":
+                        (x1, y1), (x2, y2) = points
+                        x1, x2 = sorted([x1, x2])
+                        y1, y2 = sorted([y1, y2])
+                        points = [x1, y1, x2, y1, x2, y2, x1, y2]
+                    elif shape_type == "circle":
+                        (x1, y1), (x2, y2) = points
+                        r = np.linalg.norm([x2 - x1, y2 - y1])
+                        # r(1-cos(a/2))<x, a=2*pi/N => N>pi/arccos(1-x/r)
+                        # x: tolerance of the gap between the arc and the line segment
+                        n_points_circle = max(int(np.pi / np.arccos(1 - 1 / r)), 12)
+                        i = np.arange(n_points_circle)
+                        x = x1 + r * np.sin(2 * np.pi / n_points_circle * i)
+                        y = y1 + r * np.cos(2 * np.pi / n_points_circle * i)
+                        points = np.stack((x, y), axis=1).flatten().tolist()
+                    else:
+                        points = np.asarray(points).flatten().tolist()
                 else:
-                    points = np.asarray(points).flatten().tolist()
+                    points = []
 
                 segmentations[instance].append(points)
             segmentations = dict(segmentations)
@@ -247,11 +254,13 @@ def labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_js
 if __name__ == "__main__":
     # parser.add_argument("--input_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset')
     # parser.add_argument("--output_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_coco_dataset')
-    input_dir = '/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_dataset'
-    output_dir = '/storage/projects/Tenneco/Metalbearing/OUTER/250211/split_coco_dataset'
-    noviz = True
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset_unit'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_coco_dataset_unit'
+    noviz = False
     assert_image_path = False
     modes = ['train', 'val']
-    only_json = True
+    only_json = False
+    ignore_shape_types = ['point', 'line', 'linestrip']
     
-    labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_json=only_json)
+    labelme2coco(input_dir, output_dir, noviz, assert_image_path, modes, only_json=only_json, 
+                 ignore_shape_types=ignore_shape_types)
