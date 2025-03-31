@@ -254,8 +254,8 @@ def labelme2coco(input_dir, output_dir, noviz,
 if __name__ == "__main__":
     # parser.add_argument("--input_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset')
     # parser.add_argument("--output_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_coco_dataset')
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset_unit'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_coco_dataset_unit'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_coco_dataset'
     noviz = False
     assert_image_path = False
     modes = ['train', 'val']
