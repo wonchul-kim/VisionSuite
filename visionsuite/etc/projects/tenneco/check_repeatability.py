@@ -42,14 +42,19 @@ def polygon2rect(points, offset=0):
     return [[min(xs) - offset, min(ys) - offset], [max(xs) + offset, min(ys) - offset], 
             [max(xs) + offset, max(ys) + offset], [min(xs) - offset, max(ys) + offset]]
 
+def get_wh(points):
+    xs, ys = [], []
+    for x, y in points:
+        xs.append(x)
+        ys.append(y)
+    
+    return max(xs) - min(xs), max(ys) - min(ys)
+
 def compare_two(anns1, anns2, iou_threshold, 
                 area_threshold=0, rect_iou=False, offset=0, 
                 conf_threshold=0):
     
     is_different = False
-    
-    if len(anns1) == 0:
-        return True 
     
     for ann1 in anns1:
                 
@@ -61,18 +66,26 @@ def compare_two(anns1, anns2, iou_threshold,
             if conf_threshold > confidence:
                 continue
 
-        if rect_iou:
-            points1 = polygon2rect(points1, offset=offset)
-        
         if len(points1) < 3:
             continue
+        
+        poly1 = Polygon(ond_dim_points_to_polygon(tuple(coord for points in points1 for coord in points)))
+        if not poly1.is_valid:
+            poly1 = poly1.buffer(0)
+        
+        if poly1.area < area_threshold:
+            continue 
+        
+        if rect_iou:
+            points1 = polygon2rect(points1, offset=offset)
             
         if len(anns2) == 0:
             is_different = True 
             break
+        
+        w1, h1 = get_wh(points1)
             
         for ann2 in anns2:
-            
             label2 = ann2['label']
             points2 = ann2['points']
             
@@ -82,49 +95,102 @@ def compare_two(anns1, anns2, iou_threshold,
                 if conf_threshold > confidence:
                     continue
                 
+            if len(points2) < 3:
+                continue
+            
+            poly2 = Polygon(ond_dim_points_to_polygon(tuple(coord for points in points2 for coord in points)))
+            if not poly2.is_valid:
+                poly2 = poly2.buffer(0)
+            
+            if poly2.area < area_threshold:
+                continue 
+                
             if rect_iou:
                 points2 = polygon2rect(points2, offset=offset)
-
             
             if label1 != label2:
                 is_different = True 
                 continue
             
-            if len(points2) < 3:
-                continue
             
             iou, area1, area2, intersection_area = get_polygon_iou(tuple(coord for points in points1 for coord in points), 
                                                                    tuple(coord for points in points2 for coord in points))
 
-            if area_threshold and (area1 < area_threshold and area2 < area_threshold):
-                continue
 
-            if iou < iou_threshold:
+            if iou > iou_threshold:
+                w2, h2 = get_wh(points2)
+                # if ((w1 >= w2 and w1*2/3 <= w2) or (w1 <= w2 and w1 >= w2*2/3)) and ((h1 >= h2 and h1*2/3 <= h2) or (h1 <= h2 and h1 >= h2*2/3)):
+                if max(w1, w2) >= 20 or max(h1, h2) >= 20: 
+                    is_different = False 
+                    break 
+                else:
+                    is_different = True
+                    continue
+            else:
                 is_different = True 
-                break 
+                continue
             
         if is_different:
-            break 
-        else:
-            poly1 = Polygon(ond_dim_points_to_polygon(tuple(coord for points in points1 for coord in points)))
+            break
             
-            if not poly1.is_valid:
-                poly1 = poly1.buffer(0)
+        # if is_different:
+        #     break 
+        # else:
+        #     poly1 = Polygon(ond_dim_points_to_polygon(tuple(coord for points in points1 for coord in points)))
             
-            if poly1.area < area_threshold:
-                is_different = False 
+        #     if not poly1.is_valid:
+        #         poly1 = poly1.buffer(0)
+            
+        #     if poly1.area < area_threshold:
+        #         is_different = False 
 
     return is_different
+ 
+def compare(anns1, anns2, anns3, filename, iou_threshold, area_threshold, rect_iou, offset, conf_threshold,
+            no_diff_no_points, no_diff_no_points_filenames_txt,
+            diff_points, diff_points_filenames_txt, 
+            no_diff_points, no_diff_points_filenames_txt, no_diff_points_files):
+    
+    is_different = False
+    if len(anns1) == 0 and len(anns2) == 0 and len(anns3) == 0:
+        # all cases are no points
+        no_diff_no_points += 1
+        no_diff_no_points_filenames_txt.write(filename + '\n')
+        is_different = False
+    elif compare_two(anns1, anns2, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns1, anns3, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns2, anns1, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns2, anns3, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns3, anns1, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns3, anns2, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold):
+        # different predicted points
+        is_different = True 
+        diff_points_filenames_txt.write(filename + '\n')
+        diff_points += 1
+    else:
+        # no difference even with predicted points
+        is_different = False
+        no_diff_points += 1
+        no_diff_points_filenames_txt.write(filename + '\n')
+        no_diff_points_files.append(filename)
+        
+    return is_different, no_diff_no_points, diff_points, no_diff_points
+ 
  
 def run(base_dir, dir_names, iou_thresholds, area_thresholds, 
         vis=False, figs=True, rect_iou=False, offset=0, 
         filename_postfix='_3_0', conf_thresholds=[0]):
        
+    
     for dir_name in dir_names:
+        filenames_dir = osp.join(base_dir, dir_name, 'filenames')
+        if not osp.exists(filenames_dir):
+            os.mkdir(filenames_dir)
+            
         results = {}
         for iou_threshold in iou_thresholds:
             for area_threshold in area_thresholds:
                 for conf_threshold in conf_thresholds:
+                    
+                    no_diff_no_points_filenames_txt = open(osp.join(filenames_dir, f'IoU-{iou_threshold}_Area-{area_threshold}_Conf-{conf_threshold}_no_diff_no_points.txt'), 'w')
+                    no_diff_points_filenames_txt = open(osp.join(filenames_dir, f'IoU-{iou_threshold}_Area-{area_threshold}_Conf-{conf_threshold}_no_diff_points.txt'), 'w')
+                    diff_points_filenames_txt = open(osp.join(filenames_dir, f'IoU-{iou_threshold}_Area-{area_threshold}_Conf-{conf_threshold}_diff_points.txt'), 'w')
+                    
                     json_files1 = sorted(glob(osp.join(base_dir, dir_name, 'test/exp/labels', '*.json')))
 
                     no_diff_no_points = 0
@@ -136,7 +202,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                         filename = osp.split(osp.splitext(json_file1)[0])[-1]
                         
                         # if filename == '125020717054728_7_Outer_1_Image': 
-                        if filename == '125020717054826_4_Outer_1_Image':
+                        if filename == '125032816413298_9':
                             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                         
                         json_file2 = osp.join(base_dir, dir_name, 'test/exp2/labels', f'{filename}.json')
@@ -154,20 +220,10 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                         with open(json_file3, 'r') as jf:
                             anns3 = json.load(jf)['shapes']
                         
-                        is_different = False
-                        if len(anns1) == 0 and len(anns2) == 0 and len(anns3) == 0:
-                            # all cases are no points
-                            no_diff_no_points += 1
-                            is_different = False
-                        elif compare_two(anns1, anns2, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns1, anns3, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns2, anns1, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns2, anns3, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns3, anns1, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold) or compare_two(anns3, anns2, iou_threshold, area_threshold, rect_iou=rect_iou, offset=offset, conf_threshold=conf_threshold):
-                            # different predicted points
-                            is_different = True 
-                            diff_points += 1
-                        else:
-                            # no difference even with predicted points
-                            is_different = False
-                            no_diff_points += 1
-                            no_diff_points_files.append(filename)
+                        is_different, no_diff_no_points, diff_points, no_diff_points = compare(anns1, anns2, anns3, filename, iou_threshold, area_threshold, rect_iou, offset, conf_threshold,
+                                                                                                no_diff_no_points, no_diff_no_points_filenames_txt,
+                                                                                                diff_points, diff_points_filenames_txt, 
+                                                                                                no_diff_points, no_diff_points_filenames_txt, no_diff_points_files)
                         
                         if vis and is_different:
                             img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}{filename_postfix}.png'))
@@ -178,7 +234,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                             if not osp.exists(diff_dir):
                                 os.makedirs(diff_dir)
                             
-                            cv2.imwrite(osp.join(diff_dir, f'{filename}.png'), np.vstack([img1, img2, img3]))
+                            cv2.imwrite(osp.join(diff_dir, f'{filename}.jpg'), np.vstack([img1, img2, img3]))
                         
                                         
                         if vis and filename in no_diff_points_files:
@@ -190,7 +246,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                             if not osp.exists(no_diff_dir):
                                 os.makedirs(no_diff_dir)
                             
-                            cv2.imwrite(osp.join(no_diff_dir, f'{filename}.png'), np.vstack([img1, img2, img3]))
+                            cv2.imwrite(osp.join(no_diff_dir, f'{filename}.jpg'), np.vstack([img1, img2, img3]))
                         
                             
                     assert len(json_files1) == no_diff_no_points + no_diff_points + diff_points, ValueError(f"{len(json_files1)} == {no_diff_no_points} + {no_diff_points} + {diff_points}")
@@ -205,6 +261,12 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                         txt.write(f"diff. with points: {diff_points}\n")
                         txt.write("============================================================================\n")
                         txt.close()
+                        
+                    no_diff_no_points_filenames_txt.close()
+                    no_diff_points_filenames_txt.close()
+                    diff_points_filenames_txt.close()
+                    
+                    
 
         if figs:
             df = pd.DataFrame.from_dict(results)     
@@ -249,16 +311,3 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
             plt.tight_layout(rect=[0, 0, 1, 0.97])
             plt.savefig(osp.join(base_dir, dir_name, 'diff.png'))
             
-
-               
-                
-    
-    
-
-
-        
-    
-        
-    
-    
-    
