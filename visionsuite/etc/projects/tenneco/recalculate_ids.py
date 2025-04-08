@@ -6,12 +6,12 @@ import json
 iou = 0.05
 area = 20
 
-input_dir = '/HDD/etc/repeatablility/deeplabv3plus_2/filenames'
-output_dir = '/HDD/etc/repeatablility/deeplabv3plus_2'
-total = 11214/14
-# input_dir = '/HDD/etc/repeatablility/2nd/deeplabv3plus_2/filenames'
-# output_dir = '/HDD/etc/repeatablility/2nd/deeplabv3plus_2'
-# total = 7714/14
+# input_dir = '/HDD/etc/repeatablility/deeplabv3plus_2/filenames'
+# output_dir = '/HDD/etc/repeatablility/deeplabv3plus_2'
+# total = 11214/14
+input_dir = '/HDD/etc/repeatablility/2nd/deeplabv3plus_2/filenames'
+output_dir = '/HDD/etc/repeatablility/2nd/deeplabv3plus_2'
+total = 7714/14
 
 diff_points_txt = osp.join(input_dir, f'IoU-{iou}_Area-{area}_Conf-0_diff_points.txt')
 no_diff_no_points_txt = osp.join(input_dir, f'IoU-{iou}_Area-{area}_Conf-0_no_diff_no_points.txt')

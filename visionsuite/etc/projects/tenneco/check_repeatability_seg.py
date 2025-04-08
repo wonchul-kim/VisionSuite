@@ -3,7 +3,7 @@ from check_repeatability import run
 base_dir = '/HDD/etc/repeatablility'
 # dir_names = ['gcnet_epochs100', 'mask2former_epochs140', 'pidnet_l_epochs300', 'sam2_epochs300']
 # filename_postfix = '_3_0'
-dir_names = ['deeplabv3plus_2']
+dir_names = ['2nd/deeplabv3plus_2']
 filename_postfix = ''
 rect_iou = True 
 offset = 100

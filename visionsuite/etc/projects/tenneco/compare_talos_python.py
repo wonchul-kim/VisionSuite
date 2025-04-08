@@ -3,8 +3,8 @@ import os.path as osp
 from tqdm import tqdm
 
 
-talos_dir = '/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/for wc/same_ok'
-python_txt_file = '/HDD/etc/repeatablility/deeplabv3plus_2/filenames/IoU-0.05_Area-20_Conf-0_no_diff_no_points.txt'
+talos_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/talos result/same_ok'
+python_txt_file = '/HDD/etc/repeatablility/2nd/deeplabv3plus_2/filenames/IoU-0.05_Area-20_Conf-0_no_diff_no_points.txt'
 
 talos_img_files = glob(osp.join(talos_dir, '*.jpg'))
 
