@@ -46,5 +46,5 @@ def make_repeatability_test_dataset(input_dir, output_dir):
                 
 if __name__ == '__main__':                
     input_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/benchmark/반복성/250328/PC2'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/repeatability_'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/repeatability'
     make_repeatability_test_dataset(input_dir, output_dir)
