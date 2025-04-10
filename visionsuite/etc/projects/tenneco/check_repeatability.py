@@ -103,6 +103,7 @@ def compare_two(anns1, anns2, iou_threshold,
                 poly2 = poly2.buffer(0)
             
             if poly2.area < area_threshold:
+                is_different = True 
                 continue 
                 
             if rect_iou:
@@ -174,11 +175,11 @@ def compare(anns1, anns2, anns3, filename, iou_threshold, area_threshold, rect_i
  
 def run(base_dir, dir_names, iou_thresholds, area_thresholds, 
         vis=False, figs=True, rect_iou=False, offset=0, 
-        filename_postfix='_3_0', conf_thresholds=[0]):
+        filename_postfix='_3_0', conf_thresholds=[0], case='test'):
        
     
     for dir_name in dir_names:
-        filenames_dir = osp.join(base_dir, dir_name, 'filenames')
+        filenames_dir = osp.join(base_dir, dir_name, case, 'filenames')
         if not osp.exists(filenames_dir):
             os.mkdir(filenames_dir)
             
@@ -191,7 +192,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                     no_diff_points_filenames_txt = open(osp.join(filenames_dir, f'IoU-{iou_threshold}_Area-{area_threshold}_Conf-{conf_threshold}_no_diff_points.txt'), 'w')
                     diff_points_filenames_txt = open(osp.join(filenames_dir, f'IoU-{iou_threshold}_Area-{area_threshold}_Conf-{conf_threshold}_diff_points.txt'), 'w')
                     
-                    json_files1 = sorted(glob(osp.join(base_dir, dir_name, 'test/exp/labels', '*.json')))
+                    json_files1 = sorted(glob(osp.join(base_dir, dir_name, f'{case}/exp/labels', '*.json')))
 
                     no_diff_no_points = 0
                     no_diff_points = 0
@@ -202,11 +203,13 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                         filename = osp.split(osp.splitext(json_file1)[0])[-1]
                         
                         # if filename == '125020717054728_7_Outer_1_Image': 
-                        if filename == '125032816413298_9':
+                        if filename == '125032817145323_4':
                             print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                         
-                        json_file2 = osp.join(base_dir, dir_name, 'test/exp2/labels', f'{filename}.json')
-                        json_file3 = osp.join(base_dir, dir_name, 'test/exp3/labels', f'{filename}.json')
+                        json_file2 = osp.join(base_dir, dir_name, f'{case}/exp2/labels', f'{filename}.json')
+                            
+                        json_file3 = osp.join(base_dir, dir_name, f'{case}/exp3/labels', f'{filename}.json')
+                            
                         
                         assert osp.exists(json_file2), ValueError(f"There is no such file: {json_file2}")
                         assert osp.exists(json_file3), ValueError(f"There is no such file: {json_file3}")
@@ -226,11 +229,11 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                                                                                                 no_diff_points, no_diff_points_filenames_txt, no_diff_points_files)
                         
                         if vis and is_different:
-                            img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}{filename_postfix}.png'))
-                            img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}{filename_postfix}.png'))
-                            img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}{filename_postfix}.png'))
+                            img1 = cv2.imread(osp.join(base_dir, dir_name, f'{case}/exp/vis/{filename}{filename_postfix}.png'))
+                            img2 = cv2.imread(osp.join(base_dir, dir_name, f'{case}/exp2/vis/{filename}{filename_postfix}.png'))
+                            img3 = cv2.imread(osp.join(base_dir, dir_name, f'{case}/exp3/vis/{filename}{filename_postfix}.png'))
                             
-                            diff_dir = osp.join(base_dir, dir_name, f'iou{iou_threshold}_area{area_threshold}', 'diff_w_points')
+                            diff_dir = osp.join(base_dir, dir_name, case, f'iou{iou_threshold}_area{area_threshold}', 'diff_w_points')
                             if not osp.exists(diff_dir):
                                 os.makedirs(diff_dir)
                             
@@ -238,11 +241,11 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                         
                                         
                         if vis and filename in no_diff_points_files:
-                            img1 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp/vis/{filename}{filename_postfix}.png'))
-                            img2 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp2/vis/{filename}{filename_postfix}.png'))
-                            img3 = cv2.imread(osp.join(base_dir, dir_name, f'test/exp3/vis/{filename}{filename_postfix}.png'))
+                            img1 = cv2.imread(osp.join(base_dir, dir_name, f'{case}/exp/vis/{filename}{filename_postfix}.png'))
+                            img2 = cv2.imread(osp.join(base_dir, dir_name, f'{case}/exp2/vis/{filename}{filename_postfix}.png'))
+                            img3 = cv2.imread(osp.join(base_dir, dir_name, f'{case}/exp3/vis/{filename}{filename_postfix}.png'))
                             
-                            no_diff_dir = osp.join(base_dir, dir_name,  f'iou{iou_threshold}_area{area_threshold}', 'no_diff_w_points')
+                            no_diff_dir = osp.join(base_dir, dir_name, case, f'iou{iou_threshold}_area{area_threshold}', 'no_diff_w_points')
                             if not osp.exists(no_diff_dir):
                                 os.makedirs(no_diff_dir)
                             
@@ -254,7 +257,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                     results[f'iou{iou_threshold}_area{area_threshold}_conf{conf_threshold}'] = {'no_diff_no_points': no_diff_no_points, 'no_diff_points': no_diff_points, 'diff_points': diff_points}
                     
                     if figs:
-                        txt = open(osp.join(base_dir, dir_name, 'diff.txt'), 'a')
+                        txt = open(osp.join(base_dir, dir_name, case, 'diff.txt'), 'a')
                         txt.write(f"\n >>>>>>>>>>>>>>>> IoU Threshold: {iou_threshold} & Area Threshold: {area_threshold} <<<<<<<<<<<<<<<<\n")
                         txt.write(f"No diff. b/c no points: {no_diff_no_points}\n")
                         txt.write(f"No diff. even with points: {no_diff_points}\n")
@@ -270,7 +273,7 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
 
         if figs:
             df = pd.DataFrame.from_dict(results)     
-            df.to_csv(osp.join(base_dir, dir_name, 'diff.csv'))
+            df.to_csv(osp.join(base_dir, dir_name, case, 'diff.csv'))
             
             # X축 레이블
             categories = list(results.keys())
@@ -309,5 +312,5 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
 
             # 그래프 출력
             plt.tight_layout(rect=[0, 0, 1, 0.97])
-            plt.savefig(osp.join(base_dir, dir_name, 'diff.png'))
+            plt.savefig(osp.join(base_dir, dir_name, case, 'diff.png'))
             

@@ -10,15 +10,17 @@ img_dirs = ['/DeepLearning/research/data/benchmarks/benchmarks_production/tennec
 cases = ['OUTER_shot01', 'OUTER_shot02', 'OUTER_shot03', '1', '2', '3']
 
 input_dirs = [
-            '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/talos result/diff',
-            '/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/for wc/diff'
+            # '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/talos result/diff',
+            # '/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/for wc/diff'
+            '/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/for wc',
+            '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/talos result'
             ]
 output_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/benchmark/repeatability'
 if not osp.exists(output_dir):
     os.mkdir(output_dir)
     
-folders = ['딥러닝 체크', '얼라인', '경계성', '순서 틀어짐', '오염']
-
+# folders = ['딥러닝 체크', '얼라인', '경계성', '순서 틀어짐', '오염', 'same_ok']
+folders = ['same_ok']
 for input_dir in input_dirs:
     for folder in folders:
         
@@ -55,6 +57,9 @@ for input_dir in input_dirs:
                                 else:
                                     _case = case
                                 
+                                if osp.exists(osp.join(_output_dir, _case, _filename)):
+                                    continue
+
                                 shutil.copytree(osp.join(img_dir, case, filename), osp.join(_output_dir, _case, _filename))     
                             except Exception as error:
                                 print(error)
