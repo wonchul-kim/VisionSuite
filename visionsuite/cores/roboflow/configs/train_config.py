@@ -19,6 +19,11 @@ class TrainConfig(BaseConfig):
     imgsz: int = Field(frozen=True)
     device: DeviceConfig = Field('0', frozen=True)
     
+    # loss 
+    box: float = Field(7.5, frozen=True)
+    cls: float = Field(0.5, frozen=True)
+    dfl: float = Field(1.5, frozen=True)
+    
     #
     conf: float = Field(0.25, frozen=True)
     iou: float = Field(0.7, frozen=True)
