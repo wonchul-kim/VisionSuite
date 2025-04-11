@@ -4,7 +4,7 @@ from glob import glob
 from tqdm import tqdm
 import shutil
 
-img_dirs = ['/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/final_data',
+img_dirs = ['/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data',
             '/HDD/datasets/projects/Tenneco/Metalbearing/outer/repeatability'
         ]
 cases = ['OUTER_shot01', 'OUTER_shot02', 'OUTER_shot03', '1', '2', '3']
@@ -12,7 +12,7 @@ cases = ['OUTER_shot01', 'OUTER_shot02', 'OUTER_shot03', '1', '2', '3']
 input_dirs = [
             # '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/talos result/diff',
             # '/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/for wc/diff'
-            '/DeepLearning/research/data/benchmarks/benchmarks_production/tenneco/repeatibility/v01/for wc',
+            '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/for wc',
             '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/talos result'
             ]
 output_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/benchmark/repeatability'
