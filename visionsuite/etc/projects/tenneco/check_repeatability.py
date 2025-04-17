@@ -203,8 +203,8 @@ def run(base_dir, dir_names, iou_thresholds, area_thresholds,
                         filename = osp.split(osp.splitext(json_file1)[0])[-1]
                         
                         # if filename == '125020717054728_7_Outer_1_Image': 
-                        if filename == '125032817145323_4':
-                            print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+                        # if filename == '125032817145323_4':
+                        #     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
                         
                         json_file2 = osp.join(base_dir, dir_name, f'{case}/exp2/labels', f'{filename}.json')
                             
