@@ -332,8 +332,8 @@ def main():
                 for trt_blob in trt_blobs[channel]['blobs']:
                     for python_blob in python_blobs[channel]['blobs']:
                         
-                        iou, area1, area2, intersection_area = get_polygon_iou(tuple(coord for points in polygon2rect(trt_blob['polygon']) for coord in points), 
-                                              tuple(coord for points in polygon2rect(python_blob['polygon']) for coord in points))
+                        iou, area1, area2, intersection_area = get_polygon_iou(tuple(coord for points in polygon2rect(trt_blob['polygon'], case_offset) for coord in points), 
+                                              tuple(coord for points in polygon2rect(python_blob['polygon'], case_offset) for coord in points))
                         if iou > case_iou_threshold:
                             case = 2
                         else:
