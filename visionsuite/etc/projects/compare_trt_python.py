@@ -270,6 +270,7 @@ def main():
         }
     '''
     idx = 0
+    ious, trt_areas, python_areas = [], [], []
     for bin_file in tqdm(bin_files):
         idx += 1
         filename = osp.split(osp.splitext(bin_file)[0])[-1].split(".")[0]
@@ -310,17 +311,19 @@ def main():
             python_arr[python_arr < contour_confidence_threshold] = 0
             
             image = trt_arr[..., channel].astype(np.uint8)
-            blobs, areas = get_blobs(image, contour_thres=contour_threshold)
-            if areas != []:
-                trt_blobs[channel] = {'blobs': blobs, 'mean area': np.mean(areas), 'min area': np.min(areas), 'max area': np.max(areas), 'std area': np.std(areas), 'count': len(blobs)}
+            t_blobs, t_areas = get_blobs(image, contour_thres=contour_threshold)
+            trt_areas += t_areas
+            if t_areas != []:
+                trt_blobs[channel] = {'blobs': t_blobs, 'mean area': np.mean(t_areas), 'min area': np.min(t_areas), 'max area': np.max(t_areas), 'std area': np.std(t_areas), 'count': len(t_blobs)}
             else:
-                trt_blobs[channel] = {'blobs': blobs, 'mean area': None, 'min area': None, 'max area': None, 'std area': None}
+                trt_blobs[channel] = {'blobs': t_blobs, 'mean area': None, 'min area': None, 'max area': None, 'std area': None}
             image = python_arr[..., channel].astype(np.uint8)
-            blobs, areas = get_blobs(image, contour_thres=contour_threshold)
-            if areas != []:
-                python_blobs[channel] = {'blobs': blobs, 'mean area': np.mean(areas), 'min area': np.min(areas), 'max area': np.max(areas), 'std area': np.std(areas), 'count': len(blobs)}
+            p_blobs, p_areas = get_blobs(image, contour_thres=contour_threshold)
+            python_areas += p_areas
+            if p_areas != []:
+                python_blobs[channel] = {'blobs': p_blobs, 'mean area': np.mean(p_areas), 'min area': np.min(p_areas), 'max area': np.max(p_areas), 'std area': np.std(p_areas), 'count': len(p_blobs)}
             else:
-                python_blobs[channel] = {'blobs': blobs, 'mean area': None, 'min area': None, 'max area': None, 'std area': None}
+                python_blobs[channel] = {'blobs': p_blobs, 'mean area': None, 'min area': None, 'max area': None, 'std area': None}
 
 
             if len(trt_blobs[channel]['blobs']) == 0 and len(python_blobs[channel]['blobs']) == 0:
@@ -334,24 +337,48 @@ def main():
                         
                         iou, area1, area2, intersection_area = get_polygon_iou(tuple(coord for points in polygon2rect(trt_blob['polygon'], case_offset) for coord in points), 
                                               tuple(coord for points in polygon2rect(python_blob['polygon'], case_offset) for coord in points))
+                        ious.append(iou)
                         if iou > case_iou_threshold:
                             case = 2
                         else:
                             case = 3
                             break
-
+                        
         result[filename] = {'trt': trt_blobs, 'python': python_blobs, 'case': case}
         
         if idx > 3:
             break
     
+
+    fig = plt.figure(figsize=(20, 20))
+    plt.hist(ious, bins=20, color='skyblue', edgecolor='black')
+    plt.title('Distribution of IoUs')
+    plt.xlabel('IoU')
+    plt.ylabel('Count')    
+    plt.savefig(osp.join(output_dir, 'ious.jpg'))
+    plt.close()
+
+    fig = plt.figure(figsize=(20, 20))
+    plt.hist(trt_areas, bins=20, color='skyblue', edgecolor='black')
+    plt.title('Distribution of trt blob areas')
+    plt.xlabel('IoU')
+    plt.ylabel('Count')    
+    plt.savefig(osp.join(output_dir, 'trt_areas.jpg'))
+    plt.close()
+    
+    fig = plt.figure(figsize=(20, 20))
+    plt.hist(python_areas, bins=20, color='skyblue', edgecolor='black')
+    plt.title('Distribution of python blob areas')
+    plt.xlabel('IoU')
+    plt.ylabel('Count')    
+    plt.savefig(osp.join(output_dir, 'python_areas.jpg'))
+    plt.close()
+
     with open(osp.join(output_dir, 'result.json'), 'w') as jf:
         json.dump(result, jf, indent=4)
         
     with open(osp.join(output_dir, 'result.pkl'), "wb") as f:
         pickle.dump(result, f)
-
-
 
     rows = []
 
