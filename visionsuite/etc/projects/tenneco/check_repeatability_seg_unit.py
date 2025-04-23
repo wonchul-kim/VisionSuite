@@ -7,14 +7,18 @@ import matplotlib.pyplot as plt
 # base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model_wo_patch'
 # cases = ['no_tta', 'translate', 'translate_v2', 'translate_v3', 'translate_v4', 'translate_flip']
 
-### 1-2
-base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model/wo_patch'
-cases = ['no_tta', 'translate_flip']
+# ### 1-2
+# base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model/wo_patch'
+# cases = ['no_tta', 'translate_flip']
 
 
 # ### 2
 # base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model_w_patch'
 # cases = ['no_tta_0.5', 'no_tta_0.3', 'translate', 'translate_flip']#, 'translate', 'translate_v2', 'translate_v3', 'translate_v4', 'translate_flip']
+
+### lps_deeplabv3plus_w512_h512_epochs200
+base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/segmentation/lps_deeplabv3plus_w512_h512_epochs200/wo_patch'
+cases = ['no_tta']
 
 
 dir_names = ['']

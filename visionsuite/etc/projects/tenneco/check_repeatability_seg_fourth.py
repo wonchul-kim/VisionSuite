@@ -3,33 +3,69 @@ import pandas as pd
 from check_repeatability import run
 import matplotlib.pyplot as plt
 
-### --------------------------------------------------------------------------------------------------------
-base_dir = '/HDD/etc/repeatablility'
-# dir_names = ['gcnet_epochs100', 'mask2former_epochs140', 'pidnet_l_epochs300', 'sam2_epochs300']
-# filename_postfix = '_3_0'
-# dir_names = ['3rd/lps_patch512_epochs200', '3rd/m2f_epochs100', '3rd/sam2unet_epochs300', '3rd/segman_epochs200']
-dir_names = ['3rd/lps_patch512_epochs200']
-cases = ['얼라인', '경계성', '딥러닝 체크', 'same_ok']
-filename_postfix = '_3_0'
+
+fovs = ['464_11', 
+        '642_9', 
+        '110_4', '110_5',
+        '471_5',
+        '547_4', '574_6', '574_8',
+        '119_8',
+        '711_8',
+        '700_8',
+        '397_4',
+        '778_9',
+        '047_13',
+]
+        
+        
+        
+        
+        
+        
+
+
+# ### 1
+# base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model_wo_patch'
+# cases = ['no_tta', 'translate', 'translate_v2', 'translate_v3', 'translate_v4', 'translate_flip']
+
+# ### 1-2
+# base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model/wo_patch'
+# cases = ['no_tta', 'translate_flip']
+
+
+# ### 2
+# base_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeat_unit/one_model_w_patch'
+# cases = ['no_tta_0.5', 'no_tta_0.3', 'translate', 'translate_flip']#, 'translate', 'translate_v2', 'translate_v3', 'translate_v4', 'translate_flip']
+
+### lps_deeplabv3plus_w512_h512_epochs200
+base_dir = '/HDD/etc/repeatablility/4th/deeplabv3plus'
+cases = ['no_tta', 'translate13', 'translate135', 'translate13_conf0.3']
+
+
+dir_names = ['']
+filename_postfix = ''
 rect_iou = True 
 offset = 100
 
-# ### ===================================
-# iou_thresholds = [0.05, 0.1, 0.2, 0.3]
-# area_thresholds = [20, 100, 150, 200]
-# figs = True 
-# vis = False
-# for case in cases:
-#     run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, 
-#         offset=offset, filename_postfix=filename_postfix, case=case)
-# ### ===================================
-# iou_thresholds = [0.05]
-# area_thresholds = [20]
-# figs = False
-# vis = True
-# for case in cases:
-#     run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, 
-#         offset=offset, filename_postfix=filename_postfix, case=case)    
+### result
+result = {}
+
+### ===================================
+iou_thresholds = [0.05, 0.1, 0.2, 0.3]
+area_thresholds = [20, 100, 150, 200]
+figs = True 
+vis = False
+for case in cases:
+    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, 
+        offset=offset, filename_postfix=filename_postfix, case=case)
+### ===================================
+iou_thresholds = [0.05]
+area_thresholds = [20]
+figs = False
+vis = True
+for case in cases:
+    run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, 
+        offset=offset, filename_postfix=filename_postfix, case=case)    
     
 iou = 0.05
 area = 20

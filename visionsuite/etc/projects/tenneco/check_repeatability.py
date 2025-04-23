@@ -175,9 +175,9 @@ def compare(anns1, anns2, anns3, filename, iou_threshold, area_threshold, rect_i
  
 def run(base_dir, dir_names, iou_thresholds, area_thresholds, 
         vis=False, figs=True, rect_iou=False, offset=0, 
-        filename_postfix='_3_0', conf_thresholds=[0], case='test'):
+        filename_postfix='_3_0', conf_thresholds=[0], case='test',
+        result=None):
        
-    
     for dir_name in dir_names:
         filenames_dir = osp.join(base_dir, dir_name, case, 'filenames')
         if not osp.exists(filenames_dir):
