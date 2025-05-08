@@ -154,7 +154,7 @@ def build_optimized_dataset(tfrecord_dir, global_batch_size, strategy, split='tr
     # 3. 파이프라인 최적화
     dataset = dataset.map(parse_fn, num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.cache()  # 캐싱 위치 변경(셔플 전)
-    dataset = dataset.shuffle(400, reshuffle_each_iteration=True)
+    dataset = dataset.shuffle(1000, reshuffle_each_iteration=True)
     dataset = dataset.batch(global_batch_size // strategy.num_replicas_in_sync)
     return dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
 

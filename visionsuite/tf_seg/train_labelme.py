@@ -35,7 +35,7 @@ if __name__ == "__main__":
         os.mkdir(logs_dir)
 
     epochs = 10
-    global_batch_size = 64
+    global_batch_size = 8
     num_classes = 150
     roi = [220, 60, 1340, 828]
     strategy = tf.distribute.MirroredStrategy()
@@ -45,7 +45,7 @@ if __name__ == "__main__":
     with strategy.scope():
         height, width = 768, 1120
         base_model, layers, layer_names = create_base_model('efficientnetb3', 'imagenet', height, width)
-        model = DeepLabV3plus(150, base_model, layers, height=height, width=width)
+        model = DeepLabV3plus(num_classes, base_model, layers, height=height, width=width)
         lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
             1e-4, decay_steps=1000, decay_rate=0.96
         )

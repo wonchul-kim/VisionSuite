@@ -9,7 +9,7 @@ def train_step(model, inputs, optimizer, loss_fn, strategy, train_acc_metric):
             per_example_loss = loss_fn(masks, preds)
             loss = tf.nn.compute_average_loss(
                     per_example_loss,
-                    global_batch_size=2*strategy.num_replicas_in_sync
+                    global_batch_size=preds.shape[0]*strategy.num_replicas_in_sync
                 )
 
             loss += sum(model.losses)
