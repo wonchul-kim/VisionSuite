@@ -3,16 +3,16 @@ import tensorflow as tf
 from tqdm import tqdm
 
 
-def create_ade20k_pipeline(data_root, batch_size, strategy, split='training', img_size=(512,512)):
-    img_dir = os.path.join(data_root, 'images', split)
-    ann_dir = os.path.join(data_root, 'annotations', split)
+def create_camvid_pipeline(data_root, batch_size, strategy, split='train', img_size=(512,512)):
+    img_dir = os.path.join(data_root, split, 'images')
+    ann_dir = os.path.join(data_root, split, 'masks')
     img_paths = tf.data.Dataset.list_files(os.path.join(img_dir, '*.jpg'), shuffle=True)
     # mask_paths = img_paths.map(
     # lambda x: tf.strings.regex_replace(
     # x, 'images', 'annotations').replace('.jpg', '.png'))
     mask_paths = img_paths.map(
     lambda x: tf.strings.regex_replace(
-    tf.strings.regex_replace(x, 'images', 'annotations'),
+    tf.strings.regex_replace(x, 'images', 'masks'),
     '.jpg', '.png'
     )
     )
@@ -36,8 +36,8 @@ def create_ade20k_pipeline(data_root, batch_size, strategy, split='training', im
     
     return dataset
 
-def create_ade20k_pipeline_interleave(data_root, batch_size, strategy, split='training', img_size=(512,512)):
-    img_dir = os.path.join(data_root, 'images', split)
+def create_camvid_pipeline_interleave(data_root, batch_size, strategy, split='train', img_size=(512,512)):
+    img_dir = os.path.join(data_root, split, 'images')
     
     # 1. 이미지 경로 데이터셋 생성
     img_paths = tf.data.Dataset.list_files(os.path.join(img_dir, '*.jpg'), shuffle=True)
@@ -47,7 +47,7 @@ def create_ade20k_pipeline_interleave(data_root, batch_size, strategy, split='tr
         lambda img_path: tf.data.Dataset.from_tensors({
             'image': img_path,
             'mask': tf.strings.regex_replace(
-                tf.strings.regex_replace(img_path, 'images', 'annotations'),
+                tf.strings.regex_replace(img_path, 'images', 'masks'),
                 '.jpg', '.png'
             )
         }),
@@ -73,16 +73,16 @@ def create_ade20k_pipeline_interleave(data_root, batch_size, strategy, split='tr
     dataset = dataset.batch(batch_size * strategy.num_replicas_in_sync)
     return dataset.prefetch(tf.data.AUTOTUNE)
 
-def create_tfrecord(data_root, output_dir, split='training', img_size=(512,512)):
-    img_dir = os.path.join(data_root, 'images', split)
-    ann_dir = os.path.join(data_root, 'annotations', split)
+def create_tfrecord(data_root, output_dir, split='train', img_size=(512,512)):
+    img_dir = os.path.join(data_root, split, 'images')
+    ann_dir = os.path.join(data_root, split, 'masks')
     
     # 이미지-마스크 경로 매칭
     img_paths = tf.io.gfile.glob(os.path.join(img_dir, '*.jpg'))
-    mask_paths = [p.replace('/images/', '/annotations/').replace('.jpg', '.png') for p in img_paths]
+    mask_paths = [p.replace('/images/', '/masks/').replace('.jpg', '.png') for p in img_paths]
 
     # TFRecord 작성
-    output_path = os.path.join(output_dir, f'ade20k_{split}.tfrecord')
+    output_path = os.path.join(output_dir, f'camvid_{split}.tfrecord')
     with tf.io.TFRecordWriter(output_path) as writer:
         for img_path, mask_path in zip(img_paths, mask_paths):
             image = tf.io.read_file(img_path)
@@ -94,12 +94,12 @@ def create_tfrecord(data_root, output_dir, split='training', img_size=(512,512))
             }))
             writer.write(example.SerializeToString())
 
-def create_tfrecord_auto_shard(data_root, output_dir, split='training', max_shard_size_mb=200):
+def create_tfrecord_auto_shard(data_root, output_dir, split='train', max_shard_size_mb=200):
     SHARD_MAX_BYTES = max_shard_size_mb * 1024 * 1024  # 200MB
     
     # 데이터 경로 수집
-    img_dir = os.path.join(data_root, 'images', split)
-    img_paths = tf.io.gfile.glob(os.path.join(img_dir, '*.jpg'))
+    img_dir = os.path.join(data_root, split, 'images')
+    img_paths = tf.io.gfile.glob(os.path.join(img_dir, '*.png'))
     
     # 샤드 초기화
     shard_idx = 0
@@ -109,7 +109,7 @@ def create_tfrecord_auto_shard(data_root, output_dir, split='training', max_shar
     for idx, img_path in tqdm(enumerate(img_paths)):
         # 이미지/마스크 로드
         image = tf.io.read_file(img_path)
-        mask_path = img_path.replace('/images/', '/annotations/').replace('.jpg', '.png')
+        mask_path = img_path.replace('/images/', '/masks/')
         mask = tf.io.read_file(mask_path)
         
         # 예제 직렬화
@@ -122,46 +122,7 @@ def create_tfrecord_auto_shard(data_root, output_dir, split='training', max_shar
         # 샤드 용량 체크
         if writer is None or current_shard_size + len(example_bytes) > SHARD_MAX_BYTES:
             if writer: writer.close()
-            output_path = os.path.join(output_dir, f'ade20k_{split}-{shard_idx:05d}.tfrecord')
-            writer = tf.io.TFRecordWriter(output_path)
-            shard_idx += 1
-            current_shard_size = 0
-            
-        # 기록
-        writer.write(example_bytes)
-        current_shard_size += len(example_bytes)
-    
-    if writer: writer.close()
-
-def create_tfrecord_parallel(data_root, output_dir, split='training', max_shard_size_mb=200):
-    SHARD_MAX_BYTES = max_shard_size_mb * 1024 * 1024  # 200MB
-    
-    # 데이터 경로 수집
-    img_dir = os.path.join(data_root, 'images', split)
-    img_paths = tf.io.gfile.glob(os.path.join(img_dir, '*.jpg'))
-    
-    # 샤드 초기화
-    shard_idx = 0
-    current_shard_size = 0
-    writer = None
-    
-    for idx, img_path in enumerate(img_paths):
-        # 이미지/마스크 로드
-        image = tf.io.read_file(img_path)
-        mask_path = img_path.replace('/images/', '/annotations/').replace('.jpg', '.png')
-        mask = tf.io.read_file(mask_path)
-        
-        # 예제 직렬화
-        example = tf.train.Example(features=tf.train.Features(feature={
-            'image': tf.train.Feature(bytes_list=tf.train.BytesList(value=[image.numpy()])),
-            'mask': tf.train.Feature(bytes_list=tf.train.BytesList(value=[mask.numpy()]))
-        }))
-        example_bytes = example.SerializeToString()
-        
-        # 샤드 용량 체크
-        if writer is None or current_shard_size + len(example_bytes) > SHARD_MAX_BYTES:
-            if writer: writer.close()
-            output_path = os.path.join(output_dir, f'ade20k_{split}-{shard_idx:05d}.tfrecord')
+            output_path = os.path.join(output_dir, f'camvid_{split}-{shard_idx:05d}.tfrecord')
             writer = tf.io.TFRecordWriter(output_path)
             shard_idx += 1
             current_shard_size = 0
@@ -173,10 +134,9 @@ def create_tfrecord_parallel(data_root, output_dir, split='training', max_shard_
     if writer: writer.close()
 
 
-
-def build_optimized_dataset(tfrecord_dir, global_batch_size, strategy, split='training'):
+def build_optimized_dataset(tfrecord_dir, global_batch_size, strategy, split='train'):
     # 1. 병렬 파일 읽기 (num_parallel_reads=1024)
-    files = tf.data.Dataset.list_files(f'{tfrecord_dir}/ade20k_{split}-*.tfrecord')
+    files = tf.data.Dataset.list_files(f'{tfrecord_dir}/camvid_{split}-*.tfrecord')
     dataset = files.interleave(
         lambda x: tf.data.TFRecordDataset(x, num_parallel_reads=1024),
         cycle_length=256,
@@ -211,26 +171,3 @@ def build_optimized_dataset(tfrecord_dir, global_batch_size, strategy, split='tr
     dataset = dataset.shuffle(200, reshuffle_each_iteration=True)
     dataset = dataset.batch(global_batch_size//strategy.num_replicas_in_sync)
     return dataset.prefetch(tf.data.AUTOTUNE)
-
-
-
-if __name__ == '__main__':
-    from glob import glob 
-    import os.path as osp 
-    
-    input_dir = '/HDD/datasets/public/ade20k_2016/ADEChallengeData2016'
-    
-    mask_files = glob(osp.join(input_dir, 'annotations/training/*.png'))
-    print(f"There are {len(mask_files)} mask files")
-    
-    
-    for mask_file in mask_files:
-        import cv2 
-        import numpy as np
-        mask = cv2.imread(mask_files[0], 0)
-        uniques = np.unique(mask)
-        
-        for unique in uniques:
-            if unique > 150:
-                print(">>>>>>>>>>>>>>>>")
-                

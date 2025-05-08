@@ -1,12 +1,12 @@
 import tensorflow as tf 
 import time 
 
-# @tf.function(experimental_relax_shapes=True)#(jit_compile=True) # XLA 컴파일 활성화
+@tf.function(experimental_relax_shapes=True)#(jit_compile=True) # XLA 컴파일 활성화
 def train_step(model, inputs, optimizer, loss_fn, strategy, train_acc_metric):
     def step_fn(images, masks):
         with tf.GradientTape() as tape:
             preds = model(images, training=True)
-            per_example_loss = loss_fn(tf.squeeze(masks, -1), preds)
+            per_example_loss = loss_fn(masks, preds)
             loss = tf.nn.compute_average_loss(
                     per_example_loss,
                     global_batch_size=2*strategy.num_replicas_in_sync
@@ -16,7 +16,7 @@ def train_step(model, inputs, optimizer, loss_fn, strategy, train_acc_metric):
 
         gradients = tape.gradient(loss, model.trainable_variables)
         optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-        train_acc_metric.update_state(tf.squeeze(masks, -1), preds)
+        train_acc_metric.update_state(masks, preds)
         
         return loss
 
