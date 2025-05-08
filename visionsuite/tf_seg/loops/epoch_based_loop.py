@@ -20,7 +20,7 @@ def train_step(model, inputs, optimizer, loss_fn, strategy, train_acc_metric):
         
         return loss
 
-    images, masks = inputs
+    images, masks, filename = inputs
     per_replica_loss = strategy.run(step_fn, args=(images, masks))
     
     return strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_loss, axis=None)
@@ -30,28 +30,30 @@ def train_loop(model, dataset, epochs, optimizer, loss_fn, strategy, train_acc_m
         tf.profiler.experimental.start(logdir=logs_dir)
 
     for epoch in range(epochs):
+        tic_epoch = time.time()
         total_loss = 0.0
         epoch_acc = 0.0
         num_batches = 0
         
-        gpu = f'{tf.config.experimental.get_memory_info("GPU:0")["current"]/1e7:.2f}GB'
-        tic = time.time()
+        tic_step = time.time()
         for batch_idx, batch in enumerate(dataset):
             loss = train_step(model, batch, optimizer, loss_fn, strategy, train_acc_metric)
             total_loss += loss
             num_batches += 1
             
             if batch_idx%100 == 0:
-                print(">>>>> time for epoch: ", time.time() - tic)
-                tic = time.time()
-
-            print(f'\r{epoch}/{epochs} > {batch_idx}: loss({loss:.4f}), acc({epoch_acc:.4f}), gpu({gpu})', end='', flush=True)
+                print(">>>>> time for epoch: ", time.time() - tic_step)
+                tic_step = time.time()
+                
+            gpu = f'{tf.config.experimental.get_memory_info("GPU:0")["current"]/1e7:.2f}GB'
+            print(f'\r{epoch}/{epochs} > {batch_idx}: loss({loss:.4f}), gpu({gpu})', end='', flush=True)
             
         epoch_loss = total_loss / num_batches
         epoch_acc = train_acc_metric.result()
 
-        print(f'Epoch {epoch+1}, Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}')
+        print(f'\nEpoch {epoch+1}, Loss: {epoch_loss:.4f}, Accuracy: {epoch_acc:.4f}')
         train_acc_metric.reset_states()
+        print("EPOCH is done: ", time.time() - tic_epoch)
         
     if logs_dir:
         tf.profiler.experimental.stop()
