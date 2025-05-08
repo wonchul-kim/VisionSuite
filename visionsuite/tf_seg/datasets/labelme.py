@@ -23,8 +23,6 @@ def create_mask_from_json(json_path, img_size, class_names):
         points = np.array(shape['points'], dtype=np.int32)
         cv2.fillPoly(mask, [points], color=class_id)
     
-    cv2.imwrite("/HDD/etc/mask_json.png", mask*60)
-    
     return mask
 
 def labelme2tfrecord_auto_shard(data_root, output_dir, split='train', max_shard_size_mb=200, class_names=None):
