@@ -71,22 +71,62 @@ if __name__ == "__main__":
 
     with strategy.scope():
         height, width = 768, 1120
+        '''
+        
+            effb0
+            Total params: 10,783,535
+            Trainable params: 0
+            Non-trainable params: 10,783,535
+        
+            tf - deeplabv3plus
+            Total params: 2,329,209
+            Trainable params: 2,139,820
+            Non-trainable params: 189,389
+            
+            
+            torch - deeplabv3plus
+            Total params: 18,352,180
+            Trainable params: 18,352,180
+            Non-trainable params: 0
+            ----------------------------------------------------------------
+            Input size (MB): 9.84
+            Forward/backward pass size (MB): 54425825554351.47
+            Params size (MB): 70.01
+            Estimated Total Size (MB): 54425825554431.32
+            
+            
+            torch - efficientnetb0
+            Total params: 5,858,704
+            Trainable params: 5,858,704
+            Non-trainable params: 0
+            ----------------------------------------------------------------
+            Input size (MB): 9.84
+            Forward/backward pass size (MB): 2697.39
+            Params size (MB): 22.35
+            Estimated Total Size (MB): 2729.58
+
+        '''
         base_model, layers, layer_names = create_base_model('efficientnetb3', 'imagenet', height, width)
         model = DeepLabV3plus(num_classes, base_model, layers, height=height, width=width)
         lr_scheduler = tf.keras.optimizers.schedules.ExponentialDecay(
             1e-4, decay_steps=1000, decay_rate=0.96
         )
+        
+        
+        
         # optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler)
         optimizer = tf.keras.optimizers.Adam(learning_rate=1e-5)
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False,
                     reduction=tf.keras.losses.Reduction.NONE # 필수 변경[2][4]
                 )
         train_acc_metric = tf.keras.metrics.SparseCategoricalAccuracy()
-
-    train_dataset = build_optimized_dataset(tfrecords_dir, batch_size, strategy, roi=roi)
-    dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
+        
     
-    train_loop(model, dist_dataset, epochs, optimizer, loss_fn, strategy, train_acc_metric)
+
+    # train_dataset = build_optimized_dataset(tfrecords_dir, batch_size, strategy, roi=roi)
+    # dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
+    
+    # train_loop(model, dist_dataset, epochs, optimizer, loss_fn, strategy, train_acc_metric)
     # import cv2 
     # import numpy as np
     # sample_batch = next(iter(dist_dataset))
