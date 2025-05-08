@@ -153,7 +153,7 @@ def build_optimized_dataset(tfrecord_dir, batch_size, strategy, split='train', r
     dataset = dataset.map(parse_fn, num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.cache()  # 캐싱 위치 변경(셔플 전)
     dataset = dataset.shuffle(1000, reshuffle_each_iteration=True)
-    dataset = dataset.batch(batch_size)
+    dataset = dataset.batch(batch_size, drop_remainder=True)
     return dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
 
 
