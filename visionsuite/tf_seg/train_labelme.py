@@ -35,7 +35,7 @@ if __name__ == "__main__":
         os.mkdir(logs_dir)
 
     epochs = 10
-    global_batch_size = 8
+    batch_size = 8
     num_classes = 150
     roi = [220, 60, 1340, 828]
     strategy = tf.distribute.MirroredStrategy()
@@ -56,7 +56,7 @@ if __name__ == "__main__":
                 )
         train_acc_metric = tf.keras.metrics.SparseCategoricalAccuracy()
 
-    train_dataset = build_optimized_dataset(tfrecords_dir, global_batch_size, strategy, roi=roi)
+    train_dataset = build_optimized_dataset(tfrecords_dir, batch_size, strategy, roi=roi)
     dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
     
     train_loop(model, dist_dataset, epochs, optimizer, loss_fn, strategy, train_acc_metric)

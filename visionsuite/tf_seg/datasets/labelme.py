@@ -90,7 +90,7 @@ def labelme2tfrecord_auto_shard(data_root, output_dir, split='train', max_shard_
     if writer: writer.close()
 
 
-def build_optimized_dataset(tfrecord_dir, global_batch_size, strategy, split='train', roi=None, fp16=False):
+def build_optimized_dataset(tfrecord_dir, batch_size, strategy, split='train', roi=None, fp16=False):
     files = tf.data.Dataset.list_files(f'{tfrecord_dir}/labelme_{split}-*.tfrecord', shuffle=True)
     dataset = files.interleave(
         lambda x: tf.data.TFRecordDataset(x),
@@ -153,7 +153,7 @@ def build_optimized_dataset(tfrecord_dir, global_batch_size, strategy, split='tr
     dataset = dataset.map(parse_fn, num_parallel_calls=tf.data.AUTOTUNE)
     dataset = dataset.cache()  # 캐싱 위치 변경(셔플 전)
     dataset = dataset.shuffle(1000, reshuffle_each_iteration=True)
-    dataset = dataset.batch(global_batch_size // strategy.num_replicas_in_sync)
+    dataset = dataset.batch(batch_size)
     return dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
 
 
