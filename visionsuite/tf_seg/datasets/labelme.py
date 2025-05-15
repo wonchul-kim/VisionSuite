@@ -1,4 +1,5 @@
 import os 
+import os.path as osp
 import tensorflow as tf 
 from tqdm import tqdm
 import json 
@@ -26,6 +27,7 @@ def create_mask_from_json(json_path, img_size, class_names):
     return mask
 
 def labelme2tfrecord_auto_shard(data_root, output_dir, split='train', max_shard_size_mb=200, class_names=None):
+    
     SHARD_MAX_BYTES = max_shard_size_mb * 1024 * 1024
     img_dir = os.path.join(data_root, split)
     img_extensions = ['*.bmp', '*.png', '*.jpeg', '*.jpg']
@@ -90,8 +92,19 @@ def labelme2tfrecord_auto_shard(data_root, output_dir, split='train', max_shard_
     if writer: writer.close()
 
 
-def build_optimized_dataset(tfrecord_dir, batch_size, strategy, split='train', roi=None, fp16=False):
-    files = tf.data.Dataset.list_files(f'{tfrecord_dir}/labelme_{split}-*.tfrecord', shuffle=True)
+def build_optimized_dataset(tfrecord_dir, batch_size, 
+                            cache=False, shuffle_buffer=300,
+                            image_format='bmp',
+                            shuffle=True,
+                            one_hot_encoding=False,
+                            split='train', roi=None, fp16=False):
+    options = tf.data.Options()
+    options.threading.private_threadpool_size = os.cpu_count()  # CPU 코어 수에 맞춤
+    options.threading.max_intra_op_parallelism = 1
+    options.experimental_optimization.map_and_batch_fusion = True
+    
+    files = tf.data.Dataset.list_files(f'{tfrecord_dir}/labelme_{split}-*.tfrecord', 
+                                shuffle=shuffle).with_options(options)
     dataset = files.interleave(
         lambda x: tf.data.TFRecordDataset(x),
         cycle_length=tf.data.AUTOTUNE,
@@ -144,16 +157,19 @@ def build_optimized_dataset(tfrecord_dir, batch_size, strategy, split='train', r
         mask = tf.squeeze(mask, axis=-1)  # (H,W,1) → (H,W)
         mask = tf.cast(mask, tf.int32)
 
-        # 원-핫 인코딩 필요시 (주석 해제)
-        # mask = tf.one_hot(mask, depth=num_classes, axis=-1)
+        if one_hot_encoding:
+            mask = tf.one_hot(mask, depth=4, axis=-1)
         
         return image, mask, parsed['filename']
 
     # 3. 파이프라인 최적화
     dataset = dataset.map(parse_fn, num_parallel_calls=tf.data.AUTOTUNE)
-    dataset = dataset.cache()  # 캐싱 위치 변경(셔플 전)
-    dataset = dataset.shuffle(1000, reshuffle_each_iteration=True)
-    dataset = dataset.batch(batch_size, drop_remainder=True)
-    return dataset.prefetch(buffer_size=tf.data.AUTOTUNE)
+    if cache:
+        dataset = dataset.cache()  # 캐싱 위치 변경(셔플 전)
+    # dataset = dataset.shuffle(shuffle_buffer, reshuffle_each_iteration=True)
+    dataset = dataset.batch(batch_size, 
+                            num_parallel_calls=tf.data.AUTOTUNE, 
+                            drop_remainder=True)
+    return dataset.prefetch(buffer_size=tf.data.AUTOTUNE).with_options(options)
 
 

@@ -41,7 +41,7 @@ def train_loop(model, dataset, epochs, optimizer, loss_fn, strategy, train_acc_m
             total_loss += loss
             num_batches += 1
             
-            if batch_idx%100 == 0:
+            if batch_idx%10 == 0:
                 print(">>>>> time for epoch: ", time.time() - tic_step)
                 tic_step = time.time()
                 

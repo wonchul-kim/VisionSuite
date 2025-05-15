@@ -14,40 +14,14 @@ if __name__ == "__main__":
     output_dir = '/HDD/etc/tensorflow'
     now = datetime.datetime.now()
 
-    tfrecords_dir = osp.join(output_dir, 'tfrecords')
-    '''
-        >>>>> time for epoch:  68.8586437702179
-        0/10 > 99: loss(1199703.5000), gpu(13.49GB)>>>>> time for epoch:  51.65077018737793
-        0/10 > 199: loss(1194212.1250), gpu(24.53GB)>>>>> time for epoch:  44.69721555709839
-        0/10 > 238: loss(1193024.0000), gpu(14.90GB)
-        Epoch 1, Loss: 1216328.3750, Accuracy: 0.2569
-        EPOCH is done:  173.96172833442688
-        >>>>> time for epoch:  0.48888683319091797
-        1/10 > 99: loss(1190696.2500), gpu(24.45GB)>>>>> time for epoch:  22.676891565322876
-        1/10 > 199: loss(1188137.3750), gpu(23.54GB)>>>>> time for epoch:  22.758178234100342
-        1/10 > 238: loss(1187881.7500), gpu(16.67GB)
-        Epoch 2, Loss: 1189861.6250, Accuracy: 0.2940
-        EPOCH is done:  54.536705493927
-        >>>>> time for epoch:  0.5064129829406738
-        2/10 > 99: loss(1185724.7500), gpu(20.13GB)>>>>> time for epoch:  22.746150255203247
-        2/10 > 199: loss(1184754.0000), gpu(23.49GB)>>>>> time for epoch:  22.701698064804077
-        2/10 > 238: loss(1183944.0000), gpu(13.50GB)
-        Epoch 3, Loss: 1185543.0000, Accuracy: 0.3481
-        EPOCH is done:  54.52851676940918
-        >>>>> time for epoch:  0.5280563831329346
-        3/10 > 99: loss(1182047.7500), gpu(23.13GB)>>>>> time for epoch:  22.74532175064087
-        3/10 > 199: loss(1180976.5000), gpu(23.01GB)>>>>> time for epoch:  22.752564668655396
-        3/10 > 238: loss(1180538.7500), gpu(16.40GB)
-        Epoch 4, Loss: 1182005.0000, Accuracy: 0.4181
-        EPOCH is done:  54.70700478553772
-    '''
-    
-    if not osp.exists(tfrecords_dir):
-        os.mkdir(tfrecords_dir)
+    tfrecord_dir = osp.join(output_dir, 'tfrecords_unit')
+
+    if not osp.exists(tfrecord_dir):
+        os.mkdir(tfrecord_dir)
             
         labelme2tfrecord_auto_shard(
             data_root=input_dir,
-            output_dir=tfrecords_dir,
+            output_dir=tfrecord_dir,
             split='train',
             class_names = ['MARK', 'CHAMFER_MARK', 'LINE']
         )
@@ -67,7 +41,26 @@ if __name__ == "__main__":
     roi = [220, 60, 1340, 828]
     strategy = tf.distribute.MirroredStrategy()
     print(f'활성화된 GPU 수: {strategy.num_replicas_in_sync}')
-
+    '''
+        >>>>> time for epoch:  70.28238725662231
+        0/3 > 9: loss(1372844.5000), gpu(19.96GB)>>>>> time for epoch:  5.5843212604522705
+        0/3 > 19: loss(1352080.5000), gpu(21.16GB)>>>>> time for epoch:  5.551506280899048
+        0/3 > 28: loss(1330189.0000), gpu(14.28GB)
+        Epoch 1, Loss: 1363394.6250, Accuracy: 0.2831
+        EPOCH is done:  85.90839838981628
+        >>>>> time for epoch:  1.0797467231750488
+        1/3 > 9: loss(1311259.7500), gpu(21.16GB)>>>>> time for epoch:  5.594640493392944
+        1/3 > 19: loss(1295287.0000), gpu(20.05GB)>>>>> time for epoch:  5.598327875137329
+        1/3 > 28: loss(1272684.6250), gpu(12.86GB)
+        Epoch 2, Loss: 1303733.2500, Accuracy: 0.2875
+        EPOCH is done:  16.802703380584717
+        >>>>> time for epoch:  1.270380973815918
+        2/3 > 9: loss(1262342.5000), gpu(19.76GB)>>>>> time for epoch:  5.563065767288208
+        2/3 > 19: loss(1256613.2500), gpu(22.04GB)>>>>> time for epoch:  5.536720275878906
+        2/3 > 28: loss(1241454.2500), gpu(14.26GB)
+        Epoch 3, Loss: 1260447.7500, Accuracy: 0.2827
+        EPOCH is done:  16.78995704650879
+    '''
 
     with strategy.scope():
         height, width = 768, 1120
@@ -112,21 +105,28 @@ if __name__ == "__main__":
             1e-4, decay_steps=1000, decay_rate=0.96
         )
         
-        
-        
         # optimizer = tf.keras.optimizers.Adam(learning_rate=lr_scheduler)
         optimizer = tf.keras.optimizers.Adam(learning_rate=1e-5)
         loss_fn = tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False,
                     reduction=tf.keras.losses.Reduction.NONE # 필수 변경[2][4]
                 )
         train_acc_metric = tf.keras.metrics.SparseCategoricalAccuracy()
-        
-    
 
-    # train_dataset = build_optimized_dataset(tfrecords_dir, batch_size, strategy, roi=roi)
-    # dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
+    train_dataset = build_optimized_dataset(tfrecord_dir=tfrecord_dir, 
+                                            batch_size=batch_size, 
+                                            cache=True, shuffle_buffer=batch_size*20,
+                                            image_format='bmp',
+                                            shuffle=True,
+                                            one_hot_encoding=False,
+                                            split='train', roi=roi, fp16=False
+                                        )
+    dist_dataset = strategy.experimental_distribute_dataset(train_dataset)
     
-    # train_loop(model, dist_dataset, epochs, optimizer, loss_fn, strategy, train_acc_metric)
+    print("Start training >>>")
+    train_loop(model, dist_dataset, epochs, optimizer, loss_fn, strategy, train_acc_metric)
+
+
+
     # import cv2 
     # import numpy as np
     # sample_batch = next(iter(dist_dataset))
