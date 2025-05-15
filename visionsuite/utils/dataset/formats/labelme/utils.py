@@ -161,13 +161,10 @@ def get_mask_from_labels(labels, width, height, class2label, format='pil'):
         return mask
 
 
-def get_mask_from_labelme(json_file, width, height, class2label, format='pil', metis=None):
+def get_mask_from_labelme(json_file, width, height, class2label, format='pil', one_class=False):
 
-    if metis is None:
-        with open(json_file) as f:
-            anns = json.load(f)
-    else:
-        anns = {"shapes": metis}
+    with open(json_file) as f:
+        anns = json.load(f)
     mask = np.zeros((height, width))
     for label_idx in range(0, len(class2label.keys())):
         for shapes in anns['shapes']:
@@ -178,19 +175,28 @@ def get_mask_from_labelme(json_file, width, height, class2label, format='pil', m
                 if shape_type == 'circle':
                     cx, cy = _points[0][0], _points[0][1]
                     radius = int(math.sqrt((cx - _points[1][0]) ** 2 + (cy - _points[1][1]) ** 2))
-                    cv2.circle(mask, (int(cx), int(cy)), int(radius), True, -1)
+                    if not one_class:
+                        cv2.circle(mask, (int(cx), int(cy)), int(radius), class2label[label], -1)
+                    else:
+                        cv2.circle(mask, (int(cx), int(cy)), int(radius), one_class, -1)
                 elif shape_type in ['rectangle']:
                     if len(_points) == 2:
                         arr = np.array(_points, dtype=np.int32)
                     else:
                         RuntimeError(f"Rectangle labeling should have 2 points")
-                    cv2.fillPoly(mask, [arr], color=(class2label[label]))
+                    if not one_class:
+                        cv2.fillPoly(mask, [arr], color=(class2label[label]))
+                    else:
+                        cv2.fillPoly(mask, [arr], color=(one_class))
                 elif shape_type in ['polygon', 'watershed']:
                     if len(_points) > 2:  # handle cases for 1 point or 2 points
                         arr = np.array(_points, dtype=np.int32)
                     else:
                         continue
-                    cv2.fillPoly(mask, [arr], color=(class2label[label]))
+                    if not one_class:
+                        cv2.fillPoly(mask, [arr], color=(class2label[label]))
+                    else:
+                        cv2.fillPoly(mask, [arr], color=(one_class))
                 elif shape_type in ['point']:
                     pass
                 else:

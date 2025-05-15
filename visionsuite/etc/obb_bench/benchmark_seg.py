@@ -4,29 +4,41 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf
 import os.path as osp
 
-
 # model_name = 'tf_deeplabv3plus_epochs100'
 # model_name = 'tf_deeplabv3plus_epochs200'
-model_name = 'tf_deeplabv3plus_frozen_epochs100'
+# model_name = 'tf_deeplabv3plus_frozen_epochs100'
 # model_name = 'm2f_epochs100'
 # model_name = 'cosnet_epochs100'
 # model_name = 'pidnet_epochs100'
+# model_name = 'gcnet_epochs100'
+# output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
+# input_dir = '/DeepLearning//etc/_athena_tests/benchmark/tenneco/outer/val'
 
-output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp_conf0.5'
+# model_name = 'deeplabv3plus'
+# model_name = 'pidnet_epochs300'
+# model_name = 'dinov2_epochs50'
+# model_name = 'm2f_epochs20'
+model_name = 'gcnet_epochs200'
 
-input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val'
+# output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
+output_dir = f'/HDD/etc/repeatablility/gcnet_epochs100/test/exp'
+input_dir = '/HDD/etc/repeatablility/gcnet_epochs100/test/exp2/labels'
+
+
 ground_truths, class2idx = labelme2metrics(input_dir)
-
-preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp_conf0.5/preds.json'
-detections, class2idx = preds2metrics(preds_json, class2idx)
+# class2idx = {'DUST': 0, "STABBED": 1}
+# preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/preds.json'
+preds_json = f'/HDD/etc/repeatablility/gcnet_epochs100/test/exp/preds.json'
+detections, class2idx = preds2metrics(preds_json, class2idx, nms=0)
+# detections, class2idx = preds2metrics(preds_json, class2idx, nms=0.2)
 print(class2idx)
 
 # _detections, _ground_truths = [], []
 # for detection in detections:
-#     if detection[0] == '14_124060517095294_1_rgb':
+#     if detection[0] == '1182_1_angle_20241212161927203':
 #         _detections.append(detection)
 # for ground_truth in ground_truths:
-#     if ground_truth[0] == '14_124060517095294_1_rgb':
+#     if ground_truth[0] == '1182_1_angle_20241212161927203':
 #         _ground_truths.append(ground_truth)
 # detections = _detections
 # ground_truths = _ground_truths

@@ -35,10 +35,12 @@ def labelme2metrics(input_dir, return_class2idx=True):
                         ]
                     gts.append(gt)          
                 elif shape_type == 'polygon':
-                    assert len(points) >=3, ValueError(f"ERROR: the number of points must be more than 3, not {len(points)}: {points} at {json_file}")
+                    if len(points) >=3: 
                     
-                    gt = [filename, class2idx[label], 1, tuple([_point for __point in points for _point in __point])]
-                    gts.append(gt)
+                        gt = [filename, class2idx[label], 1, tuple([_point for __point in points for _point in __point])]
+                        gts.append(gt)
+                    else:
+                        warnings.warn(f"ERROR: the number of points must be more than 3, not {len(points)}: {points} at {json_file}")
                 else:
                     NotImplementedError(f"ERROR: NOT Consider {shape_type} shape-type at {json_file}")
                     
