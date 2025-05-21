@@ -190,9 +190,8 @@ def parse(df, roi, output_dir):
     exception_txt = open(osp.join(output_dir, '../exception.txt'), 'w')
     
     for sample_id, group in tqdm(df.groupby('sampleId'), desc="PARSING excel: "):
-        # if sample_id != 125020717061509:
-        #     print("................................... ", sample_id)
-        #     continue
+        if sample_id != 125032816575591:
+            continue
         group = group.sort_values('inspectedAt')
         parsed_data[str(sample_id)] = {}
         order_ngs = []
