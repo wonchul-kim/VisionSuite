@@ -2,17 +2,19 @@ import os
 import os.path as osp 
 from glob import glob 
 import json 
+from tqdm import tqdm
 from visionsuite.utils.dataset.formats.labelme.utils import init_labelme_json, add_labelme_element
 
 orders = ['1', '2', '3']
-
-input_dir = '/DeepLearning/etc/neuro/1st/경계성'
-output_dir = '/DeepLearning/etc/neuro/1st/경계성/labelme'
+case = '2nd'
+defect = '경계성'
+input_dir = f'/HDD/etc/repeatablility/talos2/{case}/benchmark/neurocle/{defect}'
+output_dir = f'/HDD/etc/repeatablility/talos2/{case}/benchmark/neurocle/{defect}'
 
 os.makedirs(output_dir, exist_ok=True)
 
 
-for order in orders:
+for order in tqdm(orders):
 
     json_file = osp.join(input_dir, f'{order}.json')
     with open(json_file, 'r') as jf:
@@ -31,7 +33,10 @@ for order in orders:
                                         points=label['points'])
 
 
-        _output_dir = osp.join(output_dir, order)
+        if order == '1':
+            _output_dir = osp.join(output_dir, f'exp/labels')
+        else:     
+            _output_dir = osp.join(output_dir, f'exp{order}/labels')
 
         os.makedirs(_output_dir, exist_ok=True)
 

@@ -72,8 +72,8 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes, width=
         
             
 if __name__ == '__main__':
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_mask_dataset_one_class'
+    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
+    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset_one_class'
     class2label = {'chamfer_mark': 1, 'line': 2, 'mark': 3}
     modes = ['train', 'val']
     # width, height = 1120, 768
