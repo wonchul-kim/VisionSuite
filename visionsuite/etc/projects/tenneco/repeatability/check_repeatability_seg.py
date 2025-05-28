@@ -3,11 +3,19 @@ import pandas as pd
 from check_repeatability import run
 import matplotlib.pyplot as plt
 
+
+by_product = True
+
 ### --------------------------------------------------------------------------------------------------------
 # base_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark/'
+# base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/'
+# dir_names = ['deeplabv3plus_w1120_h768', 'lps_w1120_h768']
+# cases = ['오염', '딥러닝', '경계성']
+
 base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/'
-dir_names = ['deeplabv3plus_w1120_h768', 'lps_w1120_h768']
-cases = ['오염', '딥러닝', '경계성']
+dir_names = ['segformer_b2_unfrozen_w1120_h768']
+cases = ['오염']
+
 filename_postfix = '*'
 rect_iou = True 
 offset = 100
@@ -21,7 +29,7 @@ figs = True
 vis = False
 for case in cases:
     run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, 
-        offset=offset, filename_postfix=filename_postfix, case=case)
+        offset=offset, filename_postfix=filename_postfix, case=case, by_product=by_product)
     
 ### ===================================
 iou_thresholds = [0.05]
@@ -31,7 +39,7 @@ vis = True
 for case in cases:
     print(case)
     run(base_dir, dir_names, iou_thresholds, area_thresholds, vis, figs, rect_iou=rect_iou, 
-        offset=offset, filename_postfix=filename_postfix, case=case)    
+        offset=offset, filename_postfix=filename_postfix, case=case, by_product=by_product)    
     
 iou = 0.05
 area = 20

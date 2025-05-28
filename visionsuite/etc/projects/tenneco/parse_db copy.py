@@ -205,16 +205,15 @@ def parse(df, roi, output_dir):
                 for defect_data in fov_data['defects']:
                     
                     ###
-                    if defect_data['class'].lower() in ['od_mark', 'od_scratch']:
+                    if defect_data['ng']:
                         parsed_defect_data = {'class': defect_data['class'], 
-                                            'x': float(defect_data['positionInFov']['x']) - roi[0],
-                                            'y': float(defect_data['positionInFov']['y']) - roi[1],
-                                            'width': float(defect_data['widthPix']), # longaxis
-                                            'height': float(defect_data['heightPix']), # shortaxis
-                                            'angle': float(defect_data['angle']),
-                                            'repeated': set(),
-                                            'ng': defect_data['ng']
-                                        }
+                                              'x': float(defect_data['positionInFov']['x']) - roi[0],
+                                              'y': float(defect_data['positionInFov']['y']) - roi[1],
+                                              'width': float(defect_data['widthPix']), # longaxis
+                                              'height': float(defect_data['heightPix']), # shortaxis
+                                              'angle': float(defect_data['angle']),
+                                              'repeated': set()
+                                            }
                         parsed_data[str(sample_id)][str(order)][f"fov_{fov_data['fov']}"].append(parsed_defect_data)
                         
             assert len(parsed_data[str(sample_id)][str(order)]) == 14, RuntimeError(f"There must be 14 fovs for each sample-id({sample_id}), now {len(parsed_data[str(sample_id)][order])}")
@@ -251,20 +250,20 @@ def parse(df, roi, output_dir):
             
     return parsed_data, output_data
         
-csv_file = '/HDD/etc/repeatablility/talos3/inspection(2025-05-14).xlsx'
+csv_file = '/HDD/etc/repeatablility/talos2/inspection(2025-05-14).xlsx'
 
-# #### 1st
-# case = '1st'
-# input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
-# sheet_name = '250207'
-# output_dir = '/HDD/etc/repeatablility/talos3/1st/outputs'
+#### 1st
+case = '1st'
+input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
+sheet_name = '250207'
+output_dir = '/HDD/etc/repeatablility/talos2/1st/outputs'
 
 
-### 2nd
-case = '2nd'
-input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-sheet_name = '250328'
-output_dir = '/HDD/etc/repeatablility/talos3/2nd/outputs'
+# ### 2nd
+# case = '2nd'
+# input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
+# sheet_name = '250328'
+# output_dir = '/HDD/etc/repeatablility/talos2/2nd/outputs'
 
 
 if not osp.exists(output_dir):
@@ -277,7 +276,7 @@ ng: 0/1
 inspectedAt: time
 '''
 
-color_map = np.concatenate([
+color_map= np.concatenate([
                             np.array([
                                 [255, 0, 255],
                                 [254, 128, 0],
@@ -319,6 +318,7 @@ with open(osp.join(output_dir, 'output_data.json'), 'w') as jf:
 
 
 assert isinstance(overlap, int), ValueError(f"Overlap must be int, not {overlap} which is {type(overlap)}")
+    
 for sample_id, orders_data in tqdm(parsed_data.items(), desc="ANALYZING: "):  
     
     # if sample_id != '125020717095782':
@@ -427,14 +427,8 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
                 if defect == []:
                     continue
                 is_defected = True
-                _class, x, y, w, h, angle, is_ng = defect['class'].lower(), defect['x'], defect['y'], \
-                                            defect['width'], defect['height'], float(defect['angle']), defect['ng']
-                
-                
-                if is_ng:
-                    color = (0, 0, 255)
-                else:
-                    color = (255, 0, 0)
+                _class, x, y, w, h, angle = defect['class'].lower(), defect['x'], defect['y'], \
+                                            defect['width'], defect['height'], float(defect['angle'])
                 
                 # pts = obb2poly_le90([x + w/2, y + h/2, w, h, -angle])
                 
@@ -444,9 +438,9 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
                     class2label[_class] = len(class2label)
                 
                 cv2.putText(_img, f'w{w:.1f}_h{h:.1f}_a{angle:.1f}', (int(x), int(y - 25)), cv2.FONT_HERSHEY_SIMPLEX, 
-                                0.7, tuple(map(int, color)), 1)
+                                0.7, tuple(map(int, color_map[class2label[_class]])), 1)
                 cv2.putText(_img, f'{_class}', (int(x), int(y + 5)), cv2.FONT_HERSHEY_SIMPLEX, 
-                                1, tuple(map(int, color)), 2)
+                                1, tuple(map(int, color_map[class2label[_class]])), 2)
                 
                 # cv2.polylines(_img, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
                 ### rotate the bbox by the left top point
@@ -456,7 +450,11 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
                                                                 [w, h],
                                                                 [0, h]
                                                             ], dtype=np.float32)]), cv2.getRotationMatrix2D((0, 0), angle, 1.0))[0] + np.array([x, y], dtype=np.float32)
-                cv2.polylines(_img, [rotated_pts.astype(np.int32)], isClosed=True, color=tuple(map(int, color)), thickness=thickness)
+                cv2.polylines(_img, [rotated_pts.astype(np.int32)], isClosed=True, color=tuple(map(int, color_map[class2label[_class]])), thickness=thickness)
+                # else:
+                #     box = cv2.boxPoints(((x + w/2, y + h/2), (w, h), -angle))
+                #     box = np.floor(box + 0.5).astype(np.int32)
+                #     cv2.drawContours(_img, [box], 0, tuple(map(int, color_map[class2label[_class]])), thickness)
                     
                 # ### original
                 # cv2.rectangle(_img, (int(x), int(y)), (int(x + w), int(y + h)), (255, 255, 224), 1)
