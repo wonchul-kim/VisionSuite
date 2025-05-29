@@ -376,26 +376,28 @@ if __name__ == '__main__':
     # # dir_name = 'deeplabv3plus_patch512'
     # # dir_name = 'deeplabv3plus_w1120_h768'
     # # dir_name = 'mask2former_swin-s_w1120_h768'
-    # # dir_name = 'segformer_b2_unfrozen_w1120_h768'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768'
     # # dir_name = 'yolov12_xl'
     # # dir_name = 'define'
-    # dir_name = 'neurocle'
-    # # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-    # defects = ['오염', '딥러닝', '경계성']
+    # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+    # # dir_name = 'neurocle'
+    # # defects = ['오염', '딥러닝', '경계성']
 
-    case = '2nd'
-    input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-    base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/'
-    # dir_name = 'deeplabv3plus'
-    # dir_name = 'deeplabv3plus_patch512'
-    dir_name = 'deeplabv3plus_w1120_h768'
-    # dir_name = 'mask2former_swin-s_w1120_h768'
+    # case = '2nd'
+    # input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
+    # base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/'
+    # # dir_name = 'deeplabv3plus'
+    # # dir_name = 'deeplabv3plus_patch512'
+    # # dir_name = 'deeplabv3plus_w1120_h768'
+    # # dir_name = 'mask2former_swin-s_w1120_h768'
     # dir_name = 'segformer_b2_unfrozen_w1120_h768'
-    # dir_name = 'yolov12_xl'
-    # dir_name = 'define'
-    defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-    # dir_name = 'neurocle'
-    # defects = ['오염', '딥러닝', '경계성']
+    # # dir_name = 'yolov12_xl'
+    # # dir_name = 'define'
+    # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+    # # dir_name = 'neurocle'
+    # # defects = ['오염', '딥러닝', '경계성']
+    
+    
     roi = [220, 60, 1340, 828]
 
     result_by_product = {}

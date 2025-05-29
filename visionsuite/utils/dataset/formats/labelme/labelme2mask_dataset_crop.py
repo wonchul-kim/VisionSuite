@@ -80,8 +80,10 @@ def labelme2mask(input_dir, output_dir, class2label, input_format, modes,
                     
                     for ann_id, ann in enumerate(anns['shapes']):
 
-                        if ann['shape_type'] in ['point', 'polygon', 'watershed'] and len(ann['points']) <=2 :
+                        if ann['shape_type'] in ['watershed']:
                             continue
+                        
+                        
                         xs, ys = [], []
                         for point in ann['points']:
                             if point[0] >= roi[0] and point[0] <= roi[2]:
