@@ -94,8 +94,8 @@ model_name = 'u2net' #'u2netp'
 # val_image_dir = os.path.join('DUTS-TE/DUTS-TE-Image')
 # val_label_dir = os.path.join('DUTS-TE/DUTS-TE-Mask')
 # image_ext = '.jpg'
-data_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset_one_class'
-# data_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset_one_class_crop'
+# data_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset_one_class'
+data_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_mask_dataset_one_class_crop'
 tra_image_dir = os.path.join('train/images')
 tra_label_dir = os.path.join('train/masks')
 val_image_dir = os.path.join('val/images')
@@ -123,7 +123,7 @@ if not osp.exists(debug_dir):
     os.makedirs(debug_dir)
 
 epoch_num = 300
-batch_size_train = 8
+batch_size_train = 96
 batch_size_val = 1
 train_num = 0
 val_num = 0
