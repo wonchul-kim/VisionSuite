@@ -1,4 +1,5 @@
 import os
+os.environ['CUDA_VISIBLE_DEVICES'] = '1'
 from skimage import io, transform
 import torch
 import torchvision
@@ -39,16 +40,16 @@ def main():
 
     # --------- 1. get image path and name ---------
     model_name='u2net'
-    model_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/outputs/SOD/5_28_17_33_7/weights/u2net_bce_itr_1232_train_0.100802_tar_0.009582.pth'
-    order = 1
-    defect = '오염'
+    model_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/outputs/SOD/crop/weights/u2net_bce_itr_23244_train_0.024273_tar_0.001608.pth'
+    order = 3
+    defect = 'repeated_ok'
     img_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data/{order}'
     if order == 1:
         labelme_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/yolov12_xl/{defect}/exp/labels'
-        output_dir = f'/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/outputs/SOD/5_28_17_33_7/test/{defect}/exp/labels'
+        output_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/yolov12_xl_sod/{defect}/exp/labels'
     else:
         labelme_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/yolov12_xl/{defect}/exp{order}/labels'
-        output_dir = f'/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/outputs/SOD/5_28_17_33_7/test/{defect}/exp{order}/labels'
+        output_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/yolov12_xl_sod/{defect}/exp{order}/labels'
         
     if not os.path.exists(output_dir):
         os.makedirs(output_dir, exist_ok=True)        
@@ -58,9 +59,9 @@ def main():
     classes = ['background', "CHAMFER_MARK", "LINE", "MARK"]
     class2idx = {val: key for key, val in enumerate(classes)}
     color_map = imgviz.label_colormap()[1:len(class2idx) + 1 + 1]
-    conf_threshold = 0.5
+    conf_threshold = 0.6
     contour_thres = 10
-    vis = True
+    vis = False
 
     # --------- 3. model define ---------
     if(model_name=='u2net'):
@@ -79,11 +80,9 @@ def main():
         net.load_state_dict(torch.load(model_dir, map_location='cpu'))
     net.eval()
 
-
     json_files = glob.glob(osp.join(labelme_dir, '*.json'))
-    
     with torch.no_grad():
-        for json_file in json_files:
+        for json_file in tqdm(json_files):
             
             filename = osp.split(osp.splitext(json_file)[0])[-1]
             img_file = osp.join(img_dir, filename, '1_image.bmp')
@@ -194,7 +193,19 @@ def main():
 
                 assert crop_img.shape[:2] == (int(offset), int(offset))
                             
-                torch_img = torch.from_numpy(crop_img.transpose((2, 0, 1))).float().unsqueeze(0)
+                                
+                tmpImg = np.zeros((crop_img.shape[0],crop_img.shape[1],3))
+                crop_img = crop_img/np.max(crop_img)
+                if crop_img.shape[2]==1:
+                    tmpImg[:,:,0] = (crop_img[:,:,0]-0.485)/0.229
+                    tmpImg[:,:,1] = (crop_img[:,:,0]-0.485)/0.229
+                    tmpImg[:,:,2] = (crop_img[:,:,0]-0.485)/0.229
+                else:
+                    tmpImg[:,:,0] = (crop_img[:,:,0]-0.485)/0.229
+                    tmpImg[:,:,1] = (crop_img[:,:,1]-0.456)/0.224
+                    tmpImg[:,:,2] = (crop_img[:,:,2]-0.406)/0.225
+                                
+                torch_img = torch.from_numpy(tmpImg.transpose((2, 0, 1))).float().unsqueeze(0)
 
                 if torch.cuda.is_available():
                     torch_img = Variable(torch_img.cuda())
@@ -226,6 +237,9 @@ def main():
                     new_points = []    
                     for _point in point:
                         new_points.append([int(_point[0] + x1 + roi[0]), int(_point[1] + y1 + roi[1])]) 
+                
+                    if len(new_points) < 3:
+                        continue
                 
                     if vis:
                         mask = vis_pred[:, :, class2idx[label]].copy()  # view → copy로 바꿔서 C-contiguous 보장

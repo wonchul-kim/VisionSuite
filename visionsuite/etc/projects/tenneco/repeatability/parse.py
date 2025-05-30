@@ -397,6 +397,21 @@ if __name__ == '__main__':
     # # dir_name = 'neurocle'
     # # defects = ['오염', '딥러닝', '경계성']
     
+    # ### tta
+    # case = '2nd'
+    # input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
+    # base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/segformer_b2_unfrozen_w1120_h768/tta/data/outputs'
+    # dir_name = ''
+    # defects = ['딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+    
+     
+    ### detection + sod
+    case = '2nd'
+    input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
+    base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/yolov12_xl_sod'
+    dir_name = ''
+    defects = ['오염', '경계성']#, 'repeated_ng', 'repeated_ok']
+    
     
     roi = [220, 60, 1340, 828]
 
@@ -450,7 +465,7 @@ if __name__ == '__main__':
     save_stitched = True
     add_weights = False
     alpha = 0.5
-    vis_repeated = False
+    vis_repeated = True
     thickness = 2
     font_scale = 2
     iou_threshold = 0.05
