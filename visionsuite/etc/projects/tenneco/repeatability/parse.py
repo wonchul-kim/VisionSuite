@@ -13,43 +13,28 @@ import math
  
  
 def get_feret(points):
-    # Polygon 객체 생성
     poly = Polygon(points)
-
-    # 최소 외접 회전 사각형 구하기
     min_rect = poly.minimum_rotated_rectangle
 
-    # 타입에 따라 좌표 추출
     if min_rect.geom_type == 'Polygon':
-        rect_coords = list(min_rect.exterior.coords)[:-1]  # 마지막 점은 시작점과 동일
+        rect_coords = list(min_rect.exterior.coords)[:-1] 
     elif min_rect.geom_type == 'LineString':
         rect_coords = list(min_rect.coords)
     else:
         rect_coords = []
 
-    # 두 점 사이 거리 계산 함수
     def distance(p1, p2):
         return math.hypot(p2[0] - p1[0], p2[1] - p1[1])
 
-    # 사각형의 네 변 길이 계산
     edges = []
     for i in range(len(rect_coords)):
         p1 = rect_coords[i]
         p2 = rect_coords[(i + 1) % len(rect_coords)]
         edges.append(distance(p1, p2))
 
-    # 가로, 세로 길이 (두 쌍의 변 중 큰 값과 작은 값)
     width = max(edges)
     height = min(edges)
 
-    # print("최소 외접 회전 사각형 꼭짓점 좌표:")
-    # for i, coord in enumerate(rect_coords):
-    #     print(f"  Point {i+1}: {coord}")
-
-    # print(f"\n가로 길이 (Width): {width:.4f}")
-    # print(f"세로 길이 (Height): {height:.4f}")
-    
-    
     return width, height
  
 def get_major_length(points):
@@ -59,7 +44,7 @@ def get_major_length(points):
     axes = pca.components_
 
     points_centered = points - center
-    rotated = points_centered @ axes.T  # (N,2) × (2,2).T → PCA 좌표계로 변환
+    rotated = points_centered @ axes.T 
 
     width_major = rotated[:, 0].max() - rotated[:, 0].min()
     width_minor = rotated[:, 1].max() - rotated[:, 1].min()
@@ -170,8 +155,6 @@ def merge(anns, config={'mark': 5}):
                 
                 break
                 
-
-
 def setbin(label, points, fov, specs={'mark': [{'fovs': [1, 2, 3, 10, 11, 12, 13, 14],
                                          'width': 52.6,
                                          'height': 35.1,
@@ -262,8 +245,6 @@ def setbin(label, points, fov, specs={'mark': [{'fovs': [1, 2, 3, 10, 11, 12, 13
             
     return is_ng, label
             
-        
-
  
 def run(base_dir, dir_name, case, roi,
     result_by_product, outputs_by_product):
@@ -369,6 +350,7 @@ def run(base_dir, dir_name, case, roi,
 
 if __name__ == '__main__':
     
+    ###### 1st
     # case = '1st'
     # input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
     # base_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark/'
@@ -384,6 +366,7 @@ if __name__ == '__main__':
     # # dir_name = 'neurocle'
     # # defects = ['오염', '딥러닝', '경계성']
 
+    ###### 2nd
     case = '2nd'
     input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
     base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/'
