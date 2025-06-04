@@ -11,8 +11,6 @@ input_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
 output_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
 defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
 models = os.listdir(input_dir)
-ignore_models = ['lps_w1120_h768', 'summary.png', 'segformer_b2_unfrozen_w1120_h768_tta', ]
-# models = ['segformer_b2_unfrozen_w1120_h768_tta']
 
 
 # ### 2nd
@@ -21,7 +19,7 @@ ignore_models = ['lps_w1120_h768', 'summary.png', 'segformer_b2_unfrozen_w1120_h
 # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
 # models = os.listdir(input_dir)
 
-ignore_models = ['lps_w1120_h768', 'summary.png', 'segformer_b2_unfrozen_w1120_h768_tta']
+ignore_models = ['lps_w1120_h768', 'summary.png']
 print(models)
 
 results = {}

@@ -40,20 +40,24 @@ def normPRED(d):
 def main():
 
     # --------- 1. get image path and name ---------
+    mode = '1st'
     model_name='u2net'
     model_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/outputs/SOD/crop/weights/u2net_bce_itr_23244_train_0.024273_tar_0.001608.pth'
-    # detection = 'define'
-    detection = 'yolov12_xl'
+    detection = 'define'
+    # detection = 'yolov12_xl'
     for defect in ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']:
         
         for order in [1, 2, 3]:
-            img_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data/{order}'
-            if order == 1:
-                labelme_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/{detection}/{defect}/exp/labels'
-                output_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/{detection}_sod/{defect}/exp/labels'
+            if mode == '1st':
+                img_dir = f'/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data/OUTER_shot0{order}'
             else:
-                labelme_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/{detection}/{defect}/exp{order}/labels'
-                output_dir = f'/HDD/etc/repeatablility/talos2/2nd/benchmark/{detection}_sod/{defect}/exp{order}/labels'
+                img_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data/{order}'
+            if order == 1:
+                labelme_dir = f'/HDD/etc/repeatablility/talos2/{mode}/benchmark/{detection}/{defect}/exp/labels'
+                output_dir = f'/HDD/etc/repeatablility/talos2/{mode}/benchmark/{detection}_sod/{defect}/exp/labels'
+            else:
+                labelme_dir = f'/HDD/etc/repeatablility/talos2/{mode}/benchmark/{detection}/{defect}/exp{order}/labels'
+                output_dir = f'/HDD/etc/repeatablility/talos2/{mode}/benchmark/{detection}_sod/{defect}/exp{order}/labels'
                 
             if not os.path.exists(output_dir):
                 os.makedirs(output_dir, exist_ok=True)        
@@ -89,7 +93,10 @@ def main():
                 for json_file in tqdm(json_files, desc=f'Order {defect}-{order}: '):
                     
                     filename = osp.split(osp.splitext(json_file)[0])[-1]
-                    img_file = osp.join(img_dir, filename, '1_image.bmp')
+                    if mode == '1st':
+                        img_file = osp.join(img_dir, f'{filename}_Outer', '1_image.bmp')
+                    else:
+                        img_file = osp.join(img_dir, filename, '1_image.bmp')
                     
                     assert osp.exists(img_file), ValueError(f'There is no image: {img_file}')
                     

@@ -6,22 +6,22 @@ from tqdm import tqdm
 from visionsuite.utils.dataset.formats.labelme.utils import init_labelme_json, add_labelme_element
 
 orders = ['1', '2', '3']
-case = '2nd'
-defect = '경계성'
+case = '1st'
+defect = 'repeated_ok'
 input_dir = f'/HDD/etc/repeatablility/talos2/{case}/benchmark/neurocle/{defect}'
 output_dir = f'/HDD/etc/repeatablility/talos2/{case}/benchmark/neurocle/{defect}'
 
 os.makedirs(output_dir, exist_ok=True)
 
 
-for order in tqdm(orders):
+for order in orders:
 
     json_file = osp.join(input_dir, f'{order}.json')
     with open(json_file, 'r') as jf:
         anns = json.load(jf)
     w, h = 1120, 768
         
-    for data in anns['data']:
+    for data in tqdm(anns['data'], desc=f'{str(order)}: '):
         
         filename = data['fileName'].split('.')[0]
         region_label = data['regionLabel']
