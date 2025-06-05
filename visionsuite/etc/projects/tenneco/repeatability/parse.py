@@ -365,8 +365,9 @@ if __name__ == '__main__':
     # dir_name = 'segnext_w1120_h768'
     # dir_name = 'define_sod'
     # dir_name = 'yolov12_xl_sod'
+    dir_name = 'segnext_w1120_h768_tta'
+    # dir_name = 'neurocle'
     defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-    dir_name = 'neurocle'
 
     # ###### 2nd
     # case = '2nd'
@@ -383,9 +384,10 @@ if __name__ == '__main__':
     # # dir_name = 'define'
     # # dir_name = 'define_sod'
     # # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
-    # dir_name = 'segnext_w1120_h768'
-    # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+    # # dir_name = 'segnext_w1120_h768'
+    # dir_name = 'segnext_w1120_h768_tta'
     # # dir_name = 'neurocle'
+    # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
     
     # ### tta
     # case = '2nd'
