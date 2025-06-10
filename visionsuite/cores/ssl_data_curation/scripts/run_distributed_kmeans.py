@@ -226,19 +226,24 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     # parser.add_argument("--data_path", default='/HDD/etc/curation/embeddings/representations/dinov2/labelme_train.npy')
-    parser.add_argument("--data_path", default='/HDD/etc/curation/data/level1/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/etc/curation/data/level1/centroids.npy')
+    parser.add_argument("--data_path", default='/HDD/etc/curation/data/level2/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/etc/curation/data/level3/centroids.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--n_clusters", type=int, default=500000)
+    parser.add_argument("--n_clusters", type=int, default=500)
     parser.add_argument("--chunk_size", type=int, default=400)
     parser.add_argument("--dtype", type=str, default="float64")
     parser.add_argument("--high_precision", type=str, default="float64")
-    parser.add_argument("--checkpoint_period", type=int, default=10000)
+    parser.add_argument("--checkpoint_period", type=int, default=100)
     parser.add_argument(
         "--sort_cluster_checkpoint_period",
         type=int,
         default=-1
     )
-    parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/data/level1/pre_clusters")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/data/level1/pre_clusters")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/data/level2")
+    parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/data/level3")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/data/level4")
     parser.add_argument("--n_iters", type=int, default=50)
     parser.add_argument("--use_torchrun", action="store_true")
 

@@ -5,8 +5,8 @@ import torch
 import numpy as np
 from matplotlib import pyplot as plt
 
-from src.clusters import HierarchicalCluster
-from src import (
+from visionsuite.cores.ssl_data_curation.src.clusters import HierarchicalCluster
+from visionsuite.cores.ssl_data_curation.src import (
   hierarchical_kmeans_gpu as hkmg,
   hierarchical_sampling as hs
 )
@@ -45,4 +45,4 @@ axs[0].tick_params(labelsize=16)
 axs[1].scatter(sampled_points[:, 0], sampled_points[:, 1], alpha=0.2)
 axs[1].set_title("data sampled with hierarchical k-means", fontsize=20)
 axs[1].tick_params(labelsize=16)
-plt.show()
+plt.savefig('/HDD/etc/curation/vis_1.png')
