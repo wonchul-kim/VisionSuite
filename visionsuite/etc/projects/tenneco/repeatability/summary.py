@@ -6,20 +6,20 @@ import matplotlib.pyplot as plt
 import matplotlib
 from pathlib import Path
 
-### 1st
-input_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
-output_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
-defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-models = os.listdir(input_dir)
-
-
-# ### 2nd
-# input_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark'
-# output_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark'
+# ### 1st
+# input_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
+# output_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
 # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
 # models = os.listdir(input_dir)
 
-ignore_models = ['lps_w1120_h768', 'summary.png']
+
+### 2nd
+input_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark'
+output_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark'
+defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+models = os.listdir(input_dir)
+
+ignore_models = ['summary.png']
 print(models)
 
 results = {}

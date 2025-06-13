@@ -1,6 +1,8 @@
 import sys
 sys.path.insert(0, "..")
 
+import os
+import os.path as osp
 import torch
 import numpy as np
 from matplotlib import pyplot as plt
@@ -15,6 +17,9 @@ def make_ring(n, rmin, rmax):
     r = np.random.rand(n) * (rmax - rmin) + rmin
     alpha = np.random.rand(n) * 2 * np.pi
     return np.vstack([r * np.cos(alpha), r * np.sin(alpha)]).T
+
+output_dir = '/HDD/etc/curation/tutorial'
+os.makedirs(output_dir, exist_ok=True)
 
 data = np.concatenate([
     make_ring(20000, 0.7, 1.0) + np.array([-2.2, 1.]),
@@ -45,4 +50,4 @@ axs[0].tick_params(labelsize=16)
 axs[1].scatter(sampled_points[:, 0], sampled_points[:, 1], alpha=0.2)
 axs[1].set_title("data sampled with hierarchical k-means", fontsize=20)
 axs[1].tick_params(labelsize=16)
-plt.savefig('/HDD/etc/curation/vis_1.png')
+plt.savefig(osp.join(output_dir, 'vis_1.png'))

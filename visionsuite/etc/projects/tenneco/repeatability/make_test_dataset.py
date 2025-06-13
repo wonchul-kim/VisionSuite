@@ -13,7 +13,7 @@ def make_repeatability_test_dataset(input_dir, output_dir, filenames_dir, cases)
     print(f"Categories: {categories}")
     cat2list = {}
     for category in categories:
-        if category in ['vis', '.DS_Store', 'Thumbs.db']:
+        if category in ['vis', '.DS_Store', 'Thumbs.db', '딥러닝 바보 review.xlsx']:
             continue
         _filenames_dir = osp.join(filenames_dir, category)
         filenames = glob(osp.join(_filenames_dir, "*.bmp"))
@@ -60,29 +60,28 @@ def make_repeatability_test_dataset(input_dir, output_dir, filenames_dir, cases)
                     
                     found = True
 
-            if not found:
-                _output_dir = osp.join(output_dir, 'repeated_ok', str(_case), filename)
+            # if not found:
+            #     _output_dir = osp.join(output_dir, 'repeated_ok', str(_case), filename)
                             
-                if not osp.exists(_output_dir):
-                    os.makedirs(_output_dir)
+            #     if not osp.exists(_output_dir):
+            #         os.makedirs(_output_dir)
                 
-                img_file = osp.join(folder_dir, f"1_image.bmp")
-                assert osp.exists(img_file), ValueError(f"There is no such image file: {img_file}")
+            #     img_file = osp.join(folder_dir, f"1_image.bmp")
+            #     assert osp.exists(img_file), ValueError(f"There is no such image file: {img_file}")
                 
-                shutil.copyfile(img_file, osp.join(_output_dir, '1_image.bmp'))
+            #     shutil.copyfile(img_file, osp.join(_output_dir, '1_image.bmp'))
 
 if __name__ == '__main__':                
     # ## 1st
     # input_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
-    # filenames_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeatability_check_python/1st/deeplabv3plus/outputs/not_repeated/vis/재분류'
-    # output_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeat_250605/1st/data'
+    # filenames_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeatability_check_python/1st/deeplabv3plus/outputs/not_repeated/vis/wonchul'
+    # output_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeat_250605/1st/data/repeated_ng_2'
     # cases = ['OUTER_shot01', 'OUTER_shot02', 'OUTER_shot03']
     
     ### 2nd
     input_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-    filenames_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeatability_check_python/2nd/deeplabv3plus/outputs/not_repeated/vis/재분류'
-    json_file = osp.join(filenames_dir, '../output_data.json')
-    output_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeat_250605/2nd/data'
+    filenames_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeatability_check_python/2nd/deeplabv3plus/outputs/not_repeated/vis/wonchul'
+    output_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeat_250605/2nd/data/repeated_ng_2'
     cases = ['1', '2', '3']
     
     make_repeatability_test_dataset(input_dir, output_dir, filenames_dir, cases)

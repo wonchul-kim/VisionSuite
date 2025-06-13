@@ -350,60 +350,48 @@ def run(base_dir, dir_name, case, roi,
 
 if __name__ == '__main__':
     
-    ##### 1st
-    case = '1st'
-    input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
-    base_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark/'
-    # dir_name = 'deeplabv3plus'
-    # dir_name = 'deeplabv3plus_patch512'
-    # dir_name = 'deeplabv3plus_w1120_h768'
-    # dir_name = 'mask2former_swin-s_w1120_h768'
-    # dir_name = 'segformer_b2_unfrozen_w1120_h768'
-    # dir_name = 'yolov12_xl'
-    # dir_name = 'define'
-    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
-    # dir_name = 'segnext_w1120_h768'
-    # dir_name = 'define_sod'
-    # dir_name = 'yolov12_xl_sod'
-    dir_name = 'segnext_w1120_h768_tta'
-    # dir_name = 'neurocle'
-    defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-
-    # ###### 2nd
-    # case = '2nd'
-    # input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-    # base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/'
+    # ##### 1st
+    # case = '1st'
+    # input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
+    # base_dir = '/HDD/etc/repeatablility/talos3/1st/benchmark/'
     # # dir_name = 'deeplabv3plus'
     # # dir_name = 'deeplabv3plus_patch512'
     # # dir_name = 'deeplabv3plus_w1120_h768'
     # # dir_name = 'mask2former_swin-s_w1120_h768'
     # # dir_name = 'segformer_b2_unfrozen_w1120_h768'
+    # # dir_name = 'yolov12_xl'
+    # # dir_name = 'define'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
+    # # dir_name = 'segformer_b2_unfrozen_w512_h512_tta'
+    # # dir_name = 'segnext_w1120_h768'
+    # # dir_name = 'define_sod'
+    # # dir_name = 'yolov12_xl_sod'
+    # # dir_name = 'segnext_w1120_h768_tta'
+    # # dir_name = 'neurocle'
+    # # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+    # defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', 'repeated_ok']
+
+    # ###### 2nd
+    # case = '2nd'
+    # input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
+    # base_dir = '/HDD/etc/repeatablility/talos3/2nd/benchmark/'
+    # # dir_name = 'deeplabv3plus'
+    # # dir_name = 'deeplabv3plus_patch512'
+    # # dir_name = 'deeplabv3plus_w1120_h768'
+    # # dir_name = 'mask2former_swin-s_w1120_h768'
+    # # dir_name = 'segformer_b2_unfrozen_w1120_h768'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
     # # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta_v2'
     # # dir_name = 'yolov12_xl'
     # # dir_name = 'yolov12_xl_sod'
     # # dir_name = 'define'
     # # dir_name = 'define_sod'
-    # # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
     # # dir_name = 'segnext_w1120_h768'
-    # dir_name = 'segnext_w1120_h768_tta'
+    # # dir_name = 'segnext_w1120_h768_tta'
     # # dir_name = 'neurocle'
-    # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-    
-    # ### tta
-    # case = '2nd'
-    # input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-    # base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/segformer_b2_unfrozen_w1120_h768/tta/data/outputs'
-    # dir_name = ''
-    # defects = ['딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
-    
-     
-    # ### detection + sod
-    # case = '2nd'
-    # input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-    # base_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark/yolov12_xl_sod'
-    # dir_name = ''
-    # defects = ['오염', '경계성', '딥러닝', 'repeated_ng', 'repeated_ok']
-    
+    # # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+    # defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', '종횡비 경계성', '기타 불량', '양불 경계성', 'repeated_ok']
+
     
     roi = [220, 60, 1340, 828]
 

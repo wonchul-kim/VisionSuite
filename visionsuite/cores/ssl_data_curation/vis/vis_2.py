@@ -3,6 +3,8 @@ sys.path.insert(0, "..")
 from pathlib import Path
 import pickle
 import torch
+import os
+import os.path as osp
 
 import numpy as np
 from scipy.spatial import Voronoi, voronoi_plot_2d
@@ -29,6 +31,7 @@ def draw_voronoi(
     basic_fig_size = (6, 5),
     wspace=0.1,
     hspace=0.1,
+    filename=None,
 ):
     if legends is None:
         legends = clustering_names
@@ -47,7 +50,10 @@ def draw_voronoi(
         axs[i].set_xlim(xlim[0], xlim[1])
         axs[i].axis('off')
     plt.subplots_adjust(wspace=wspace, hspace=hspace)
-    plt.show()
+    if filename:
+        plt.savefig(filename)
+    else:
+        plt.show()
     return fig
 
 def compute_KL_divergence(kde, L, s):
@@ -77,6 +83,7 @@ def visualize_kde(
     compute_kl = True,
     wspace=0.1,
     hspace=0.1,
+    filename=None,
 ):
     if z_high is None:
         z_high = [0.05] * len(clustering_names)
@@ -117,8 +124,11 @@ def visualize_kde(
         axs[i].tick_params(axis='z', which='major', labelsize=fontsize*5//10)
     
     plt.subplots_adjust(wspace=wspace, hspace=hspace)
-    plt.show()
-    
+    if filename:
+        plt.savefig(filename)
+    else:
+        plt.show()
+            
     kl_dist = None
     if compute_kl:
         kl_dist = {}
@@ -127,18 +137,23 @@ def visualize_kde(
             kl_dist[_name] = kl
             print(f"Name: {_name}, KL divergence: {kl}")
     return fig, kl_dist
-    
+
+
+output_dir = '/HDD/etc/curation/tutorial'
+os.makedirs(output_dir, exist_ok=True)
+
 data = np.concatenate([
     np.random.randn(7000, 2)/2 + [-1, -1],
     np.random.randn(1000, 2)/2 + [1, -1],
     np.random.randn(500, 2)/2 + [0, 1],
     (np.random.rand(500,2) - 0.5) * 6,
 ])
+print('data.shape: ', data.shape) # (9000, 2)
 
 figh, figw = 1, 1
 fig, ax = plt.subplots(figh, figw, figsize=(6 * figw, 5))
 ax.scatter(data[:, 0], data[:, 1], alpha=0.2)
-# plt.show()
+plt.savefig(osp.join(output_dir, 'vis_2_data.png'))
 
 # eta: 4m30s
 X = torch.tensor(data, device='cuda', dtype=torch.float32)
@@ -161,6 +176,7 @@ fig = draw_voronoi(
     line_width=0.7,
     fontsize=30,
     basic_fig_size = (6,4),
+    filename=osp.join(output_dir, 'vis_2_voronoi.png')
 )
 
 res_no_resampling["data"] = [{"centroids": torch.tensor(data),}]
@@ -173,4 +189,5 @@ fig, kl_dist_1 = visualize_kde(
     show_title=False,
     L=3,
     basic_fig_size = (6,4),
+    filename=osp.join(output_dir, 'vis_2_kde.png')
 )

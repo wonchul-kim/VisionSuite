@@ -24,7 +24,8 @@ def _parse_args(args):
                                      'clipvitB32', 'clipvitB16', 'clipvitL14', 'dinov2'])
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--root_dir', type=str, default='/HDD/etc/curation/embeddings')
-    parser.add_argument('--input-dir', type=str, default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset')
+    parser.add_argument('--input-dir', type=str, default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset_unit')
+    # parser.add_argument('--input-dir', type=str, default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset')
     parser.add_argument('--device', type=str, default="cuda", help="cuda or cpu")
     parser.add_argument('--seed', type=int, default=42, help='Random seed')
     return parser.parse_args(args)
@@ -68,7 +69,7 @@ def run(args=None):
     feats_train = get_features(trainloader, model, device)
     feats_val = get_features(valloader, model, device)
 
-    representations_dir = f"{args.root_dir}/representations/{args.phis}"
+    representations_dir = f"{args.root_dir}/representations_unit/{args.phis}"
     if not os.path.exists(representations_dir):
         os.makedirs(representations_dir)
 

@@ -14,8 +14,6 @@ class LabelmeDataset:
         img = Image.open(img_file)
         img = img.crop((self.roi[0], self.roi[1], self.roi[2], self.roi[3]))
 
-        
-        
         target = None
         
         if self.transform:

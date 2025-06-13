@@ -237,7 +237,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
     # parser.add_argument("--exp_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset_unit/train')
     parser.add_argument("--exp_dir", default='/HDD/etc/curation/data')
-    parser.add_argument("--embeddings_path", default='/HDD/etc/curation/embeddings')
+    parser.add_argument("--embeddings_path", default='/HDD/etc/curation/embeddings/representations/dinov2/labelme_train.npy')
     parser.add_argument("--config_file", default='/HDD/_projects/github/VisionSuite/visionsuite/cores/ssl_data_curation/configs/4levels_web_based_images.yaml')
 
     args, opts = parser.parse_known_args()
