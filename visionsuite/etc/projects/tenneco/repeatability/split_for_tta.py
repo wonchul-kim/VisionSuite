@@ -4,7 +4,7 @@ from glob import glob
 from shutil import copytree
 from tqdm import tqdm 
 
-input_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeat_250605/1st/data/repeated_ok'
+input_dir = '/Data/01.Image/Tenneco/Metalbearing/4_FOR_SIMULATION/TEST_SET/repeat_250605/2nd/data/repeated_ok'
 orders = [1, 2, 3]
 count_threshold = 900
 

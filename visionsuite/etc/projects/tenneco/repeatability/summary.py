@@ -7,19 +7,19 @@ import matplotlib
 from pathlib import Path
 
 # ### 1st
-# input_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
-# output_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
-# defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+# input_dir = '/HDD/etc/repeatablility/talos3/1st/benchmark'
+# output_dir = '/HDD/etc/repeatablility/talos3/1st/benchmark'
+# defects = ['오염', '시인성', '한도 경계성', '딥러닝 바보', 'repeated_ok']
 # models = os.listdir(input_dir)
 
 
 ### 2nd
-input_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark'
-output_dir = '/HDD/etc/repeatablility/talos2/2nd/benchmark'
-defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
+input_dir = '/HDD/etc/repeatablility/talos3/2nd/benchmark'
+output_dir = '/HDD/etc/repeatablility/talos3/2nd/benchmark'
+defects = ['오염', '시인성', '한도 경계성', '딥러닝 바보', '종횡비 경계성', '기타 불량', 'repeated_ok']
 models = os.listdir(input_dir)
 
-ignore_models = ['summary.png']
+ignore_models = ['summary.png', 'deeplabv3plus_w1120_h768']
 print(models)
 
 results = {}
@@ -37,10 +37,16 @@ for model in models:
     for defect in defects:
         if defect == '오염':
             _defect = 'polluted'
-        elif defect == '경계성':
-            _defect = 'vague'
-        elif defect == '딥러닝':
+        elif defect == '한도 경계성':
+            _defect = 'spec in/out'
+        elif defect == '종횡비 경계성':
+            _defect = 'aspect in/out'
+        elif defect == '시인성':
+            _defect = 'visibility'
+        elif defect == '딥러닝 바보':
             _defect = 'deeplearning'
+        elif defect == '기타 불량':
+            _defect = 'etc.'
         else:
             _defect = defect
         

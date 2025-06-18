@@ -354,17 +354,17 @@ if __name__ == '__main__':
     # case = '1st'
     # input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
     # base_dir = '/HDD/etc/repeatablility/talos3/1st/benchmark/'
-    # # dir_name = 'deeplabv3plus'
-    # # dir_name = 'deeplabv3plus_patch512'
-    # # dir_name = 'deeplabv3plus_w1120_h768'
-    # # dir_name = 'lps_w1120_h768'
-    # dir_name = 'segnext_w1120_h768'
-    
-    # # dir_name = 'mask2former_swin-s_w1120_h768'
     # # dir_name = 'segformer_b2_unfrozen_w1120_h768'
+    # # dir_name = 'lps_w1120_h768'
+    # # dir_name = 'segnext_w1120_h768'
+    # # dir_name = 'mask2former_swin-s_w1120_h768'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
+    
+    # # dir_name = 'deeplabv3plus_w1120_h768'
+    # # defects = ['한도 경계성']
+
     # # dir_name = 'yolov12_xl'
     # # dir_name = 'define'
-    # # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
     # # dir_name = 'segformer_b2_unfrozen_w1120_h768_nohsv_tta'
     # # dir_name = 'segformer_b2_unfrozen_w512_h512_tta'
     # # dir_name = 'define_sod'
@@ -377,24 +377,64 @@ if __name__ == '__main__':
     case = '2nd'
     input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
     base_dir = '/HDD/etc/repeatablility/talos3/2nd/benchmark/'
-    # dir_name = 'deeplabv3plus'
-    # dir_name = 'deeplabv3plus_patch512'
-    # dir_name = 'deeplabv3plus_w1120_h768'
     # dir_name = 'mask2former_swin-s_w1120_h768'
     # dir_name = 'lps_w1120_h768'
-    dir_name = 'segformer_b2_unfrozen_w1120_h768'
-    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
+    # dir_name = 'segnext_w1120_h768'
+    dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
+    
+    # dir_name = 'deeplabv3plus_w1120_h768'
+    # defects = ['한도 경계성', '종횡비 경계성']
+    
     # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta_v2'
     # dir_name = 'yolov12_xl'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768'
     # dir_name = 'yolov12_xl_sod'
     # dir_name = 'define'
     # dir_name = 'define_sod'
-    # dir_name = 'segnext_w1120_h768'
     # dir_name = 'segnext_w1120_h768_tta'
     # dir_name = 'neurocle'
-    # defects = ['오염', '딥러닝', '경계성', 'repeated_ng', 'repeated_ok']
     defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', '종횡비 경계성', '기타 불량', 'repeated_ok']
 
+    ### height info
+    import pandas as pd
+    height_info_csv = '/HDD/etc/repeatablility/250616_OD_ROI_반복성테스트.xlsx'
+    if case == '1st':
+        sheet_name = f'repeat_250605_1st(th)' # 'repeat_250605_2nd(th)', 'repeat_250605_2nd(aspect)'
+        height_info_df = pd.read_excel(height_info_csv, sheet_name=sheet_name)
+    
+        height_info = {}
+        
+        
+        for order in [1, 2, 3]:
+            height_info[order] = {}            
+            order_df = height_info_df[height_info_df['repeat'] == order]
+            for id, height in zip(order_df['innerid'], order_df['height']):
+                inner_id = id[1:].split("_")[0].rstrip().lstrip()
+                fov = id.split("_")[1].rstrip().lstrip()
+                if inner_id not in height_info[order]:
+                    height_info[order][inner_id] = {fov: height}
+                else:
+                    height_info[order][inner_id][fov] = height
+        
+    elif case == '2nd':
+        sheet_name = ['repeat_250605_2nd(th)', 'repeat_250605_2nd(aspect)']
+        
+        height_info_df = pd.read_excel(height_info_csv, sheet_name=sheet_name)
+        height_info = {}
+        
+        for key, val in height_info_df.items():  
+            for order in [1, 2, 3]:
+                if order not in height_info:
+                    height_info[order] = {}                
+                order_df = val[val['repeat'] == order]
+                for id, height in zip(order_df['innerid'], order_df['height']):
+                    inner_id = id[1:].split("_")[0].rstrip().lstrip()
+                    fov = id.split("_")[1].rstrip().lstrip()
+                    if inner_id not in height_info[order]:
+                        height_info[order][inner_id] = {fov: height}
+                    else:
+                        height_info[order][inner_id][fov] = height
+                    
     
     roi = [220, 60, 1340, 828]
 
@@ -454,13 +494,14 @@ if __name__ == '__main__':
     iou_threshold = 0.05
     fov_indexes = [14, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
-            
+    changed = False
     assert isinstance(overlap, int), ValueError(f"Overlap must be int, not {overlap} which is {type(overlap)}")
     for sample_id, orders_data in tqdm(result_by_product.items(), desc="ANALYZING: "):  
         
         # if sample_id != '125020717082139':
         #     continue
         
+        _changed = False
         for order, data in orders_data.items():
             if order == 'repeated':
                 continue
@@ -489,11 +530,123 @@ if __name__ == '__main__':
                                 
                                 iou = compute_iou(x1 - offset_x - margin_x/2, y1 + margin_y/2, w1  + margin_x, h1 + margin_y, 
                                                 x2, y2, w2, h2)
-                                                            
+                                
                                 if iou > iou_threshold:
                                     data[f'fov_{fov1}'][defect1_idx]['repeated'].update([fov1, fov2])
                                     data[f'fov_{fov2}'][defect2_idx]['repeated'].update([fov1, fov2])
-                            
+                                    
+                                    if ng1 != ng2 and sample_id in height_info[int(order)] and not _changed:
+                                        w1, h1 = get_feret(points1)
+                                        w2, h2 = get_feret(points2)
+                                        
+                                        height1 = height_info[int(order)][sample_id][str(fov1)]
+                                        height2 = height_info[int(order)][sample_id][str(fov2)]
+                                        
+                                        if ((w1 - w2) < 0 and (height1 - height2)) < 0 or ((w1 - w2) < 0 and (height1 - height2) < 0):
+                                            if abs(w1 - w2) < abs(height1 - height2):
+                                                pass
+                                            else:
+                                                outputs_by_product[orders_data['case']]['count'] -= 1
+                                            
+                                                if sample_id in outputs_by_product[orders_data['case']]['not_repeated']['id']:
+                                                    category = 'not_repeated'
+                                                else:
+                                                    category = 'repeated'
+                                                outputs_by_product[orders_data['case']][category]['count'] -= 1
+                                                
+                                                if category == 'not_repeated':
+                                                    id_name = 'id'
+                                                else:
+                                                    if sample_id in outputs_by_product[orders_data['case']][category]['ng_id']:
+                                                        id_name = 'ng_id'
+                                                        outputs_by_product[orders_data['case']][category]['ng_count'] -= 1
+                                                    else:
+                                                        id_name = 'ok_id'
+                                                        outputs_by_product[orders_data['case']][category]['ok_count'] -= 1
+                                                outputs_by_product[orders_data['case']][category][id_name].remove(sample_id)
+                                                
+                                                
+                                                if '딥러닝 바보' not in outputs_by_product:
+                                                    outputs_by_product['딥러닝 바보'] = {'count': 0,
+                                                            'repeated': {
+                                                                            'count': 0,
+                                                                            'ng_count': 0,
+                                                                            'ng_id': [], 
+                                                                            'ok_count': 0,
+                                                                            'ok_id': [],
+                                                            },
+                                                            'not_repeated': {
+                                                                            'count': 0,
+                                                                            'id': [],
+                                                            }
+                                                    }
+                                                
+                                                outputs_by_product['딥러닝 바보']['count'] += 1
+                                                outputs_by_product['딥러닝 바보'][category]['count'] += 1
+                                                outputs_by_product['딥러닝 바보'][category][id_name].append(sample_id)
+                                                if id_name == 'ng_id':
+                                                    outputs_by_product['딥러닝 바보'][category]['ng_count'] += 1
+                                                elif id_name == 'ok_id':
+                                                    outputs_by_product['딥러닝 바보'][category]['ok_count'] += 1
+
+                                                orders_data['case'] = '딥러닝 바보'
+                                                changed = True
+                                                _changed = True
+                                        else:
+                                            outputs_by_product[orders_data['case']]['count'] -= 1
+                                            
+                                            if sample_id in outputs_by_product[orders_data['case']]['not_repeated']['id']:
+                                                category = 'not_repeated'
+                                            else:
+                                                category = 'repeated'
+                                            outputs_by_product[orders_data['case']][category]['count'] -= 1
+                                            
+                                            if category == 'not_repeated':
+                                                id_name = 'id'
+                                            else:
+                                                if sample_id in outputs_by_product[orders_data['case']][category]['ng_id']:
+                                                    id_name = 'ng_id'
+                                                    outputs_by_product[orders_data['case']][category]['ng_count'] -= 1
+                                                else:
+                                                    id_name = 'ok_id'
+                                                    outputs_by_product[orders_data['case']][category]['ok_count'] -= 1
+                                            outputs_by_product[orders_data['case']][category][id_name].remove(sample_id)
+                                            
+                                            
+                                            if '딥러닝 바보' not in outputs_by_product:
+                                                outputs_by_product['딥러닝 바보'] = {'count': 0,
+                                                        'repeated': {
+                                                                        'count': 0,
+                                                                        'ng_count': 0,
+                                                                        'ng_id': [], 
+                                                                        'ok_count': 0,
+                                                                        'ok_id': [],
+                                                        },
+                                                        'not_repeated': {
+                                                                        'count': 0,
+                                                                        'id': [],
+                                                        }
+                                                }
+                                            
+                                            outputs_by_product['딥러닝 바보']['count'] += 1
+                                            outputs_by_product['딥러닝 바보'][category]['count'] += 1
+                                            outputs_by_product['딥러닝 바보'][category][id_name].append(sample_id)
+                                            if id_name == 'ng_id':
+                                                outputs_by_product['딥러닝 바보'][category]['ng_count'] += 1
+                                            elif id_name == 'ok_id':
+                                                outputs_by_product['딥러닝 바보'][category]['ok_count'] += 1
+
+                                            orders_data['case'] = '딥러닝 바보'
+                                            changed = True
+                                            _changed = True
+                                            
+    for defect_name in outputs_by_product.keys():
+        if defect_name == '딥러닝 바보' or '경계성' in defect_name:
+            outputs_by_product[defect_name]['repeated_percentage'] = outputs_by_product[defect_name]['repeated']['count']/outputs_by_product[defect_name]['count']*100 if outputs_by_product['딥러닝 바보']['count'] != 0 else 0    
+                                            
+    with open(osp.join(output_dir, 'new_outputs.json'), 'w') as jf:
+        json.dump(outputs_by_product, jf, ensure_ascii=False, indent=4)
+            
     sample_cnt = 0
     for sample_id, orders_data in tqdm(result_by_product.items(), desc="VISUALIZAING: "):  
         sample_cnt += 1
@@ -507,6 +660,7 @@ if __name__ == '__main__':
             continue
         
         stitched_images = []
+        
         vis_dir = osp.join(output_dir, 'repeated' if orders_data['repeated'] else 'not_repeated', 'vis', orders_data['case'])
         if not osp.exists(vis_dir):
             os.makedirs(vis_dir)
@@ -565,6 +719,11 @@ if __name__ == '__main__':
                                     0.3, tuple(map(int, color)), 1)
                     cv2.putText(_img, f'{_class}', (int(x), int(y + 5)), cv2.FONT_HERSHEY_SIMPLEX, 
                                     1, tuple(map(int, color)), 2)
+                    
+                    if sample_id in height_info[int(order)]:
+                        height = height_info[int(order)][sample_id][str(fov)]
+                        
+                        cv2.putText(_img, f'height: {str(height)}', (960, 80), cv2.FONT_HERSHEY_SIMPLEX, 1, tuple(map(int, color)), 2)
                     
                     # cv2.polylines(_img, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
                     ### rotate the bbox by the left top point
