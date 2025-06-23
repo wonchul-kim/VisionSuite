@@ -4,15 +4,19 @@ from pathlib import Path
 import pickle
 import torch
 import os.path as osp
+from copy import deepcopy
 import numpy as np
 from scipy.spatial import Voronoi, voronoi_plot_2d
+import shutil
+from tqdm import tqdm
+import random
 
 from matplotlib.pyplot import cm
 from matplotlib import pyplot as plt
 from sklearn.neighbors import KernelDensity
 from sklearn.metrics import pairwise_distances as pwd
 from matplotlib.ticker import MultipleLocator, AutoMinorLocator
-
+import os 
 from visionsuite.cores.ssl_data_curation.src.hierarchical_kmeans_gpu import hierarchical_kmeans_with_resampling, hierarchical_kmeans
 
 
@@ -128,17 +132,64 @@ def visualize_kde(
             print(f"Name: {_name}, KL divergence: {kl}")
     return fig, kl_dist
 
-output_dir = '/HDD/etc/curation/data'
+input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
+output_dir = '/HDD/etc/curation/tenneco'
 
-ori_data = np.load('/HDD/etc/curation/embeddings/representations/dinov2/labelme_train.npy', mmap_mode="r")
+ori_data = np.load('/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train.npy', mmap_mode="r")
+ori_index_f = open('/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train_filenames.txt', 'r')
+ori_index = []
+while True:
+    line = ori_index_f.readline()
+    
+    if not line: break
+    
+    ori_index.append(line.rstrip())
+    
+    
 print("data: ", ori_data.shape)
 fig, ax = plt.subplots(1, 1, figsize=(6 * 4, 5))
 ax.scatter(ori_data[:, 0], ori_data[:, 1], alpha=0.2, color='r')
 
-data1 = np.load('/HDD/etc/curation/data/level1/centroids.npy', mmap_mode="r")
-data2 = np.load('/HDD/etc/curation/data/level2/centroids.npy', mmap_mode="r")
-data3 = np.load('/HDD/etc/curation/data/level3/centroids.npy', mmap_mode="r")
-data4 = np.load('/HDD/etc/curation/data/level4/centroids.npy', mmap_mode="r")
+data1 = np.load('/HDD/etc/curation/tenneco/outputs/level1/centroids.npy', mmap_mode="r")
+data2 = np.load('/HDD/etc/curation/tenneco/outputs/level2/centroids.npy', mmap_mode="r")
+data3 = np.load('/HDD/etc/curation/tenneco/outputs/level3/centroids.npy', mmap_mode="r")
+data4 = np.load('/HDD/etc/curation/tenneco/outputs/level4/centroids.npy', mmap_mode="r")
+sorted_clusters = np.load('/HDD/etc/curation/tenneco/outputs/level4/sorted_clusters.npy', allow_pickle=True)
+sorted_clusters = np.concatenate(sorted_clusters)
+
+
+clustered_dataset_train_dir = osp.join(output_dir, 'clustered_dataset/train')
+os.makedirs(clustered_dataset_train_dir, exist_ok=True)
+
+for index in tqdm(sorted_clusters):
+    img_file = osp.join(input_dir, 'train', ori_index[index] + '.bmp')
+    json_file = osp.join(input_dir, 'train', ori_index[index] + '.json')
+    assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
+    assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
+
+    shutil.copyfile(img_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.bmp'))
+    shutil.copyfile(json_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.json'))
+
+clustered_dataset_val_dir = osp.join(output_dir, 'clustered_dataset/val')
+os.makedirs(clustered_dataset_val_dir, exist_ok=True)
+clustered_dataset_test_dir = osp.join(output_dir, 'clustered_dataset/test')
+os.makedirs(clustered_dataset_test_dir, exist_ok=True)
+ratio = 0.1
+
+for jdx, filename in tqdm(enumerate(ori_index)):
+    if jdx not in sorted_clusters:
+        img_file = osp.join(input_dir, 'train', ori_index[jdx] + '.bmp')
+        json_file = osp.join(input_dir, 'train', ori_index[jdx] + '.json')
+        assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
+        assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
+
+        if ratio > random.uniform(0, 1):
+            shutil.copyfile(img_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.bmp'))
+            shutil.copyfile(json_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.json'))
+        else:
+            shutil.copyfile(img_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.bmp'))
+            shutil.copyfile(json_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.json'))
+
 
 
 res = {"ori_data": ori_data, "data1": data1, "data2": data2, "data3": data3, "data4": data4}
