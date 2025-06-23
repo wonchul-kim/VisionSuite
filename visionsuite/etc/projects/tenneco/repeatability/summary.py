@@ -19,7 +19,14 @@ output_dir = '/HDD/etc/repeatablility/talos3/2nd/benchmark'
 defects = ['오염', '시인성', '한도 경계성', '딥러닝 바보', '종횡비 경계성', '기타 불량', 'repeated_ok']
 models = os.listdir(input_dir)
 
-ignore_models = ['summary.png', 'deeplabv3plus_w1120_h768']
+
+# ## etc
+# input_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
+# output_dir = '/HDD/etc/repeatablility/talos2/1st/benchmark'
+# defects = ['오염', '딥러닝', '경계성', 'repeated_ok', 'repeated_ng']
+# models = os.listdir(input_dir)
+
+ignore_models = ['summary.png', 'deeplabv3plus_w1120_h768']#, 'lps_w1120_h768', 'segformer_b2_unfrozen_w1120_h768_nohsv_tta', 'segnext_w1120_h768_tta']
 print(models)
 
 results = {}
@@ -43,7 +50,9 @@ for model in models:
             _defect = 'aspect in/out'
         elif defect == '시인성':
             _defect = 'visibility'
-        elif defect == '딥러닝 바보':
+        elif defect == '경계성':
+            _defect = 'vague'
+        elif defect == '딥러닝 바보' or defect == '딥러닝':
             _defect = 'deeplearning'
         elif defect == '기타 불량':
             _defect = 'etc.'
