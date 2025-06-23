@@ -158,14 +158,14 @@ def split_clusters(
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train.npy')
+    parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/unit/embeddings/representations/dinov2/labelme_train.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--clusters_path", default='/HDD/etc/curation/tenneco/outputs/level1/pre_clusters/sorted_clusters.npy')
+    parser.add_argument("--clusters_path", default='/HDD/etc/curation/tenneco/unit/outputs/level1/pre_clusters/sorted_clusters.npy')
     parser.add_argument("--n_splits", default=100)
     parser.add_argument("--n_iters", default=50)
     parser.add_argument("--dtype", type=str, default="float32")
     parser.add_argument("--high_precision", type=str, default="float32")
-    parser.add_argument("--save_path", default='/HDD/etc/curation/tenneco/outputs/level1')
+    parser.add_argument("--save_path", default='/HDD/etc/curation/tenneco/unit/outputs/level1')
     parser.add_argument("--use_torchrun", action="store_true")
 
     args = parser.parse_args()

@@ -19,7 +19,7 @@ class LabelmeDataset:
         if self.transform:
             img = self.transform(img)
             
-        return img
+        return img, osp.split(osp.splitext(img_file)[0])[-1]
         
         
     def __len__(self):
