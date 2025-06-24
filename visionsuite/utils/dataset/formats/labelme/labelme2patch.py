@@ -96,7 +96,7 @@ def labelme2patch(input_dir, output_dir, modes, rois, patch_width, patch_height,
             img = cv2.imread(img_file)
             img_h, img_w, img_c = img.shape
             
-            if len(rois) == 0:
+            if len(rois) == 1 and len(rois[0]) == 0:
                 rois = [[0, 0, img_w, img_h]]
             
             num_patches = 0
@@ -197,16 +197,16 @@ def labelme2patch(input_dir, output_dir, modes, rois, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_patch_dataset'
-    modes = ['train', 'val']
+    input_dir = '/DeepLearning/research/data/unittests/unit_cost_test/split_interojo_dataset'
+    output_dir = '/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_interojo_dataset'
+    modes = ['train', 'val', 'test']
     classes_to_include = None
 
 
     patch_overlap_ratio = 0.2
-    patch_width = 1120
-    patch_height = 768
-    rois = [[220, 60, 220 + 1120, 60 + 768]]
+    patch_width = 512
+    patch_height = 512
+    rois = [[]]
     vis = False
     include_positive = True
     input_formats = ['bmp']
