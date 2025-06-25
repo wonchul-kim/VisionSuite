@@ -36,8 +36,8 @@ pf_by_class = pf['by_class']
 print('* by image: ', pf['by_image'])
 print('* by class: ', pf['by_class'])
 
+save_false_images(pf_by_image,  osp.join(output_dir, 'vis'), osp.join(output_dir, 'false_images'))
 save_pf_by_image_to_excel(pf_by_image, osp.join(output_dir, 'pf_by_image.xlsx'), idx2class)
-save_false_images(pf_by_image)
 
 save_df_by_class_to_pdf(pf_by_class, osp.join(output_dir, 'pf_by_class.pdf'), idx2class)
 

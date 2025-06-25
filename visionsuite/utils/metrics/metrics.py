@@ -407,6 +407,7 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
     results_by_image = update_ap_by_image(results_by_image)
     results_by_class.append({'map': mAP(results_by_class)})
     
+    
         
     
         
