@@ -35,10 +35,21 @@ def labelme2preds_json(input_dir, output_dir, class2idx):
         json.dump(results, json_file, ensure_ascii=False, indent=4)
     
 if __name__ == '__main__':
-    model_name = 'sam2_epochs200'
-    input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/labels'
-    output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
-    classes = ['STABBED', 'DUST']
+    # model_name = 'sam2_epochs200'
+    # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/labels'
+    # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
+    # classes = ['STABBED', 'DUST']
+    # # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/labels'
+    # # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
+    # # classes = ['CHAMFER_MARK', 'LINE', 'MARK']
+    # idx2class = {idx: cls for idx, cls in enumerate(classes)}
+    # class2idx = {cls: idx for idx, cls in enumerate(classes)}
+
+    # labelme2preds_json(input_dir, output_dir, class2idx)
+
+    input_dir = f'/HDD/etc/curation/tenneco/outputs/SEGMENTATION/6_23_16_33_14/test/exp/labels'
+    output_dir = f'/HDD/etc/curation/tenneco/outputs/SEGMENTATION/6_23_16_33_14/test/exp'
+    classes = ['MARK', 'CHAMFER_MARK', 'LINE']
     # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/labels'
     # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
     # classes = ['CHAMFER_MARK', 'LINE', 'MARK']

@@ -133,6 +133,10 @@ def save_pf_by_image_to_excel(performance_by_image, output_filename, idx2class=N
     # 엑셀 파일 저장
     workbook.save(output_filename)
     
+def save_false_images(performance_by_image):
+    pass
+    
+    
     
 if __name__ == '__main__':
     
@@ -154,3 +158,5 @@ if __name__ == '__main__':
     output_filename = '/HDD/datasets/projects/sungjin/body/benchmark/pf_by_class.pdf'
     
     save_df_by_class_to_pdf(performance_by_class, output_filename)
+    
+    
