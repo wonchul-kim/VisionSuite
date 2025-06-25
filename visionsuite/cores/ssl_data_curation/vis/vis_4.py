@@ -44,7 +44,7 @@ def draw_voronoi(
         vor = Voronoi(clusterings[_name][:, :2])
         voronoi_plot_2d(vor, ax=axs[i], show_vertices=False, point_size=point_size, line_width=line_width, line_alpha=0.8)
         if show_title:
-            axs[i].set_title(legends[i], fontsize=int(fontsize * 0.8), pad=20)
+            axs[i].set_title(f'{legends[i]} - {clusterings[_name][:, :2].shape[0]}', fontsize=int(fontsize * 0.8), pad=20)
         axs[i].set_ylim(ylim[0], ylim[1])
         axs[i].set_xlim(xlim[0], xlim[1])
         axs[i].axis('off')
@@ -132,11 +132,17 @@ def visualize_kde(
             print(f"Name: {_name}, KL divergence: {kl}")
     return fig, kl_dist
 
-input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
-output_dir = '/HDD/etc/curation/tenneco'
+make_clustered_dataset = True
+level = '7'
+ratio = 0.05
+# project_name = 'tenneco'
+# input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
+project_name = 'mr'
+input_dir = '/HDD/datasets/projects/mr/split_dataset'
+output_dir = f'/HDD/etc/curation/{project_name}'
 
-ori_data = np.load('/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train.npy', mmap_mode="r")
-ori_index_f = open('/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train_filenames.txt', 'r')
+ori_data = np.load(f'/HDD/etc/curation/{project_name}/embeddings/representations/dinov2/labelme_train.npy', mmap_mode="r")
+ori_index_f = open(f'/HDD/etc/curation/{project_name}/embeddings/representations/dinov2/labelme_train_filenames.txt', 'r')
 ori_index = []
 while True:
     line = ori_index_f.readline()
@@ -150,51 +156,18 @@ print("data: ", ori_data.shape)
 fig, ax = plt.subplots(1, 1, figsize=(6 * 4, 5))
 ax.scatter(ori_data[:, 0], ori_data[:, 1], alpha=0.2, color='r')
 
-data1 = np.load('/HDD/etc/curation/tenneco/outputs/level1/centroids.npy', mmap_mode="r")
-data2 = np.load('/HDD/etc/curation/tenneco/outputs/level2/centroids.npy', mmap_mode="r")
-data3 = np.load('/HDD/etc/curation/tenneco/outputs/level3/centroids.npy', mmap_mode="r")
-data4 = np.load('/HDD/etc/curation/tenneco/outputs/level4/centroids.npy', mmap_mode="r")
-sorted_clusters = np.load('/HDD/etc/curation/tenneco/outputs/level4/sorted_clusters.npy', allow_pickle=True)
-sorted_clusters = np.concatenate(sorted_clusters)
+data1 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level1/centroids.npy', mmap_mode="r")
+data2 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level2/centroids.npy', mmap_mode="r")
+data3 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level3/centroids.npy', mmap_mode="r")
+data4 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level4/centroids.npy', mmap_mode="r")
+data5 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level5/centroids.npy', mmap_mode="r")
+data6 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level6/centroids.npy', mmap_mode="r")
+data7 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level7/centroids.npy', mmap_mode="r")
 
+res = {"ori_data": ori_data, "data1": data1, "data2": data2, "data3": data3, 
+       "data4": data4, "data5": data5, "data6": data6, "data7": data7}
 
-clustered_dataset_train_dir = osp.join(output_dir, 'clustered_dataset/train')
-os.makedirs(clustered_dataset_train_dir, exist_ok=True)
-
-for index in tqdm(sorted_clusters):
-    img_file = osp.join(input_dir, 'train', ori_index[index] + '.bmp')
-    json_file = osp.join(input_dir, 'train', ori_index[index] + '.json')
-    assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
-    assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
-
-    shutil.copyfile(img_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.bmp'))
-    shutil.copyfile(json_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.json'))
-
-clustered_dataset_val_dir = osp.join(output_dir, 'clustered_dataset/val')
-os.makedirs(clustered_dataset_val_dir, exist_ok=True)
-clustered_dataset_test_dir = osp.join(output_dir, 'clustered_dataset/test')
-os.makedirs(clustered_dataset_test_dir, exist_ok=True)
-ratio = 0.1
-
-for jdx, filename in tqdm(enumerate(ori_index)):
-    if jdx not in sorted_clusters:
-        img_file = osp.join(input_dir, 'train', ori_index[jdx] + '.bmp')
-        json_file = osp.join(input_dir, 'train', ori_index[jdx] + '.json')
-        assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
-        assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
-
-        if ratio > random.uniform(0, 1):
-            shutil.copyfile(img_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.bmp'))
-            shutil.copyfile(json_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.json'))
-        else:
-            shutil.copyfile(img_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.bmp'))
-            shutil.copyfile(json_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.json'))
-
-
-
-res = {"ori_data": ori_data, "data1": data1, "data2": data2, "data3": data3, "data4": data4}
-
-clustering_names = ['ori_data', 'data1', "data2", 'data3', "data4"]
+clustering_names = ['ori_data', 'data1', "data2", 'data3', "data4", 'data5', 'data6', 'data7']
 fig = draw_voronoi(
     res,
     clustering_names,
@@ -207,11 +180,48 @@ fig = draw_voronoi(
     fig_filename=osp.join(output_dir, 'voronoi.png')
 )
 
+if make_clustered_dataset:
+    clustered_dataset_dir = osp.join(output_dir, f'clustered_dataset_level{level}')
+    sorted_clusters = np.load(f'/HDD/etc/curation/{project_name}/outputs/level{level}/sorted_clusters.npy', allow_pickle=True)
+    sorted_clusters = np.concatenate(sorted_clusters)
+
+    clustered_dataset_train_dir = osp.join(clustered_dataset_dir, 'train')
+    os.makedirs(clustered_dataset_train_dir, exist_ok=True)
+
+    for index in tqdm(sorted_clusters):
+        img_file = osp.join(input_dir, 'train', ori_index[index] + '.bmp')
+        json_file = osp.join(input_dir, 'train', ori_index[index] + '.json')
+        assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
+        assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
+
+        shutil.copyfile(img_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.bmp'))
+        shutil.copyfile(json_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.json'))
+
+    clustered_dataset_val_dir = osp.join(clustered_dataset_dir, 'val')
+    os.makedirs(clustered_dataset_val_dir, exist_ok=True)
+    clustered_dataset_test_dir = osp.join(clustered_dataset_dir, 'test')
+    os.makedirs(clustered_dataset_test_dir, exist_ok=True)
+
+    for jdx, filename in tqdm(enumerate(ori_index)):
+        if jdx not in sorted_clusters:
+            img_file = osp.join(input_dir, 'train', ori_index[jdx] + '.bmp')
+            json_file = osp.join(input_dir, 'train', ori_index[jdx] + '.json')
+            assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
+            assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
+
+            if ratio > random.uniform(0, 1):
+                shutil.copyfile(img_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.bmp'))
+                shutil.copyfile(json_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.json'))
+            else:
+                shutil.copyfile(img_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.bmp'))
+                shutil.copyfile(json_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.json'))
+
+
 fig, kl_dist_1 = visualize_kde(
     res,
     clustering_names,
     legends = clustering_names,
-    z_high=[0.2, 0.2, 0.2, 0.2, 0.2],
+    z_high=[0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2, 0.2],
     fontsize=30,
     show_title=False,
     L=3,

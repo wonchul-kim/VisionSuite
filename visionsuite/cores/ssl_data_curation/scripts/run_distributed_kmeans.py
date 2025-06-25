@@ -225,12 +225,15 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train.npy')
+    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/embeddings/representations/dinov2/labelme_train.npy')
     # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/outputs/level1/centroids.npy')
     # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/outputs/level2/centroids.npy')
     # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/outputs/level3/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/outputs/level4/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/outputs/level5/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/outputs/level6/centroids.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--n_clusters", type=int, default=500)
+    parser.add_argument("--n_clusters", type=int, default=200)
     parser.add_argument("--chunk_size", type=int, default=1000)
     parser.add_argument("--dtype", type=str, default="float64")
     parser.add_argument("--high_precision", type=str, default="float64")
@@ -240,10 +243,13 @@ if __name__ == "__main__":
         type=int,
         default=-1
     )
-    parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level1/pre_clusters")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level1/pre_clusters")
     # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level2")
     # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level3")
     # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level4")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level5")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level6")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/outputs/level7")
     parser.add_argument("--n_iters", type=int, default=50)
     parser.add_argument("--use_torchrun", action="store_true")
 
