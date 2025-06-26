@@ -4,8 +4,10 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf, save_false_images
 import os.path as osp
 
-output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/6_23_16_33_14/test/exp'
 input_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7/test'
+# output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/curation_v7/test/exp'
+output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/original/test/exp'
+# output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/infobatch/test/exp'
 
 ground_truths, class2idx = labelme2metrics(input_dir)
 # class2idx = {'DUST': 0, "STABBED": 1}
@@ -35,9 +37,17 @@ pf_by_class = pf['by_class']
 
 print('* by image: ', pf['by_image'])
 print('* by class: ', pf['by_class'])
+txt = open(osp.join(output_dir, 'map.txt'), 'w')
+for by_class in pf['by_class'][1:-1]:
+    txt.write(f"class: {by_class['class']} > precision: {by_class['precision']}, recall: {by_class['recall']}, ap: {by_class['ap']}\n")
+
+txt.write(f"mAP: {pf['by_class'][-1]['map']}\n")
+txt.close()
 
 save_false_images(pf_by_image,  osp.join(output_dir, 'vis'), osp.join(output_dir, 'false_images'))
 save_pf_by_image_to_excel(pf_by_image, osp.join(output_dir, 'pf_by_image.xlsx'), idx2class)
 
-save_df_by_class_to_pdf(pf_by_class, osp.join(output_dir, 'pf_by_class.pdf'), idx2class)
+
+
+# save_df_by_class_to_pdf(pf_by_class, osp.join(output_dir, 'pf_by_class.pdf'), idx2class)
 

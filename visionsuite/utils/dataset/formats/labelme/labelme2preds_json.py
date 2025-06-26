@@ -47,8 +47,8 @@ if __name__ == '__main__':
 
     # labelme2preds_json(input_dir, output_dir, class2idx)
 
-    input_dir = f'/HDD/etc/curation/tenneco/outputs/SEGMENTATION/6_23_16_33_14/test/exp/labels'
-    output_dir = f'/HDD/etc/curation/tenneco/outputs/SEGMENTATION/6_23_16_33_14/test/exp'
+    input_dir = f'/HDD/etc/curation/tenneco/outputs/SEGMENTATION/original/test/exp/labels'
+    output_dir = f'/HDD/etc/curation/tenneco/outputs/SEGMENTATION/original/test/exp'
     classes = ['MARK', 'CHAMFER_MARK', 'LINE']
     # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/labels'
     # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'

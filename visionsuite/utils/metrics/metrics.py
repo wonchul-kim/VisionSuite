@@ -146,9 +146,9 @@ def ElevenPointInterpolatedAP(rec, prec):
 
 def mAP(result):
     ap = 0
-    for r in result:
+    for r in result[1:]:
         ap += r['ap']
-    mAP = ap / len(result)
+    mAP = ap / (len(result) - 1)
     
     return mAP
 
