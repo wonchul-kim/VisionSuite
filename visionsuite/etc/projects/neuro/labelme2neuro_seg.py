@@ -55,7 +55,9 @@ for labelme_jsons in [(labelme_val_jsons, 'val')]:
         
         data = {
             'fileName': img_file, 
-            "set": 'train' if mode == 'train' else 'test',
+            # "set": 'train' if mode == 'train' else 'test',
+            'set': '',
+            'retest': 1,
             "classLabel": "",
             "regionLabel": [],
             'retestset': 0,

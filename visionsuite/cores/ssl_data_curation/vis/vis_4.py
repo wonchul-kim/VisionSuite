@@ -10,6 +10,8 @@ from scipy.spatial import Voronoi, voronoi_plot_2d
 import shutil
 from tqdm import tqdm
 import random
+import seaborn as sns
+import pandas as pd
 
 from matplotlib.pyplot import cm
 from matplotlib import pyplot as plt
@@ -163,6 +165,49 @@ data4 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level4/centroids.npy'
 data5 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level5/centroids.npy', mmap_mode="r")
 data6 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level6/centroids.npy', mmap_mode="r")
 data7 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level7/centroids.npy', mmap_mode="r")
+
+clusters = {}
+counts = []
+for _level in range(1, 8):
+    sorted_clusters = np.load(f'/HDD/etc/curation/{project_name}/outputs/level{_level}/sorted_clusters.npy', allow_pickle=True)
+    clusters[f'cluster_{_level}'] = sorted_clusters
+    count = []
+    for cluster in sorted_clusters:
+        count.append(len(cluster))
+    counts.append(count)
+    
+labels = [f"Group {i+1}" for i in range(len(counts))]
+
+# 데이터를 DataFrame으로 변환
+all_values = []
+group_labels = []
+for i, group in enumerate(counts):
+    all_values.extend(group)
+    group_labels.extend([labels[i]] * len(group))
+
+df = pd.DataFrame({
+    "Value": all_values,
+    "Group": group_labels
+})
+
+# seaborn 스타일 설정
+sns.set(style="whitegrid", palette="pastel")
+
+# boxplot 그리기
+plt.figure(figsize=(8, 5))
+sns.boxplot(x="Group", y="Value", data=df, showmeans=True,
+            meanprops={"marker": "o", "markerfacecolor": "black", "markeredgecolor": "black"},
+            boxprops={"facecolor": "skyblue", "edgecolor": "gray"},
+            medianprops={"color": "red"})
+
+# 제목 및 레이아웃
+plt.title("Distribution of Counts per Group", fontsize=14)
+plt.ylabel("Value", fontsize=12)
+plt.xlabel("Group", fontsize=12)
+plt.tight_layout()
+
+plt.savefig(osp.join(output_dir, 'clusters.png'))
+
 
 res = {"ori_data": ori_data, "data1": data1, "data2": data2, "data3": data3, 
        "data4": data4, "data5": data5, "data6": data6, "data7": data7}

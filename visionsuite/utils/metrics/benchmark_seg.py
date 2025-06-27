@@ -4,16 +4,22 @@ from visionsuite.utils.metrics.metrics import get_performance
 from visionsuite.utils.metrics.save import save_pf_by_image_to_excel, save_df_by_class_to_pdf, save_false_images
 import os.path as osp
 
-input_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7/test'
-# output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/curation_v7/test/exp'
-output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/original/test/exp'
+
+input_dir = '/HDD/etc/curation/mr/clustered_dataset_level7/test'
+output_dir = '/HDD/etc/curation/mr/outputs/SEGMENTATION/6_24_16_43_32/test/exp'
 # output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/infobatch/test/exp'
+
+# input_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7/test'
+# # output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/curation_v7/test/exp'
+# output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/original/test/exp'
+# # output_dir = '/HDD/etc/curation/tenneco/outputs/SEGMENTATION/infobatch/test/exp'
 
 ground_truths, class2idx = labelme2metrics(input_dir)
 # class2idx = {'DUST': 0, "STABBED": 1}
 # preds_json = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp_conf0.7/preds.json'
 preds_json = osp.join(output_dir, 'preds.json')
 detections, class2idx = preds2metrics(preds_json, class2idx, nms=0.2)
+class2idx = {'EDGE_STABBED': 0, 'DUST': 1, 'STABBED': 2}
 print(class2idx)
 
 # _detections, _ground_truths = [], []
