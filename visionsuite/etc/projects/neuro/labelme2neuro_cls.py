@@ -59,8 +59,9 @@ val_images = list(map(str, list(range(0, 0))))
 
 os.makedirs(output_dir, exist_ok=True)
 
-labelme_train_imgs = glob(osp.join(input_dir, "train/**/**.bmp"))
-labelme_val_imgs = glob(osp.join(input_dir, "val/**/**.bmp"))
+# labelme_train_imgs = glob(osp.join(input_dir, "train/**/**.bmp"))
+# labelme_val_imgs = glob(osp.join(input_dir, "val/**/**.bmp"))
+labelme_val_imgs = glob(osp.join(input_dir, "test/**/**.bmp"))
 
 neuro_anns = {
     "label_type": 'cla',
@@ -70,7 +71,8 @@ neuro_anns = {
 }
 
 classes = []
-for labelme_imgs in [(labelme_train_imgs, 'train'), (labelme_val_imgs, 'val')]:
+# for labelme_imgs in [(labelme_train_imgs, 'train'), (labelme_val_imgs, 'val')]:
+for labelme_imgs in [(labelme_val_imgs, 'val')]:
     mode = labelme_imgs[1]
     for labelme_img in tqdm(labelme_imgs[0], desc=mode):
         img_file = osp.basename(labelme_img)
@@ -140,7 +142,8 @@ colors = ['rgba(248, 126, 172, 1)', 'rgba(167, 238, 62, 1)',
 for label, color in zip(classes, colors[:len(classes)]):
     neuro_anns['classes'].append({"name": label, "color": color})
                     
-with open(osp.join(output_dir, 'neuro.json'), 'w') as json_file:
+# with open(osp.join(output_dir, 'neuro.json'), 'w') as json_file:
+with open(osp.join(output_dir, 'test.json'), 'w') as json_file:
     json.dump(neuro_anns, json_file, ensure_ascii=False, indent=4)
     
     

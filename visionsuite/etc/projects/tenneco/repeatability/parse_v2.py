@@ -353,12 +353,12 @@ if __name__ == '__main__':
     # ##### 1st
     # case = '1st'
     # input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
-    # base_dir = '/HDD/etc/repeatablility/talos3/1st/benchmark/'
-    # # dir_name = 'segformer_b2_unfrozen_w1120_h768'
+    # base_dir = '/HDD/etc/repeatablility/talos4/1st/benchmark/'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768'
     # # dir_name = 'lps_w1120_h768'
     # # dir_name = 'segnext_w1120_h768'
     # # dir_name = 'mask2former_swin-s_w1120_h768'
-    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
+    # # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
     
     # # dir_name = 'deeplabv3plus_w1120_h768'
     # # defects = ['한도 경계성']
@@ -371,29 +371,31 @@ if __name__ == '__main__':
     # # dir_name = 'yolov12_xl_sod'
     # # dir_name = 'segnext_w1120_h768_tta'
     # # dir_name = 'neurocle'
-    # defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', 'repeated_ok']
+    # # defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', 'repeated_ok']
+    # defects = ['딥러닝 바보', '한도 경계성']
 
     ###### 2nd
     case = '2nd'
     input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-    base_dir = '/HDD/etc/repeatablility/talos3/2nd/benchmark/'
+    base_dir = '/HDD/etc/repeatablility/talos4/2nd/benchmark/'
     # dir_name = 'mask2former_swin-s_w1120_h768'
     # dir_name = 'lps_w1120_h768'
     # dir_name = 'segnext_w1120_h768'
-    dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
+    # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta'
     
     # dir_name = 'deeplabv3plus_w1120_h768'
     # defects = ['한도 경계성', '종횡비 경계성']
     
     # dir_name = 'segformer_b2_unfrozen_w1120_h768_tta_v2'
     # dir_name = 'yolov12_xl'
-    # dir_name = 'segformer_b2_unfrozen_w1120_h768'
+    dir_name = 'segformer_b2_unfrozen_w1120_h768'
     # dir_name = 'yolov12_xl_sod'
     # dir_name = 'define'
     # dir_name = 'define_sod'
     # dir_name = 'segnext_w1120_h768_tta'
     # dir_name = 'neurocle'
-    defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', '종횡비 경계성', '기타 불량', 'repeated_ok']
+    # defects = ['오염', '시인성', '딥러닝 바보', '한도 경계성', '종횡비 경계성', '기타 불량', 'repeated_ok']
+    defects = ['딥러닝 바보', '한도 경계성', '종횡비 경계성']
 
     ### height info
     import pandas as pd
