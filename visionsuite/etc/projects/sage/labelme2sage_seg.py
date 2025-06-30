@@ -15,7 +15,8 @@ SubElement(project_ele, 'SpecificType').text = 'Developer'
 SubElement(project_ele, 'ModifiedDate').text = '2025-06-26 15:59:45'
 
 class2index = {'STABBED': 0, 'DUST': 1, 'EDGE_STABBED': 2}
-output_dir = '/DeepLearning/research/data/unittests/unit_cost_test/sage/split_mr/train.srproj'
+# output_dir = '/DeepLearning/research/data/unittests/unit_cost_test/sage/split_mr/train.srproj'
+output_dir = '/DeepLearning/research/data/unittests/unit_cost_test/sage/split_mr/test.srproj'
 json_dir = '/DeepLearning/research/data/unittests/unit_cost_test/split_mr'
 
 class_group_ele = SubElement(project_ele, 'ClassGroup')
@@ -26,13 +27,17 @@ for idx, class_name in enumerate(class2index.keys()):
     SubElement(class_ele, 'Name').text = class_name
     SubElement(class_ele, 'Color').text = str(colors[idx])
 
-labelme_jsons_train = glob(osp.join(json_dir, "train/*.json"))
-labelme_jsons_val = glob(osp.join(json_dir, "val/*.json"))
+# labelme_jsons_train = glob(osp.join(json_dir, "train/*.json"))
+# labelme_jsons_val = glob(osp.join(json_dir, "val/*.json"))
+
+labelme_jsons_val = glob(osp.join(json_dir, "test/*.json"))
 image_group_ele = SubElement(project_ele, 'ImageGroup')
-SubElement(image_group_ele, 'NumberOfImages').text = str(len(labelme_jsons_train) + len(labelme_jsons_val))
+# SubElement(image_group_ele, 'NumberOfImages').text = str(len(labelme_jsons_train) + len(labelme_jsons_val))
+SubElement(image_group_ele, 'NumberOfImages').text = str(len(labelme_jsons_val))
 
 count = 0
-for idx, labelme_jsons in tqdm(enumerate([(labelme_jsons_train, 'train'), (labelme_jsons_val, 'val')])):
+# for idx, labelme_jsons in tqdm(enumerate([(labelme_jsons_train, 'train'), (labelme_jsons_val, 'val')])):
+for idx, labelme_jsons in tqdm(enumerate([(labelme_jsons_val, 'val')])):
     mode = labelme_jsons[1]
     for labelme_json in tqdm(labelme_jsons[0], desc=mode):
         filename = osp.split(osp.splitext(labelme_json)[0])[-1]
@@ -46,7 +51,8 @@ for idx, labelme_jsons in tqdm(enumerate([(labelme_jsons_train, 'train'), (label
         width, height = labelme_anns['imageWidth'], labelme_anns['imageHeight']
         image_ele = SubElement(image_group_ele, 'Image')
         count += 1
-        SubElement(image_ele, 'Path').text = f'\\\\aiv1' + json_dir.replace("/", "\\") + f"\\{mode}\\{filename}.bmp"
+        # SubElement(image_ele, 'Path').text = f'\\\\aiv1' + json_dir.replace("/", "\\") + f"\\{mode}\\{filename}.bmp"
+        SubElement(image_ele, 'Path').text = f'\\\\aiv1' + json_dir.replace("/", "\\") + f"\\test\\{filename}.bmp"
         # SubElement(image_ele, 'Path').text = f'{filename}.bmp'
         SubElement(image_ele, 'Width').text = str(width)
         SubElement(image_ele, 'Height').text = str(height)
