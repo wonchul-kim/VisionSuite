@@ -7,8 +7,8 @@ import cv2
 from tqdm import tqdm 
 
 img_dir = "/DeepLearning/research/data/unittests/unit_cost_test/split_mr/test"
-# json_dir = "/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_mr/results/test_results/labelme"
-json_dir = img_dir
+json_dir = "/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_mr/results/test_results/labelme"
+# json_dir = img_dir
 image_format = 'bmp'
 output_dir = "/DeepLearning/research/data/unittests/unit_cost_test/etc"
 
@@ -42,6 +42,7 @@ for img_file in tqdm(img_files):
                         (0, 0, 255), 5)
         elif shape_type == 'polygon':
             cv2.fillPoly(img, [np.array(points, dtype=np.int32)], color=(255, 255, 0))
+            cv2.putText(img, label, (int(points[0][0]), int(points[0][1] + 10)), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 1, 2)
         else:
             raise NotImplementedError(f"There is no such shape-type({shape_type}) considered")
 
