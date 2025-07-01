@@ -39,15 +39,19 @@ def track_images(model, source, det_conf, det_iou, tracker, output_dir, num_fram
         cv2.imwrite(osp.join(output_dir, filename + '.jpg'), img)
         
 if __name__ == '__main__':
+    
+    from pathlib import Path
+    FILE = Path(__file__).resolve()
+    ROOT = FILE.parent
 
     output_dir = '/HDD/etc/outputs/tracking/ultralytics'
     os.makedirs(output_dir, exist_ok=True)
 
     model_name = 'yolo11n.pt'
-    # source = '/HDD/etc/outputs/tracking/data/video.mp4'
-    source = '/HDD/datasets/public/MOT17/train/MOT17-02-DPM/img1'
+    source = str(ROOT / 'data/video.mp4')
+    # source = str(ROOT / 'data/mot17')
     image_format = 'jpg'
-    tracker = '/HDD/_projects/github/VisionSuite/visionsuite/cores/ultralytics_track/cfg/trackers/bytetrack.yaml'
+    tracker = str(ROOT / 'cfg/trackers/bytetrack.yaml')
     # tracker = '/HDD/_projects/github/VisionSuite/visionsuite/cores/ultralytics_track/cfg/trackers/botsort.yaml'
     det_conf = 0.3
     det_iou = 0.5

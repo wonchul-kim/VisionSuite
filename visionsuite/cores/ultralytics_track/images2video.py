@@ -6,7 +6,7 @@ from natsort import natsorted
 input_dir = "/HDD/datasets/public/MOT17/train/MOT17-02-DPM/img1/"
 output_dir = '/HDD/etc/outputs/tracking'
 fps = 30
-num_frames = 60
+num_frames = 600
 
 img_files = [f for f in os.listdir(input_dir) if f.endswith(".jpg")]
 img_files = natsorted(img_files)
