@@ -66,7 +66,7 @@ def main():
     data_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_mask_dataset_one_class'
     image_dir = os.path.join(data_dir, 'val/images')
     prediction_dir = '/HDD/etc/outputs/u2net/3_24_16_5_51/test/'
-    model_dir = '/HDD/etc/outputs/u2net/3_24_16_5_51/weights/u2net_bce_itr_448_train_1.108677_tar_0.153667.pth'
+    model_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/outputs/SOD/crop/weights/u2net_bce_itr_23244_train_0.024273_tar_0.001608.pth'
 
     conf_threshold = 0.5
     img_name_list = glob.glob(image_dir + os.sep + '*')

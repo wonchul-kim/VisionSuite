@@ -24,10 +24,11 @@ def labelme2preds_json(input_dir, output_dir, class2idx):
         for ann in anns:
             if ann['label'] == 'background':
                 continue
-            if class2idx[ann['label']] not in idx2xyxys:
-                idx2xyxys[class2idx[ann['label']]] = {'polygon': []}
+            _class = ann['label'].upper()
+            if class2idx[_class] not in idx2xyxys:
+                idx2xyxys[class2idx[_class]] = {'polygon': []}
                 
-            idx2xyxys[class2idx[ann['label']]]['polygon'].append(ann['points'])
+            idx2xyxys[class2idx[_class]]['polygon'].append(ann['points'])
             
         results.update({filename: {'idx2xyxys': idx2xyxys, 'idx2class': idx2class, 'img_file': img_file}})
                 
@@ -35,10 +36,21 @@ def labelme2preds_json(input_dir, output_dir, class2idx):
         json.dump(results, json_file, ensure_ascii=False, indent=4)
     
 if __name__ == '__main__':
-    model_name = 'sam2_epochs200'
-    input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/labels'
-    output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
-    classes = ['STABBED', 'DUST']
+    # model_name = 'sam2_epochs200'
+    # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp/labels'
+    # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/mr/plate/bottom/outputs/SEGMENTATION/{model_name}/test/exp'
+    # classes = ['STABBED', 'DUST']
+    # # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/labels'
+    # # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
+    # # classes = ['CHAMFER_MARK', 'LINE', 'MARK']
+    # idx2class = {idx: cls for idx, cls in enumerate(classes)}
+    # class2idx = {cls: idx for idx, cls in enumerate(classes)}
+
+    # labelme2preds_json(input_dir, output_dir, class2idx)
+
+    input_dir = f'/HDD/etc/curation/mr/outputs/SEGMENTATION/6_24_16_43_32/test/exp/labels'
+    output_dir = f'/HDD/etc/curation/mr/outputs/SEGMENTATION/6_24_16_43_32/test/exp'
+    classes = ['STABBED', 'DUST', 'EDGE_STABBED']
     # input_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp/labels'
     # output_dir = f'/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/{model_name}/test/exp'
     # classes = ['CHAMFER_MARK', 'LINE', 'MARK']

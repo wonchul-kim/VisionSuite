@@ -146,9 +146,9 @@ def ElevenPointInterpolatedAP(rec, prec):
 
 def mAP(result):
     ap = 0
-    for r in result:
+    for r in result[1:]:
         ap += r['ap']
-    mAP = ap / len(result)
+    mAP = ap / (len(result) - 1)
     
     return mAP
 
@@ -285,6 +285,21 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
             # match dets and gts by image
             gt = [gt for gt in gts if gt[0] == det[0]]
             
+            
+            if _class == -1:
+                if len(gt) == 0: ### FN
+                    for ground_truth in ground_truths:
+                        if ground_truth[0] == det[0]:
+                            if det[0] not in results_by_image:
+                                results_by_image[det[0]] = {ground_truth[1]: {'tp': 0, 'fp': 0, 'fn': 1, 'tn': 0, 'total_gt': 1, 'iou': [], 'coord_diff': []}}
+                            else: 
+                                if ground_truth[1] not in results_by_image[det[0]]:
+                                    results_by_image[det[0]].update({ground_truth[1]: {'tp': 0, 'fp': 0, 'fn': 1, 'tn': 0, 'total_gt': 1, 'iou': [], 'coord_diff': []}})
+                                else:
+                                    results_by_image[det[0]][ground_truth[1]]['fn'] += 1
+                                    results_by_image[det[0]][ground_truth[1]]['total_gt'] += 1
+                continue
+            
             if det[0] not in results_by_image:
                 results_by_image[det[0]] = {_class: {'tp': 0, 'fp': 0, 'fn': 0, 'tn': 0, 'total_gt': len(gt), 'iou': [], 'coord_diff': []}}
             
@@ -379,7 +394,7 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
 
 
     for image_name, results in results_by_image.items():
-        for _class in classes:
+        for _class in classes[1:]:
             gts = [gt for gt in ground_truths if gt[1] == _class]
             gt = [gt for gt in gts if gt[0] == image_name]
 
@@ -391,6 +406,7 @@ def get_performance(detections, ground_truths, classes, iou_threshold=0.3, metho
     results_by_image = update_coord_diff_by_image(results_by_image)
     results_by_image = update_ap_by_image(results_by_image)
     results_by_class.append({'map': mAP(results_by_class)})
+    
     
         
     

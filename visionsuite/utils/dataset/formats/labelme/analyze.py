@@ -147,13 +147,22 @@ if __name__ == '__main__':
     
     # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
     
-    input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
-    output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
+    # input_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
+    # output_dir = '/HDD/datasets/projects/LX/24.11.28_2/datasets_wo_vertical/split_dataset'
 
-    project_name = 'SFAW'
+    # project_name = 'SFAW'
+    # title = "Dataset Analysis"
+    # subtitle = f"The dataset is {project_name}"
+    
+    # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
+    
+    
+    input_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7'
+    output_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7'
+
+    project_name = 'Tenneco'
     title = "Dataset Analysis"
     subtitle = f"The dataset is {project_name}"
     
     analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
-    
     

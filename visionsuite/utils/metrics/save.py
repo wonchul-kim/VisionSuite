@@ -133,6 +133,40 @@ def save_pf_by_image_to_excel(performance_by_image, output_filename, idx2class=N
     # 엑셀 파일 저장
     workbook.save(output_filename)
     
+def save_false_images(performance_by_image, vis_dir, output_dir):
+    import os 
+    import os.path as osp
+    from glob import glob 
+    from shutil import copyfile
+    from tqdm import tqdm
+    
+    fp_output_dir = osp.join(output_dir, 'fp')
+    os.makedirs(fp_output_dir, exist_ok=True)
+    fn_output_dir = osp.join(output_dir, 'fn')
+    os.makedirs(fn_output_dir, exist_ok=True)
+    fp_fn_output_dir = osp.join(output_dir, 'fp_fn')
+    os.makedirs(fp_fn_output_dir, exist_ok=True)
+    
+    for filename, classes in tqdm(performance_by_image.items()):
+        for class_id, metrics in classes.items():
+            _output_dir = None
+            if metrics['fp'] > 0 and metrics['fn'] > 0:
+                _output_dir = fp_fn_output_dir
+            elif metrics['fp'] > 0:
+                _output_dir = fp_output_dir
+            elif metrics['fn']> 0:
+                _output_dir = fn_output_dir
+                
+            if _output_dir:
+                vis_imgs = glob(osp.join(vis_dir, filename + '*.png'))
+                if len(vis_imgs) == 0:
+                    continue
+                else:
+                    copyfile(vis_imgs[0], osp.join(_output_dir, filename + '.png'))
+                
+
+    
+    
     
 if __name__ == '__main__':
     
@@ -154,3 +188,5 @@ if __name__ == '__main__':
     output_filename = '/HDD/datasets/projects/sungjin/body/benchmark/pf_by_class.pdf'
     
     save_df_by_class_to_pdf(performance_by_class, output_filename)
+    
+    

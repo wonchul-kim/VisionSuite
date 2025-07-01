@@ -8,6 +8,7 @@ import numpy as np
 import imgviz
 import math
 import ast
+from shapely.geometry import Polygon
 
 def safe_literal_eval(val):
     if isinstance(val, str):
@@ -52,6 +53,37 @@ def obb2poly_le90(rboxes):
 
     return pts
 
+def ond_dim_points_to_polygon(points):
+    # points를 (x, y) 형식의 튜플 리스트로 변환
+    return [(points[i], points[i + 1]) for i in range(0, len(points), 2)]
+
+def get_polygon_iou(point1, point2):
+    # 두 다각형을 Polygon 객체로 변환
+    poly1 = Polygon(ond_dim_points_to_polygon(point1))
+    poly2 = Polygon(ond_dim_points_to_polygon(point2))
+    
+    if not poly1.is_valid:
+        poly1 = poly1.buffer(0)
+        
+    if not poly2.is_valid:
+        poly2 = poly2.buffer(0)
+        
+    # 교집합 영역 계산
+    intersection_area = poly1.intersection(poly2).area
+    union_area = poly1.union(poly2).area
+    
+    # IoU 계산
+    iou = intersection_area / (union_area + 0.000001)
+    
+    return iou, poly1.area,poly2.area, intersection_area
+
+def polygon2rect(points):
+    xs, ys = [], []
+    for x, y in points:
+        xs.append(x)
+        ys.append(y)
+    
+    return [min(xs), min(ys), max(xs) - min(xs), max(ys) - min(ys)]
 
 def compute_iou(x1, y1, w1, h1, x2, y2, w2, h2):
     x1_min, y1_min = x1, y1
@@ -79,9 +111,7 @@ def compute_iou(x1, y1, w1, h1, x2, y2, w2, h2):
 def cpp_round(x):
     return int(math.floor(x + 0.5)) if x > 0 else int(math.ceil(x - 0.5))
 
-
-    
-def parse(df, roi):
+def parse(df, roi, output_dir):
     '''
         {
             product_id: {
@@ -156,10 +186,12 @@ def parse(df, roi):
     output_data = {'total_count': 0, 
                    'repeated': {'count': 0, 'ng_count': 0, 'ng_id': [], 'ok_count': 0, 'ok_id': []}, 
                    'not_repeated': {'count': 0}}
+    
+    exception_txt = open(osp.join(output_dir, '../exception.txt'), 'w')
+    
     for sample_id, group in tqdm(df.groupby('sampleId'), desc="PARSING excel: "):
-        output_data['total_count'] += 1
-        # if sample_id == 125032816405815:
-        #     print("................................... ", sample_id)
+        # if sample_id != 125032816575591:
+        #     continue
         group = group.sort_values('inspectedAt')
         parsed_data[str(sample_id)] = {}
         order_ngs = []
@@ -173,20 +205,30 @@ def parse(df, roi):
                 for defect_data in fov_data['defects']:
                     
                     ###
-                    if defect_data['ng']:
+                    if defect_data['class'].lower() in ['od_mark', 'od_scratch']:
                         parsed_defect_data = {'class': defect_data['class'], 
-                                              'x': float(defect_data['positionInFov']['x']) - roi[0],
-                                              'y': float(defect_data['positionInFov']['y']) - roi[1],
-                                              'width': float(defect_data['widthPix']), # longaxis
-                                              'height': float(defect_data['heightPix']), # shortaxis
-                                              'angle': float(defect_data['angle']),
-                                              'repeated': set()
-                                            }
+                                            'x': float(defect_data['positionInFov']['x']) - roi[0],
+                                            'y': float(defect_data['positionInFov']['y']) - roi[1],
+                                            'width': float(defect_data['widthPix']), # longaxis
+                                            'height': float(defect_data['heightPix']), # shortaxis
+                                            'angle': float(defect_data['angle']),
+                                            'repeated': set(),
+                                            'ng': defect_data['ng']
+                                        }
                         parsed_data[str(sample_id)][str(order)][f"fov_{fov_data['fov']}"].append(parsed_defect_data)
                         
             assert len(parsed_data[str(sample_id)][str(order)]) == 14, RuntimeError(f"There must be 14 fovs for each sample-id({sample_id}), now {len(parsed_data[str(sample_id)][order])}")
+            
+        if len(parsed_data[str(sample_id)]) != 3:
+            print(len(parsed_data[str(sample_id)]), '>>>> ', sample_id)
+            exception_txt.write(str(sample_id))
+            exception_txt.write('\n')
+            del parsed_data[str(sample_id)]
+            continue
+        
         assert len(parsed_data[str(sample_id)]) == 3, RuntimeError(f"There must be 3 order for each sample-id({sample_id}), now {len(parsed_data[str(sample_id)])}")
 
+        output_data['total_count'] += 1
         ###
         assert len(order_ngs) == 3, RuntimeError(f"The number of order_ngs must be 3, not {len(order_ngs)}")      
         if sum(order_ngs) == 0 or sum(order_ngs) == 3:
@@ -209,10 +251,21 @@ def parse(df, roi):
             
     return parsed_data, output_data
         
+csv_file = '/HDD/etc/repeatablility/talos3/inspection(2025-05-14).xlsx'
+
+# #### 1st
+# case = '1st'
+# input_img_dir = '/Data/01.Image/research/benchmarks/production/tenneco/repeatibility/v01/final_data'
+# sheet_name = '250207'
+# output_dir = '/HDD/etc/repeatablility/talos3/1st/outputs'
+
+
+### 2nd
+case = '2nd'
 input_img_dir = '/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer_repeatability/2nd/data'
-csv_file = '/HDD/etc/repeatablility/talos/2nd.xlsx'
-# csv_file = '/HDD/inspection 2.xlsx'
-output_dir = '/HDD/etc/repeatablility/talos/outputs'
+sheet_name = '250328'
+output_dir = '/HDD/etc/repeatablility/talos3/2nd/outputs'
+
 
 if not osp.exists(output_dir):
     os.makedirs(output_dir)
@@ -224,7 +277,7 @@ ng: 0/1
 inspectedAt: time
 '''
 
-color_map= np.concatenate([
+color_map = np.concatenate([
                             np.array([
                                 [255, 0, 255],
                                 [254, 128, 0],
@@ -238,8 +291,11 @@ roi = [220, 60, 1340, 828]
 width, height = 1760, 832
 overlaps = [0, 238, 197, 252, 249, 243, 265, 268, 217, 229, 257, 141, 157, 295]
 overlap = 1120
-margin1 = 250
-margin2 = 50
+
+offset_x = 250
+margin_x = 50
+margin_y = 50
+
 stitch = 2 # 1 or 2
 save_fov = False
 save_stitched = True
@@ -248,25 +304,24 @@ alpha = 0.5
 vis_repeated = False
 thickness = 2
 font_scale = 2
-iou_threshold = 0.1
+iou_threshold = 0.05
 fov_indexes = [14, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
-df = pd.read_excel(csv_file)
+df = pd.read_excel(csv_file, sheet_name=sheet_name)
 # df = df.drop(columns=['lineKey', 'isNoSampleId', '_id', 'clientInspectionId', 'groupId', 'equipmentKey' ,'productKey', 'metadata'])
 # data.to_excel(osp.join(output_dir, '2nd_unit.xlsx'), index=False)
 # df['data'] = df['data'].apply(safe_literal_eval)
 df['data'] = df['data'].apply(json.loads)
 
-parsed_data, output_data = parse(df, roi)
+parsed_data, output_data = parse(df, roi, output_dir=output_dir)
 with open(osp.join(output_dir, 'output_data.json'), 'w') as jf:
     json.dump(output_data, jf, ensure_ascii=False, indent=4)
 
 
 assert isinstance(overlap, int), ValueError(f"Overlap must be int, not {overlap} which is {type(overlap)}")
-    
 for sample_id, orders_data in tqdm(parsed_data.items(), desc="ANALYZING: "):  
     
-    # if sample_id != '125032816410911':
+    # if sample_id != '125020717095782':
     #     continue
     
     for order, data in orders_data.items():
@@ -293,9 +348,32 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="ANALYZING: "):
                                                     defect2['width'], defect2['height'], defect2['angle']
                                         
                         if _class1 == _class2:
-                            iou = compute_iou(x1 - margin1*(fov_idx2 + 1) - margin2/2*max(1, abs(fov_idx2 - fov_idx1)/2), 
-                                              y1, w1 + margin2*max(1, abs(fov_idx2 - fov_idx1)/2), h1, 
+                            
+                            rotated_pts1 = cv2.transform(np.array([np.array([
+                                                                [0, 0],
+                                                                [w1, 0],
+                                                                [w1, h1],
+                                                                [0, h1]
+                                                            ], dtype=np.float32)]), 
+                                                        cv2.getRotationMatrix2D((0, 0), angle1, 1.0))[0] + np.array([x1, y1], 
+                                                        dtype=np.float32)
+                            x1, y1, w1, h1 = polygon2rect(rotated_pts1)
+                                                         
+                            rotated_pts2 = cv2.transform(np.array([np.array([
+                                                                [0, 0],
+                                                                [w2, 0],
+                                                                [w2, h2],
+                                                                [0, h2]
+                                                            ], dtype=np.float32)]), 
+                                                        cv2.getRotationMatrix2D((0, 0), angle2, 1.0))[0] + np.array([x2, y2], 
+                                                        dtype=np.float32)
+                            x2, y2, w2, h2 = polygon2rect(rotated_pts2)
+                            
+                            iou = compute_iou(x1 - offset_x - margin_x/2, y1 + margin_y/2, w1  + margin_x, h1 + margin_y, 
                                               x2, y2, w2, h2)
+                                                        
+                            # iou = compute_iou(x1 - offset_x - margin_x/2, y1 + margin_y/2, w1  + margin_x, h1 + margin_y, 
+                            #                   x2, y2, w2, h2)
                             
                             if iou > iou_threshold:
                                 data[f'fov_{fov1}'][defect1_idx]['repeated'].update([fov1, fov2])
@@ -307,14 +385,11 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="ANALYZING: "):
 sample_cnt = 0
 for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):  
     sample_cnt += 1
-       
-    # if sample_id == '125032816411208':
-    # if sample_id == '125032816405815':
-    # if sample_id == '125032816412303':
-    if sample_id == '125032816410911':
-        print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>....", orders_data['repeated'])
-    else:
-        continue
+
+    # if sample_id == '125032816410911':
+    #     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>....", orders_data['repeated'])
+    # else:
+    #     continue
        
     if orders_data['repeated'] and not vis_repeated:
         continue
@@ -338,8 +413,10 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
             defects = fovs_data[f'fov_{fov}']
 
             ### vis
-            # img_file = osp.join(input_img_dir, order, f'{sample_id}_{fov.split("_")[-1]}', '1_image.bmp')
-            img_file = osp.join(input_img_dir, order, f'{sample_id}_{fov}', '1_image.bmp')
+            if case == '1st':
+                img_file = osp.join(input_img_dir, f'OUTER_shot0{order}', f'{sample_id}_{fov}_Outer', '1_image.bmp')
+            elif case == '2nd':
+                img_file = osp.join(input_img_dir, order, f'{sample_id}_{fov}', '1_image.bmp')
             assert osp.exists(img_file), ValueError(f'There is no such image file: {img_file}')
 
             _img = cv2.imread(img_file)
@@ -350,8 +427,14 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
                 if defect == []:
                     continue
                 is_defected = True
-                _class, x, y, w, h, angle = defect['class'].lower(), defect['x'], defect['y'], \
-                                            defect['width'], defect['height'], float(defect['angle'])
+                _class, x, y, w, h, angle, is_ng = defect['class'].lower(), defect['x'], defect['y'], \
+                                            defect['width'], defect['height'], float(defect['angle']), defect['ng']
+                
+                
+                if is_ng:
+                    color = (0, 0, 255)
+                else:
+                    color = (255, 0, 0)
                 
                 # pts = obb2poly_le90([x + w/2, y + h/2, w, h, -angle])
                 
@@ -361,30 +444,26 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
                     class2label[_class] = len(class2label)
                 
                 cv2.putText(_img, f'w{w:.1f}_h{h:.1f}_a{angle:.1f}', (int(x), int(y - 25)), cv2.FONT_HERSHEY_SIMPLEX, 
-                                0.7, tuple(map(int, color_map[class2label[_class]])), 1)
+                                0.7, tuple(map(int, color)), 1)
                 cv2.putText(_img, f'{_class}', (int(x), int(y + 5)), cv2.FONT_HERSHEY_SIMPLEX, 
-                                1, tuple(map(int, color_map[class2label[_class]])), 2)
+                                1, tuple(map(int, color)), 2)
                 
                 # cv2.polylines(_img, [pts], isClosed=True, color=(0, 0, 255), thickness=2)
-
-                if angle < 0:
-                    rotated_pts = cv2.transform(np.array([np.array([
+                ### rotate the bbox by the left top point
+                rotated_pts = cv2.transform(np.array([np.array([
                                                                 [0, 0],
                                                                 [w, 0],
                                                                 [w, h],
                                                                 [0, h]
                                                             ], dtype=np.float32)]), cv2.getRotationMatrix2D((0, 0), angle, 1.0))[0] + np.array([x, y], dtype=np.float32)
-                    cv2.polylines(_img, [rotated_pts.astype(np.int32)], isClosed=True, color=tuple(map(int, color_map[class2label[_class]])), thickness=thickness)
-                else:
-                    box = cv2.boxPoints(((x + w/2, y + h/2), (w, h), -angle))
-                    box = np.floor(box + 0.5).astype(np.int32)
-                    cv2.drawContours(_img, [box], 0, tuple(map(int, color_map[class2label[_class]])), thickness)
+                cv2.polylines(_img, [rotated_pts.astype(np.int32)], isClosed=True, color=tuple(map(int, color)), thickness=thickness)
                     
-                ### original
-                cv2.rectangle(_img, (int(x), int(y)), (int(x + w), int(y + h)), (255, 255, 224), 1)
+                # ### original
+                # cv2.rectangle(_img, (int(x), int(y)), (int(x + w), int(y + h)), (255, 255, 224), 1)
                 
                 if len(defect['repeated']) != 0:
-                    cv2.rectangle(_img, (int(x) - 100, int(y) - 100), (int(x + w + 100), int(y + h + 100)), 
+                    _x, _y, _w, _h = polygon2rect(rotated_pts)
+                    cv2.rectangle(_img, (int(_x) - 100, int(_y) - 100), (int(_x + _w + 100), int(_y + _h + 100)), 
                                         (0, 255, 0), 7)
 
             if save_fov:
@@ -414,14 +493,14 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
                     cv2.putText(img, _class, (x, y + 2), cv2.FONT_HERSHEY_SIMPLEX, 
                                         1, tuple(map(int, color_map[class2label[_class]])), font_scale, 2)
 
-                    # rotated_pts = cv2.transform(np.array([np.array([
-                    #                                             [0, 0],
-                    #                                             [w, 0],
-                    #                                             [w, h],
-                    #                                             [0, h]
-                    #                                         ], dtype=np.float32)]), cv2.getRotationMatrix2D((0, 0), -angle, 1.0))[0] + np.array([x, y], dtype=np.float32)
-                    # cv2.polylines(_img, [rotated_pts.astype(np.int32)], isClosed=True, color=tuple(map(int, color_map[class2label[_class]])), thickness=thickness)
-                    cv2.drawContours(_img, [np.intp(cv2.boxPoints(((x + max(w, h)/2, y + min(w, h)/2), (max(w, h), min(w, h)), -angle)))], 0, tuple(map(int, color_map[class2label[_class]])), thickness)
+                    rotated_pts = cv2.transform(np.array([np.array([
+                                                                [0, 0],
+                                                                [w, 0],
+                                                                [w, h],
+                                                                [0, h]
+                                                            ], dtype=np.float32)]), cv2.getRotationMatrix2D((0, 0), angle, 1.0))[0] + np.array([x, y], dtype=np.float32)
+                    cv2.polylines(_img, [rotated_pts.astype(np.int32)], isClosed=True, color=tuple(map(int, color_map[class2label[_class]])), thickness=thickness)
+                    # cv2.drawContours(_img, [np.intp(cv2.boxPoints(((x + max(w, h)/2, y + min(w, h)/2), (max(w, h), min(w, h)), -angle)))], 0, tuple(map(int, color_map[class2label[_class]])), thickness)
                     # cv2.drawContours(img, [np.intp(cv2.boxPoints(((x + min(w, h)/2, y + max(w, h)/2), (w, h), -angle)))], 0, tuple(map(int, color_map[class2label[_class]])), thickness)
                     # cv2.rectangle(img, (x, y), (x + w, y + h), tuple(map(int, color_map[class2label[_class]])), 2)
             
@@ -438,6 +517,6 @@ for sample_id, orders_data in tqdm(parsed_data.items(), desc="VISUALIZAING: "):
         cv2.imwrite(osp.join(vis_dir, sample_id + '.bmp'), image)
         
         
-    if sample_cnt > 30:
-        break
+    # if sample_cnt > 30:
+    #     break
 

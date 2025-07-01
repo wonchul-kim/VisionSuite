@@ -11,6 +11,10 @@ def preds2metrics(preds_json, class2idx, nms=0):
     
     detections = []
     for filename, ann in anns.items():
+
+        if ann['idx2xyxys'] == {}:
+            detections.append([filename, -1, -1, ()])
+            
         for _class, val in ann['idx2xyxys'].items():
             if 'bbox' in val:
                 for box, conf in zip(val['bbox'], val['confidence']):
@@ -40,7 +44,7 @@ def preds2metrics(preds_json, class2idx, nms=0):
                                 
                             detections.append([filename, int(class2idx[ann['idx2class'][_class]]), None, 
                                                tuple(coord for polygon in polygons for points in polygon for coord in points)])
-                    
+
     return detections, class2idx
         
     
