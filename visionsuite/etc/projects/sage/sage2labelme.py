@@ -11,8 +11,9 @@ from PIL import Image
 
 def sage2labelme_seg():
 
-    img_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/split_mr/test'
-    input_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/saige/split_mr/results/test_results'
+    mode = 'train'
+    img_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/split_mr/{mode}'
+    input_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/saige/split_mr/results/{mode}_results/{mode}'
     output_dir = osp.join(input_dir, 'labelme')
     os.makedirs(output_dir, exist_ok=True)
     
@@ -53,9 +54,9 @@ def sage2labelme_seg():
             json.dump(_labelme, jsf)
         
 def sage2labelme_det():
-
-    img_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/split_interojo_dataset/test'
-    input_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/saige/split_interojo_dataset/results/test_results'
+    mode = 'val'
+    img_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/split_interojo_dataset/{mode}'
+    input_dir = f'/DeepLearning/research/data/unittests/unit_cost_test/saige/split_interojo_dataset/results/{mode}_results/{mode}'
     output_dir = osp.join(input_dir, 'labelme')
     os.makedirs(output_dir, exist_ok=True)
     

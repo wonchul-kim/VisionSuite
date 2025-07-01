@@ -6,10 +6,11 @@ import numpy as np
 import cv2
 from tqdm import tqdm 
 
-img_dir = "/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/val"
-json_dir = "/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/m2f_epochs100/test/exp/labels"
+img_dir = "/DeepLearning/research/data/unittests/unit_cost_test/split_mr/test"
+# json_dir = "/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_mr/results/test_results/labelme"
+json_dir = img_dir
 image_format = 'bmp'
-output_dir = "/DeepLearning/etc/_athena_tests/benchmark/tenneco/outer/outputs/m2f_epochs100/test/exp/vis_labels"
+output_dir = "/DeepLearning/research/data/unittests/unit_cost_test/etc"
 
 if not osp.exists(output_dir):
     os.mkdir(output_dir)
@@ -20,6 +21,8 @@ img_files = glob.glob(osp.join(img_dir, f'*.{image_format}'))
 
 for img_file in tqdm(img_files):
     filename = osp.split(osp.splitext(img_file)[0])[-1]
+    if filename != '0_coaxial_20240624192504197':
+        continue
     json_file = osp.join(json_dir, filename + '.json')
     assert osp.exists(json_dir), ValueError(f"There is no such json-file: {json_file}")
 

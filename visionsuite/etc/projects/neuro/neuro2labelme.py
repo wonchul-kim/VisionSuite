@@ -7,10 +7,10 @@ from visionsuite.utils.dataset.formats.labelme.utils import init_labelme_json, a
 
 
 def neuro2labelme_seg():
-    input_dir = '/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_mr/results/test_results'
+    input_dir = '/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_mr/results/val_results'
     output_dir = osp.join(input_dir, 'labelme')
     os.makedirs(output_dir, exist_ok=True)
-    json_file = osp.join(input_dir, 'test_result.json')
+    json_file = osp.join(input_dir, 'val_labeling.json')
     with open(json_file, 'r') as jf:
         anns = json.load(jf)
 
@@ -63,10 +63,10 @@ def neuro2labelme_det():
             json.dump(_labelme, jsf)
         
 def neuro2labelme_det():
-    input_dir = '/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_interojo_dataset/results/test_restults/'
+    input_dir = '/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_interojo_dataset/results/val_results'
     output_dir = osp.join(input_dir, 'labelme')
     os.makedirs(output_dir, exist_ok=True)
-    json_file = osp.join(input_dir, 'obd_det-train_labeling.json')
+    json_file = osp.join(input_dir, 'val_labeling.json')
     with open(json_file, 'r') as jf:
         anns = json.load(jf)
 
@@ -90,5 +90,6 @@ def neuro2labelme_det():
         
 
 if __name__ == '__main__':
+    # neuro2labelme_seg()
     neuro2labelme_det()
 
