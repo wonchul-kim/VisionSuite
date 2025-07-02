@@ -1,5 +1,4 @@
 import os
-import os.path as osp
 import cv2
 import pickle
 import random
@@ -7,9 +6,6 @@ import argparse
 import numpy as np
 from fastreid.emb_computer import EmbeddingComputer
 
-from pathlib import Path 
-FILE = Path(__file__).resolve()
-ROOT = FILE.parent
 
 def make_parser():
     # Initialization
@@ -17,12 +13,11 @@ def make_parser():
 
     # Data args
     parser.add_argument("--dataset", type=str, default="mot17")
-    parser.add_argument("--data_path", type=str, default="/HDD/datasets/public/MOT17/test/")
-    parser.add_argument("--pickle_path", type=str, default="/HDD/etc/outputs/tracking/tracktrack/1. det/mot17_test_0.95_original.pickle")
-    parser.add_argument("--output_dir", type=str, default="/HDD/etc/outputs/tracking/tracktrack/2. det_feat")
-    parser.add_argument("--output_filename", type=str, default="mot17_test_0.95_original.pickle")
-    parser.add_argument("--config_path", type=str, default=str(ROOT / "configs/MOT17/sbs_S50.yml"))
-    parser.add_argument("--weight_path", type=str, default="/HDD/weights/tracktrack/fastreid/mot17_sbs_S50.pth")
+    parser.add_argument("--data_path", type=str, default="../../dataset/MOT17/test/")
+    parser.add_argument("--pickle_path", type=str, default="../outputs/1. det/mot17_test_0.95_original.pickle")
+    parser.add_argument("--output_path", type=str, default="../outputs/2. det_feat/mot17_test_0.95_original.pickle")
+    parser.add_argument("--config_path", type=str, default="configs/MOT17/sbs_S50.yml")
+    parser.add_argument("--weight_path", type=str, default="weights/mot17_sbs_S50.pth")
 
     # Else
     parser.add_argument("--seed", type=float, default=10000)
@@ -33,8 +28,6 @@ def make_parser():
 if __name__ == "__main__":
     # Get arguments
     args = make_parser().parse_args()
-
-    os.makedirs(args.output_dir, exist_ok=True)
 
     # Set random seeds
     random.seed(args.seed)
@@ -73,5 +66,5 @@ if __name__ == "__main__":
             print(vid_name, frame_id, flush=True)
 
     # Save
-    with open(osp.join(args.output_dir, args.output_filename), 'wb') as handle:
+    with open(args.output_path, 'wb') as handle:
         pickle.dump(detections, handle, protocol=pickle.HIGHEST_PROTOCOL)

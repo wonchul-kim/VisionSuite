@@ -35,19 +35,14 @@ from .train_loop import TrainerBase, AMPTrainer, SimpleTrainer
 __all__ = ["default_argument_parser", "default_setup", "DefaultPredictor", "DefaultTrainer"]
 
 
-from pathlib import Path
-FILE = Path(__file__).resolve()
-ROOT = FILE.parents[2]
-
 def default_argument_parser():
     """
     Create a parser with some common arguments used by fastreid users.
     Returns:
         argparse.ArgumentParser:
-        
     """
     parser = argparse.ArgumentParser(description="fastreid Training")
-    parser.add_argument("--config-file", default=str(ROOT / 'configs/MOT17/sbs_S50.yml'), metavar="FILE", help="path to config file")
+    parser.add_argument("--config-file", default="", metavar="FILE", help="path to config file")
     parser.add_argument(
         "--resume",
         action="store_true",

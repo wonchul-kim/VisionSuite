@@ -8,4 +8,4 @@ DATASETS:
   NAMES: ("MOT17",)
   TESTS: ("MOT17",)
 
-OUTPUT_DIR: logs/MOT17/sbs_S50
+OUTPUT_DIR: /HDD/etc/outputs/tracking/tracktrack/2. fastreid/logs/MOT17/sbs_S50

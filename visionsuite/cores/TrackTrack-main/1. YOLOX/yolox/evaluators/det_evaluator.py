@@ -33,7 +33,8 @@ class DetEvaluator:
         # Detect
         for images, _, infos, ids in tqdm(self.dataloader):
             # Get video name and frame index
-            video_name = infos[4][0].split('/')[2]
+            # video_name = infos[4][0].split('/')[2]
+            video_name = infos[4][0].split('/')[0]
             frame_id = int(infos[2].item())
 
             # Initialize
