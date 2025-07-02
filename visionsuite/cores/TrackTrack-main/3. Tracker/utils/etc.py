@@ -15,8 +15,10 @@ def set_parameters(args, vid_name, mode):
             args.pickle_path_95 = args.pickle_dir + 'mot17_val_0.95.pickle'
             args.data_path = args.data_dir + 'MOT17/train/'
         else:
-            args.pickle_path = args.pickle_dir + 'mot17_test_0.80.pickle'
-            args.pickle_path_95 = args.pickle_dir + 'mot17_test_0.95.pickle'
+            # args.pickle_path = args.pickle_dir + 'mot17_test_0.80.pickle'
+            # args.pickle_path_95 = args.pickle_dir + 'mot17_test_0.95.pickle'
+            args.pickle_path = args.pickle_dir + 'mot17_test_0.95_original.pickle'
+            args.pickle_path_95 = args.pickle_dir + 'mot17_test_0.95_original.pickle'
             args.data_path = args.data_dir + 'MOT17/test/'
 
         if '01' in vid_name or '03' in vid_name or '12' in vid_name:
