@@ -1,9 +1,9 @@
-from trackers.cmc import *
-from trackers.utils import *
-from trackers.track import *
+from .cmc import CMC, apply_cmc
+from .utils import *
+from .track import *
 
 
-class Tracker(object):
+class TrackTracker(object):
     def __init__(self, args, vid_name):
         # Initialize
         self.args = args

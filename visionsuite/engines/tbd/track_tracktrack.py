@@ -4,9 +4,10 @@ from glob import glob
 from ultralytics import YOLO 
 import cv2
 import numpy as np
-from trackers.tracker import Tracker
+from trackers.tracktrack.tracker import TrackTracker
 import time
-        
+import yaml 
+
 if __name__ == '__main__':
     
     from pathlib import Path
@@ -52,7 +53,7 @@ if __name__ == '__main__':
             args.img_w = int(s_i.split('=')[-1])
         if 'imHeight' in s_i:
             args.img_h = int(s_i.split('=')[-1])
-    tracker = Tracker(args, 'MOT17-01-DPM')
+    tracker = TrackTracker(args, 'MOT17-01-DPM')
 
     total_time, total_count = 0, 0
     start = time.time()

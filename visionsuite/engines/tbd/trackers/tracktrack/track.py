@@ -1,6 +1,6 @@
 import numpy as np
-from trackers.utils import get_prev_box
-from trackers.kalman_filter import KalmanFilter
+from .utils import get_prev_box
+from .kalman_filter import KalmanFilter
 
 
 def get_vel(b_1, b_2):

@@ -1,0 +1,10 @@
+post:
+  min_box_area: 100
+  aspect_ratio_thresh: 1.6
+
+tracker:
+  type: BYTETracker
+  track_thresh: 0.2
+  track_buffer: 30
+  match_thresh: 0.8
+  mot20: False 
