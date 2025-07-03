@@ -34,9 +34,9 @@ def make_parser():
         type=str,
         help="url used to set up distributed training",
     )
-    parser.add_argument("-b", "--batch-size", type=int, default=64, help="batch size")
+    parser.add_argument("-b", "--batch-size", type=int, default=1, help="batch size")
     parser.add_argument(
-        "-d", "--devices", default=None, type=int, help="device for training"
+        "-d", "--devices", default=1, type=int, help="device for training"
     )
     parser.add_argument(
         "--local_rank", default=0, type=int, help="local rank for dist training"
@@ -50,21 +50,21 @@ def make_parser():
     parser.add_argument(
         "-f",
         "--exp_file",
-        default=None,
+        default='/HDD/_projects/github/VisionSuite/visionsuite/cores/bytetrack/exps/example/mot/yolox_x_mix_det.py',
         type=str,
         help="pls input your expriment description file",
     )
     parser.add_argument(
         "--fp16",
         dest="fp16",
-        default=False,
+        default=True,
         action="store_true",
         help="Adopting mix precision evaluating.",
     )
     parser.add_argument(
         "--fuse",
         dest="fuse",
-        default=False,
+        default=True,
         action="store_true",
         help="Fuse conv and bn for testing.",
     )
@@ -90,13 +90,16 @@ def make_parser():
         help="speed test only.",
     )
     parser.add_argument(
-        "opts",
+        "--opts",
         help="Modify config options using the command-line",
-        default=None,
+        default=['output_dir', '/HDD/etc/outputs/tracking/bytetrack',
+                 "data_dir", '/HDD/datasets/public/MOT17'
+
+                 ],
         nargs=argparse.REMAINDER,
     )
     # det args
-    parser.add_argument("-c", "--ckpt", default=None, type=str, help="ckpt for eval")
+    parser.add_argument("-c", "--ckpt", default='/HDD/weights/bytetrack/bytetrack_ablation.pth.tar', type=str, help="ckpt for eval")
     parser.add_argument("--conf", default=0.01, type=float, help="test conf")
     parser.add_argument("--nms", default=0.7, type=float, help="test nms threshold")
     parser.add_argument("--tsize", default=None, type=int, help="test img size")
