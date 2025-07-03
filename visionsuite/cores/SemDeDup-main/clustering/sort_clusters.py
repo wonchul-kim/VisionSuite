@@ -303,37 +303,113 @@ def launch_jobs(args):
     args.cluster_ids_for_job = list(range(args.ncentroids))
 
 
-    ## -- SLURM CONFIG
-    PARTITION = args.partition
-    SLURM_ARRAY_PARALLELISM = 1000
-    NODES = 1
-    TIMEOUT = args.timeout
-    CPUS_PER_TASKS = args.cpus_per_task
-    TASKS_PER_NODE = args.num_tasks
+    # ## -- SLURM CONFIG
+    # PARTITION = args.partition
+    # SLURM_ARRAY_PARALLELISM = 1000
+    # NODES = 1
+    # TIMEOUT = args.timeout
+    # CPUS_PER_TASKS = args.cpus_per_task
+    # TASKS_PER_NODE = args.num_tasks
 
-    ## -- SUBMIT
-    submitit_path = f"{args.save_folder}/clustering-jobs/%j"
-    executor = submitit.AutoExecutor(folder=submitit_path, slurm_max_num_timeout=30)
-    executor.update_parameters(
-        slurm_partition=PARTITION,
-        slurm_array_parallelism=SLURM_ARRAY_PARALLELISM,
-        nodes=NODES,
-        tasks_per_node=TASKS_PER_NODE,
-        cpus_per_task=CPUS_PER_TASKS,
-        timeout_min=TIMEOUT,
+    # ## -- SUBMIT
+    # submitit_path = f"{args.save_folder}/clustering-jobs/%j"
+    # executor = submitit.AutoExecutor(folder=submitit_path, slurm_max_num_timeout=30)
+    # executor.update_parameters(
+    #     slurm_partition=PARTITION,
+    #     slurm_array_parallelism=SLURM_ARRAY_PARALLELISM,
+    #     nodes=NODES,
+    #     tasks_per_node=TASKS_PER_NODE,
+    #     cpus_per_task=CPUS_PER_TASKS,
+    #     timeout_min=TIMEOUT,
+    # )
+
+    # jobs = []
+
+    # ## -- Start a job with <args.num_tasks> task. Each task will process part of the clusters
+    # with executor.batch():
+    #     exp = SLURMJob(args, list(range(0, args.ncentroids)))
+    #     job = executor.submit(exp)
+    #     jobs.append(job)
+
+    # for job in jobs:
+    #     print("Submitted job_id:", job.job_id)
+
+
+    cluster_ids = list(range(0, args.ncentroids))
+    assert args.ncentroids == len(cluster_ids)
+
+    def seed_everything(seed=42):
+        random.seed(seed)
+        os.environ["PYTHONHASHSEED"] = str(seed)
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed(seed)
+
+    def _encode_shard(args):
+        # Configure logger
+        logger = get_logger(
+            file_name=f"{args.save_folder}/clustering-logs.log",
+            level=logging.INFO,
+            stdout=True,
+        )
+        args.logger = logger
+
+        data = np.memmap(
+            args.emb_memory_loc,
+            dtype="float32",
+            mode="r",
+            shape=(args.dataset_size, args.emb_size),
+        )
+        # paths_list = np.memmap(
+        #     args.paths_memory_loc,
+        #     # dtype=args.path_str_dtype,
+        #     mode="r",
+        #     shape=(args.dataset_size,),
+        # )
+        paths_list = np.load(args.paths_memory_loc, allow_pickle=True)
+
+        assign_and_sort_clusters(
+            data,
+            paths_list,
+            args.sim_metric,
+            args.keep_hard,
+            args.Kmeans_with_cos_dist,
+            args.save_folder,
+            args.sorted_clusters_file_loc,
+            args.cluster_ids_for_job,
+            args.logger,
+        )
+
+        return
+
+    seed_everything(args.seed)
+
+    num_clusters = len(cluster_ids)
+    print(
+        f"There are {num_clusters} clusters: {cluster_ids[0]} to  {cluster_ids[-1]}"
     )
 
-    jobs = []
+    # job_env = submitit.JobEnvironment()
 
-    ## -- Start a job with <args.num_tasks> task. Each task will process part of the clusters
-    with executor.batch():
-        exp = SLURMJob(args, list(range(0, args.ncentroids)))
-        job = executor.submit(exp)
-        jobs.append(job)
+    # print(f"There are {args.num_tasks} tasks in this job")
+    # print(f"This is the task #{job_env.local_rank}")
 
-    for job in jobs:
-        print("Submitted job_id:", job.job_id)
+    ## devide clusters across jobs (cpus)
+    # num_clusters_per_job = int(math.ceil(num_clusters / args.num_tasks))
+    # task_rank = job_env.local_rank
+    # start = task_rank * num_clusters_per_job
+    # end = (task_rank + 1) * num_clusters_per_job
+    # end = min(end, num_clusters)
 
+    # cluster_ids_for_job = cluster_ids[start:end]
+    # print(
+        # f"This job/task will process {len(cluster_ids_for_job)} clusters: cluster {cluster_ids_for_job[0]} to cluster {cluster_ids_for_job[-1]}"
+    # )
+
+    # args.cluster_ids_for_job = cluster_ids_for_job
+    args.cluster_ids_for_job = cluster_ids
+
+    _encode_shard(args)
 
 if __name__ == "__main__":
 

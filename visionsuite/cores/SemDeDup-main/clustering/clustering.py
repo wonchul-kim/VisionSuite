@@ -18,6 +18,7 @@ import submitit
 import pathlib
 from typing import Union, Optional
 from utils import get_logger
+from sklearn.metrics import silhouette_score
 
 
 def faiss_index_to_gpu(cpu_index):
@@ -99,43 +100,66 @@ def compute_centroids(
         seed=seed,
         spherical=spherical,
         gpu=use_gpu,
-    )  ## -- faiss.Kmeans "gpu" argument: bool or int, optional. False: don't use GPU, True: use all GPUs, number: use this many GPUs.
+    )  
 
     # -- If kmeans centroids are not saved - > create and train faiss Kmeans clustering object
     kmeans_obj_file_loc = pathlib.Path(save_folder, "kmeans_index.pickle")
 
-    if not os.path.exists(kmeans_obj_file_loc):
-        start_time = time.time()
-        kmeans.train(data)
-        logger.info(f"Time for clustering (mins): {(time.time()-start_time)/(60):.2f}")
+    # if not os.path.exists(kmeans_obj_file_loc):
+    #     start_time = time.time()
+    #     kmeans.train(data)
+    #     logger.info(f"Time for clustering (mins): {(time.time()-start_time)/(60):.2f}")
 
-        # -- Move kmeans index to cpu to save it
-        kmeans_index = faiss.index_gpu_to_cpu(kmeans.index)
-        logger.info(f"faiss kmeans index to store: {type(kmeans_index)}")
-        ## -- Save faiss kmeans index object as pickle file
-        with open(kmeans_obj_file_loc, "wb") as file:
-            pickle.dump(kmeans_index, file)
-        ## -- save faiss kmeans centroids as npy file
-        np.save(pathlib.Path(save_folder, "kmeans_centroids.npy"), kmeans.centroids)
+    #     print(f"최종 inertia(WCSS): {kmeans.obj[-1]}")
 
-        logger.info(f"Saved!")
 
-    else:
-        # -- Else, load stored kmeans object
-        logger.info(
-            f"Loading faiss Kmeans index pickle file from {kmeans_obj_file_loc}"
-        )
-        with open(kmeans_obj_file_loc, "rb") as file:
-            kmeans_index = pickle.load(file)
-            if use_gpu:
-                # -- move kmeans index to gpu
-                kmeans_index = faiss_index_to_gpu(kmeans_index)
-            kmeans.index = kmeans_index
+    #     # -- Move kmeans index to cpu to save it
+    #     kmeans_index = faiss.index_gpu_to_cpu(kmeans.index)
+    #     logger.info(f"faiss kmeans index to store: {type(kmeans_index)}")
+    #     ## -- Save faiss kmeans index object as pickle file
+    #     with open(kmeans_obj_file_loc, "wb") as file:
+    #         pickle.dump(kmeans_index, file)
+    #     ## -- save faiss kmeans centroids as npy file
+    #     np.save(pathlib.Path(save_folder, "kmeans_centroids.npy"), kmeans.centroids)
+
+    #     logger.info(f"Saved!")
+
+    # else:
+    #     # -- Else, load stored kmeans object
+    #     logger.info(
+    #         f"Loading faiss Kmeans index pickle file from {kmeans_obj_file_loc}"
+    #     )
+    #     with open(kmeans_obj_file_loc, "rb") as file:
+    #         kmeans_index = pickle.load(file)
+    #         if use_gpu:
+    #             # -- move kmeans index to gpu
+    #             kmeans_index = faiss_index_to_gpu(kmeans_index)
+    #         kmeans.index = kmeans_index
+
+    start_time = time.time()
+    kmeans.train(data)
+    logger.info(f"Time for clustering (mins): {(time.time()-start_time)/(60):.2f}")
+
+    print(f"최종 inertia(WCSS): {kmeans.obj[-1]}")
+
+
+    # -- Move kmeans index to cpu to save it
+    kmeans_index = faiss.index_gpu_to_cpu(kmeans.index)
+    logger.info(f"faiss kmeans index to store: {type(kmeans_index)}")
+    ## -- Save faiss kmeans index object as pickle file
+    with open(kmeans_obj_file_loc, "wb") as file:
+        pickle.dump(kmeans_index, file)
+    ## -- save faiss kmeans centroids as npy file
+    np.save(pathlib.Path(save_folder, "kmeans_centroids.npy"), kmeans.centroids)
+
+    logger.info(f"Saved!")
 
     ## -- Step 2) Find the nearest centroid for each data point, l2 distance search
     ## -- nearest_cent: the nearest centroid for each example in data. dist_to_cent: contains the squared L2 distances.
     start_time = time.time()
     dist_to_cent, nearest_cent = kmeans.index.search(data, 1)
+    score = silhouette_score(data, nearest_cent.ravel())
+    print(f"Silhouette Score: {score:.4f}")
     dist_to_cent, nearest_cent = dist_to_cent.squeeze(1), nearest_cent.squeeze(1)
     logger.info(
         f"Time for finding nearest centroid for each data point (mins): {(time.time()-start_time)/(60):.2f}"
@@ -175,8 +199,8 @@ def main(args):
     emb_memory_loc = params[
         "emb_memory_loc"
     ]  ## -- numpy menmap where embeddings are stored
-    dataset_size = params["dataset_size"]
-    emb_size = params["emb_size"]
+    # dataset_size = params["dataset_size"]
+    # emb_size = params["emb_size"]
     niter = params["niter"]
     ncentroids = params["ncentroids"]
     save_folder = params["save_folder"]
@@ -184,7 +208,6 @@ def main(args):
 
     ## -- Load embeddings
     data = np.load(emb_memory_loc, mmap_mode="r")
-
     # data = np.memmap(
     #     emb_memory_loc, dtype="float32", mode="r", shape=(dataset_size, emb_size)
     # )
