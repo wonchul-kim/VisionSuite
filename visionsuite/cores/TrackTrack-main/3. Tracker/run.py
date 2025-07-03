@@ -9,16 +9,19 @@ from AFLink.dataset import LinkData
 from trackers.tracker import Tracker
 from utils.gbi import gb_interpolation
 
+from pathlib import Path 
+FILE = Path(__file__).resolve()
+ROOT = FILE.parent
 
 def make_parser():
     parser = argparse.ArgumentParser("Tracker")
 
     # Basic
-    parser.add_argument("--pickle_dir", type=str, default="../outputs/2. det_feat/")
-    parser.add_argument("--output_dir", type=str, default="../outputs/3. track/")
-    parser.add_argument("--data_dir", type=str, default="../../dataset/")
+    parser.add_argument("--pickle_dir", type=str, default="/HDD/etc/outputs/tracking/tracktrack/2. det_feat/")
+    parser.add_argument("--output_dir", type=str, default="/HDD/etc/outputs/tracking/tracktrack/3. track/")
+    parser.add_argument("--data_dir", type=str, default="/HDD/datasets/public/")
     parser.add_argument("--dataset", type=str, default="MOT17")
-    parser.add_argument("--mode", type=str, default="val")
+    parser.add_argument("--mode", type=str, default="test")
     parser.add_argument("--seed", type=float, default=10000)
 
     # For trackers
@@ -91,7 +94,7 @@ def track(detections, detections_95, data_path, result_folder, mode):
 def run():
     # Initialize AFLink
     model = PostLinker()
-    model.load_state_dict(torch.load('./AFLink/AFLink_epoch20.pth'))
+    model.load_state_dict(torch.load(str(ROOT / 'AFLink/AFLink_epoch20.pth')))
     aflink_dataset = LinkData('', '')
 
     # Logging & Set proper parameters

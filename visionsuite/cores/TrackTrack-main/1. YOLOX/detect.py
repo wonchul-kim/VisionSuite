@@ -1,4 +1,5 @@
 import os
+import os.path as osp
 import torch
 import random
 import pickle
@@ -12,16 +13,22 @@ from yolox.evaluators import DetEvaluator
 from torch.nn.parallel import DistributedDataParallel as DDP
 
 
+from pathlib import Path 
+FILE = Path(__file__).resolve()
+ROOT = FILE.parent
+
 def make_parser():
     parser = argparse.ArgumentParser("YOLOX")
 
     # Can be changed
-    parser.add_argument("-f", "--exp_file", default="exps/yolox_x_mot17_test.py",
+    parser.add_argument("-f", "--exp_file", default=str(ROOT / "exps/yolox_x_mot17_test.py"),
                         type=str, help="pls input your experiment description file",)
-    parser.add_argument("-c", "--ckpt", default="weights/mot17.pth.tar",
+    parser.add_argument("-c", "--ckpt", default="/HDD/weights/tracktrack/mot17.pth.tar",
                         type=str, help="ckpt for eval")
+    parser.add_argument("--output_dir", type=str,
+                        default="/HDD/etc/outputs/tracking/tracktrack/1. det")
     parser.add_argument("-n", "--exp_name", type=str,
-                        default="../outputs/1. det/mot17_test_0.95_original.pickle")
+                        default="mot17_test_0.95_original.pickle")
 
     # Fixed
     parser.add_argument("-b", "--batch-size", type=int, default=1, help="batch size")
@@ -39,7 +46,13 @@ def make_parser():
     parser.add_argument("--trt", dest="trt", default=False, action="store_true", help="Using TensorRT model",)
     parser.add_argument("--test", dest="test", default=False, action="store_true", help="Evaluating on test-dev set.",)
     parser.add_argument("--speed", dest="speed", default=False, action="store_true", help="speed test only.",)
-    parser.add_argument("opts", help="Modify config options", default=None, nargs=argparse.REMAINDER,)
+    # parser.add_argument("opts", help="Modify config options", default=None, nargs=argparse.REMAINDER,)
+    parser.add_argument("--opts", help="Modify config options", 
+                        default=["data_dir", "/HDD/datasets/public/MOT17",
+                                 "train_ann", "train.json",
+                                 "test_ann", "test.json",
+                                 "val_ann", "val_half.json"], 
+                        nargs=argparse.REMAINDER,)
 
     # det args
     parser.add_argument("--conf", default=0.1, type=float, help="test conf")
@@ -96,7 +109,7 @@ def main(exp, args, num_gpu):
     # start evaluate, x1y1x2y2
     det_results = evaluator.detect(model, args.fp16)
 
-    with open(args.exp_name, 'wb') as f:
+    with open(osp.join(args.output_dir, args.exp_name), 'wb') as f:
         pickle.dump(det_results, f, protocol=pickle.HIGHEST_PROTOCOL)
 
 
@@ -107,6 +120,8 @@ if __name__ == "__main__":
 
     num_gpu = torch.cuda.device_count() if args.devices is None else args.devices
     assert num_gpu <= torch.cuda.device_count()
+
+    os.makedirs(args.output_dir, exist_ok=True)
 
     launch(
         main,

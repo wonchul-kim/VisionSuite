@@ -12,6 +12,7 @@ class Exp(MyExp):
         self.exp_name = 'mot17'
         self.train_ann = "jsons/mot17_train.json"
         self.val_ann = "jsons/mot17_test.json"
+        self.test_ann = 'jsons/mot17_test.json'
         self.input_size = (800, 1440)
         self.test_size = (800, 1440)
         self.random_size = (18, 32)
@@ -92,9 +93,9 @@ class Exp(MyExp):
 
         valdataset = MOTDataset(
             data_dir=self.data_dir,
-            json_file=self.val_ann,
+            json_file=self.test_ann,
             img_size=self.test_size,
-            name='',
+            name='test',
             preproc=ValTransform(
                 rgb_means=(0.485, 0.456, 0.406),
                 std=(0.229, 0.224, 0.225),
