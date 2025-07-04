@@ -22,7 +22,7 @@ if __name__ == '__main__':
 
     input_dir = '/HDD/datasets/public/MOT17/test/MOT17-01-DPM/img1'
     image_format = 'jpg'
-    num_frames = 10
+    num_frames = 300
 
     model_name = 'yolo11n.pt'
     DET_CONFIDENCE = 0.3
@@ -40,8 +40,8 @@ if __name__ == '__main__':
         if 'imHeight' in s_i:
             img_h = int(s_i.split('=')[-1])
 
-    # config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/bytetrack.yaml'
-    config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/tracktrack.yaml'
+    config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/bytetrack.yaml'
+    # config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/tracktrack.yaml'
     with open(config_file) as yf:
         config = yaml.load(yf, Loader=yaml.FullLoader)
         
@@ -74,7 +74,7 @@ if __name__ == '__main__':
                             (0, 0, 255), 2)
                 cv2.putText(img, f"{id}_{score:0.1f}", 
                             (int(tlwh[0]), int(tlwh[1] - 10)), 
-                            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5,
+                            fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2,
                             color=(0, 0, 255), lineType=3
                         )
         

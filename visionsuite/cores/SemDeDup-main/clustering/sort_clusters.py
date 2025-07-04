@@ -65,7 +65,8 @@ def assign_and_sort_clusters(
     ), "Cannot use cosine distance with L2 similarity metric."
 
     # If Kmeans_with_cos_dist is True, set spherical=True. This is the spherical parameter of faiss kmeans clustering.
-    spherical = kmeans_with_cos_dist
+    # spherical = kmeans_with_cos_dist
+    spherical = False
 
     # Step 3: Sort each class/cluster
     logger.info("Ranking...")
@@ -150,9 +151,9 @@ def rank_within_cluster(
 
     sorted_clusters_list = []
     for cluster_c in tqdm(cluster_ids):
-        if os.path.exists(f"{sorted_clusters_file_loc}/cluster_{cluster_c}.npy"):
-            print(f"Cluster {cluster_c} exits, skipping....")
-            continue
+        # if os.path.exists(f"{sorted_clusters_file_loc}/cluster_{cluster_c}.npy"):
+        #     print(f"Cluster {cluster_c} exits, skipping....")
+        #     continue
 
         cluster_df = dist_df.loc[dist_df["nearest_cent"] == cluster_c]
 

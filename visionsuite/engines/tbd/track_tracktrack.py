@@ -22,7 +22,7 @@ if __name__ == '__main__':
     image_format = 'jpg'
     det_conf = 0.3
     det_iou = 0.5
-    num_frames = 10
+    num_frames = 300
 
     model = YOLO(model_name)
 
@@ -102,7 +102,7 @@ if __name__ == '__main__':
             # cv2.putText(img, f"{id}_{names[int(cls)]}", 
             cv2.putText(img, f"{t.track_id}_{t.score:0.2f}", 
                         (int(t.x1y1x2y2[0]), int(t.x1y1x2y2[1] - 10)), 
-                        fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5,
+                        fontFace=cv2.FONT_HERSHEY_SIMPLEX, fontScale=0.5, thickness=2,
                         color=(0, 0, 255), lineType=3
                     )
         

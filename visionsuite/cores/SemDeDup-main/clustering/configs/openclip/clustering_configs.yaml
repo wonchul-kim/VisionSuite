@@ -1,7 +1,7 @@
 sim_metric: 'cosine' # choose form ['cosine', 'l2']
 keep_hard: True # True for hard examples
 Kmeans_with_cos_dist: True # True for using cosine similarity for kmeans clustering
-emb_memory_loc: "/HDD/etc/semdedup/outputs/clip_openai/clip-vit-large-patch14-336/embedding.npy"
+emb_memory_loc: "/HDD/etc/semdedup/outputs/clip_openai/clip-vit-large-patch14-336/normed_embedding.npy"
 text_emb_memory_loc: None
 paths_memory_loc: "/HDD/etc/semdedup/outputs/clip_openai/clip-vit-large-patch14-336/path.npy"
 sorted_clusters_file_loc: "/HDD/etc/semdedup/outputs/sorted_clusters"

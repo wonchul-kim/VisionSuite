@@ -11,7 +11,7 @@ class CMC:
         elif 'dance' in vid_name:
             vid_name = 'dancetrack-' + vid_name.split('dancetrack')[1]
 
-        self.gmcFile = open('/HDD/_projects/github/VisionSuite/visionsuite/cores/tracktrack/trackers/cmc/' + 'GMC-' + vid_name + ".txt", 'r')
+        self.gmcFile = open('/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/tracktrack/cmc_info/' + 'GMC-' + vid_name + ".txt", 'r')
 
     def get_warp_matrix(self):
         line = self.gmcFile.readline()

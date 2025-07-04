@@ -14,6 +14,7 @@ import os
 import os.path as osp
 import cv2 
 from torchvision import transforms
+from torch.nn.functional import normalize
 
 
 def generate_dinov2_embeddings(image_ids, image_paths, model, transform, device, batch_size, regenerate, embeddings_file):
@@ -93,7 +94,7 @@ def process_images(image_directory, model_dict, batch_size, output_dir, device):
                                                        regenerate_embeddings, embeddings_file)
 
 
-    np.save(osp.join(output_dir, 'embedding.npy'), all_embeddings)
+    np.save(osp.join(output_dir, 'normed_embedding.npy'), all_embeddings)
     np.save(osp.join(output_dir, 'path.npy'), np.array(list(images_to_paths.values()), dtype=object))
 
         
@@ -132,7 +133,8 @@ def generate_embeddings(all_image_ids, images_to_paths, model, processor, device
         with torch.no_grad():
             outputs = model.get_image_features(**inputs)
 
-        all_embeddings.extend(outputs.cpu().numpy())
+        from torch.nn.functional import normalize
+        all_embeddings.extend(normalize(outputs).cpu().numpy())
         progress_bar.update(len(batch_image_ids))
 
     progress_bar.close()
