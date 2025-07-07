@@ -15,3 +15,7 @@ tracker:
   init_thr: 0.20
   match_thr: 0.70
   
+detector:
+  model_name: 'yolo11n.pt'
+  confidence: 0.3
+  iou: 0.5
