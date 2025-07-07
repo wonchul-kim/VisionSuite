@@ -1,9 +1,9 @@
 post:
   min_box_area: 100
-  aspect_ratio_thresh: 1.6
+  aspect_ratio: 1.6
 
 tracker:
-  type: TrackTrack
+  type: TrackTracker
   min_len: 3
   min_box_area: 100
   max_time_lost: 30
@@ -19,3 +19,5 @@ detector:
   model_name: 'yolo11n.pt'
   confidence: 0.3
   iou: 0.5
+  width: 1920
+  height: 1080

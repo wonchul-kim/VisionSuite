@@ -10,28 +10,7 @@ class Tracker(BaseTracker):
     def __init__(self, config_file):
         super().__init__(config_file=config_file)
     
-    def track(self, image):
-        if osp.isfile(image):
-            image = cv2.imread(image)
-            dets = self._detector(image, verbose=False, save=False,
-                                  conf=self._config['detector']['confidence'], 
-                                  iou=self._config['detector']['iou'],
-                                  imgsz=(self._config['detector']['height'], self._config['detector']['width']),)[0]
-                            
-            boxes = dets.boxes
-            detections = []
-            for idx, (cls, conf, xyxy) in enumerate(zip(boxes.cls, boxes.conf, boxes.xyxy)):
-                detections.append([xyxy[0].item(), xyxy[1].item(), xyxy[2].item(), xyxy[3].item(), conf.item()])
 
-            if len(detections) != 0:
-                tracked_outputs = self._tracker.track(np.array(detections), 
-                                                      (self._config['detector']['height'], self._config['detector']['width']), 
-                                                      (image.shape[0], image.shape[1]),
-                                                aspect_ratio_thresh=self._config['post']['aspect_ratio_thresh'], 
-                                                min_box_area=self._config['post']['min_box_area'])
-
-        return tracked_outputs
-                
 if __name__ == '__main__':
         
     import os
@@ -44,14 +23,15 @@ if __name__ == '__main__':
     ROOT = FILE.parent
     
     output_dir = '/HDD/etc/outputs/tracking/bytetrack/yolo'
+    output_dir = '/HDD/etc/outputs/tracking/tracktrack/yolo'
     os.makedirs(output_dir, exist_ok=True)
     
     input_dir = '/HDD/datasets/public/MOT17/test/MOT17-01-DPM/img1'
     image_format = 'jpg'
     num_frames = 300
     
-    config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/bytetrack.yaml'
-    # config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/tracktrack.yaml'
+    # config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/bytetrack.yaml'
+    config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/tracktrack.yaml'
     tracker = Tracker(config_file=config_file)
     
     
