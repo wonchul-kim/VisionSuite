@@ -26,7 +26,7 @@ def extract_pruned_data(
     for cluster_id in tqdm(range(0, num_clusters)):
 
         cluster_i = np.load(
-            os.path.join(sorted_clusters_path, f"cluster_{cluster_id}.npy")
+            os.path.join(sorted_clusters_path, f"cluster_{cluster_id}.npy"), allow_pickle=True
         )
         with open(
             f"{semdedup_pruning_tables_path}/cluster_{cluster_id}.pkl", "rb"
@@ -43,7 +43,8 @@ def extract_pruned_data(
             cluster_i = cluster_i[semdedup_pruning_tables["indices"]]
         ## -- retrieve only the examples we want and add to the list.
         dedup_cluster = cluster_i[images_to_keep_or_remove]
-        example_paths += dedup_cluster[:, IMAGE_NAME_INDEX].astype("<U32").tolist()
+        # example_paths += dedup_cluster[:, IMAGE_NAME_INDEX].astype("<U32").tolist()
+        example_paths += dedup_cluster[:, IMAGE_NAME_INDEX].tolist()
 
     with open(output_txt_path, "w") as fp:
         fp.write("\n".join(example_paths))
@@ -51,3 +52,15 @@ def extract_pruned_data(
     print(f"DONE saving {len(example_paths)} image paths")
 
     return
+
+if __name__ == '__main__':
+    import os.path as osp
+    output_dir = '/HDD/etc/semdedup/outputs/pruned_data'
+    os.makedirs(output_dir, exist_ok=True)
+    output_txt_path = osp.join(output_dir, 'output_txt.txt')
+    
+    semdedup_pruning_tables_path = '/HDD/etc/semdedup/outputs/results/dataframes'
+    sorted_clusters_path = '/HDD/etc/semdedup/outputs/sorted_clusters'
+    eps = 0.2
+    num_clusters = 2
+    extract_pruned_data(sorted_clusters_path, semdedup_pruning_tables_path, eps, num_clusters, output_txt_path, retreive_kept_samples=True)

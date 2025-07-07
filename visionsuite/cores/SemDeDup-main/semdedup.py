@@ -106,7 +106,7 @@ class SemDeDupJob(submitit.helpers.Checkpointable):
             cluster_i = np.load(
                 os.path.join(
                     self.args.sorted_clusters_path, f"cluster_{cluster_id}.npy"
-                )
+                ), allow_pickle=True
             )
             # 1) store cluster size
             cluster_size = cluster_i.shape[0]
@@ -152,16 +152,20 @@ class SemDeDupJob(submitit.helpers.Checkpointable):
                 points_to_remove_df[f"eps={eps}"] = eps_points_to_remove
 
             if self.args.save_loc != "":
+                os.makedirs(self.args.save_loc, exist_ok=True)
+                import os.path as osp
+                os.makedirs(osp.join(self.args.save_loc, 'dataframes'), exist_ok=True)
+                
                 ## --save df
                 with open(df_file_loc, "wb") as file:
                     pickle.dump(points_to_remove_df, file)
 
-            step_time.append_cluster(time.time() - step_st)
+            # step_time.append_cluster(time.time() - step_st)
             print("DONE cluster: ", cluster_id)
 
-        print(
-            f"DONE in {((time.time()-st)/60):.2f} minutes, Average Step time {(sum(step_time)/len(step_time)):.2f}(s)"
-        )
+        # print(
+        #     f"DONE in {((time.time()-st)/60):.2f} minutes, Average Step time {(sum(step_time)/len(step_time)):.2f}(s)"
+        # )
         return
 
     def __call__(self):
@@ -173,18 +177,18 @@ class SemDeDupJob(submitit.helpers.Checkpointable):
             f"This job will process clusters {job_start_cluster} to  {min(self.args.num_clusters, job_start_cluster+self.args.clusters_per_job)}"
         )
 
-        job_env = submitit.JobEnvironment()
-
-        print(f"There are {job_env.num_tasks} tasks in this job")
-
-        print(f"I'm the task #{job_env.local_rank} on node {job_env.node}")
-        print(f"I'm the task #{job_env.global_rank} in the job")
+        # job_env = submitit.JobEnvironment()
+        # print(f"There are {job_env.num_tasks} tasks in this job")
+        # print(f"I'm the task #{job_env.local_rank} on node {job_env.node}")
+        # print(f"I'm the task #{job_env.global_rank} in the job")
 
         ## divide clusters across tasks (cpus)
-        num_clusters_per_task = int(
-            math.ceil(self.args.clusters_per_job / job_env.num_tasks)
-        )
-        task_rank = job_env.local_rank
+        # num_clusters_per_task = int(
+        #     math.ceil(self.args.clusters_per_job / job_env.num_tasks)
+        # )
+        # task_rank = job_env.local_rank
+        num_clusters_per_task = 1
+        task_rank = 0
         start_cluster = job_start_cluster + task_rank * num_clusters_per_task
         end_cluster = job_start_cluster + (task_rank + 1) * num_clusters_per_task
         end_cluster = min(self.args.num_clusters, end_cluster)

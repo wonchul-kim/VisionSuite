@@ -1,13 +1,15 @@
+from types import SimpleNamespace
 from .cmc import CMC, apply_cmc
 from .utils import *
 from .track import *
 
 
 class TrackTracker(object):
-    def __init__(self, args, vid_name):
-        # Initialize
-        self.args = args
-        self.max_time_lost = args.max_time_lost
+    def __init__(self, vid_name='MOT17-01-DPM', **kwargs):
+
+        self.args = SimpleNamespace(**kwargs)
+        
+        self.max_time_lost = self.args.max_time_lost
 
         # Initialize
         self.tracks = []

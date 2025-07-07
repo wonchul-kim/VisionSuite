@@ -14,6 +14,7 @@ import os
 import os.path as osp
 import cv2 
 from torchvision import transforms
+from torch.nn.functional import normalize
 
 
 def generate_dinov2_embeddings(image_ids, image_paths, model, transform, device, batch_size, regenerate, embeddings_file):
@@ -55,7 +56,7 @@ def get_embeddings(model_dict, device, image_directory, batch_size, regenerate_e
         model = CLIPModel.from_pretrained(model_dict['ckpt']).to(device)
         processor = CLIPProcessor.from_pretrained(model_dict['ckpt'])
 
-        images_to_paths, all_image_ids = get_images_to_paths(image_directory, allowed_extensions)
+        # images_to_paths, all_image_ids = get_images_to_paths(image_directory, allowed_extensions)
         damaged_image_ids, all_embeddings = generate_embeddings(all_image_ids, images_to_paths, model, 
                                                                 processor, device, batch_size, regenerate_embeddings, embeddings_file)
 
@@ -93,7 +94,8 @@ def process_images(image_directory, model_dict, batch_size, output_dir, device):
                                                        regenerate_embeddings, embeddings_file)
 
 
-    np.save(osp.join(output_dir, 'embedding.npy'), all_embeddings)
+    np.save(osp.join(output_dir, 'normed_embedding.npy'), all_embeddings)
+    np.save(osp.join(output_dir, 'path.npy'), np.array(list(images_to_paths.values()), dtype=object))
 
         
 def check_and_load_embeddings(embeddings_file):
@@ -109,10 +111,11 @@ def check_and_load_embeddings(embeddings_file):
 # Get the paths of all images in the given directory and return the image ids and their paths
 def get_images_to_paths(image_directory, allowed_extensions):
     images_to_paths = {
-        image_path.stem: image_path
+        image_path.stem: str(image_path)
         for image_path in image_directory.iterdir()
         if image_path.suffix.lower() in allowed_extensions
     }
+    
     return images_to_paths, list(images_to_paths.keys())
 
 # Generate CLIP embeddings for all images, handling damaged images if any
@@ -130,7 +133,8 @@ def generate_embeddings(all_image_ids, images_to_paths, model, processor, device
         with torch.no_grad():
             outputs = model.get_image_features(**inputs)
 
-        all_embeddings.extend(outputs.cpu().numpy())
+        from torch.nn.functional import normalize
+        all_embeddings.extend(normalize(outputs).cpu().numpy())
         progress_bar.update(len(batch_image_ids))
 
     progress_bar.close()
