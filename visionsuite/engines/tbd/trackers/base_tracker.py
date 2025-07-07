@@ -4,7 +4,14 @@ from abc import *
 import cv2
 import numpy as np
 
-from ultralytics import YOLO 
+try:
+    from ultralytics import YOLO 
+except Exception as error:
+    print("There has been error to import YOLO from ultralytics: {error}")
+    import subprocess as sp
+    sp.run(['pip', 'install', 'ultralytics'])
+    from ultralytics import YOLO 
+    
 from bytetrack.byte_tracker import BYTETracker
 from tracktrack.tracker import TrackTracker
 

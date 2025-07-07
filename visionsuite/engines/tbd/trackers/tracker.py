@@ -30,8 +30,8 @@ if __name__ == '__main__':
     image_format = 'jpg'
     num_frames = 300
     
-    # config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/bytetrack.yaml'
-    config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/tracktrack.yaml'
+    config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/bytetrack.yaml'
+    # config_file = '/HDD/_projects/github/VisionSuite/visionsuite/engines/tbd/trackers/configs/tracktrack.yaml'
     tracker = Tracker(config_file=config_file)
     
     
