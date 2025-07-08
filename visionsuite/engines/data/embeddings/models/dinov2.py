@@ -3,7 +3,7 @@ import os.path as osp
 import numpy as np
 
 
-class Dinov2:
+class Dinov2FromFacebook:
     def __init__(self, output_dir, model_name, device='cuda'):
 
         self._model = torch.hub.set_dir(osp.join(output_dir, "checkpoints"))
@@ -12,9 +12,39 @@ class Dinov2:
         print("Model parameters:", f"{np.sum([int(np.prod(p.shape)) for p in self._model.parameters()]):,}")
         
         
-    def infer(self, x, masks=None, full_return=True, cls_token=False, patch_token=False):
+    def __call__(self, x, masks=None, full_return=True, cls_token=False, patch_token=False):
         
-        output = self._model.forward_features(x, masks=masks)
+        if cls_token or patch_token:
+            full_return = False
+        
+        with torch.no_grad():
+            output = self._model.forward_features(x, masks=masks)
+        
+        if full_return or (cls_token and patch_token):
+            return output
+        else:
+            if cls_token:
+                return output['x_norm_clstoken']
+            
+            if patch_token:
+                return output['x_norm_patchtokens']
+
+class Dinov2FromHuggingFace:
+    def __init__(self, output_dir, model_name, device='cuda'):
+
+        self._model = torch.hub.set_dir(osp.join(output_dir, "checkpoints"))
+        self._model = torch.hub.load('facebookresearch/dinov2', model_name).to(device)
+        self._model.eval()
+        print("Model parameters:", f"{np.sum([int(np.prod(p.shape)) for p in self._model.parameters()]):,}")
+        
+        
+    def __call__(self, x, masks=None, full_return=True, cls_token=False, patch_token=False):
+        
+        if cls_token or patch_token:
+            full_return = False
+        
+        with torch.no_grad():
+            output = self._model.forward_features(x, masks=masks)
         
         if full_return or (cls_token and patch_token):
             return output
@@ -28,13 +58,11 @@ class Dinov2:
         
         
         
-        
 if __name__ == '__main__':
     
     output_dir = '/HDD/etc/outputs/embeddings/dinov2'
     model_name = 'dinov2_vitb14'
-    
-    model = Dinov2(output_dir, model_name)
+    model = Dinov2FromFacebook(output_dir, model_name)
     
     
     img_file = '/HDD/etc/curation/tenneco/unit/data/0_0_124062721060032_6_Outer.bmp'
@@ -53,22 +81,22 @@ if __name__ == '__main__':
     input_tensor = transform(image).unsqueeze(0).to('cuda')  # shape: (1, 3, 518, 518)
     print("Input tensor shape: ", input_tensor.shape)
 
-    with torch.no_grad():
-        last_hidden = model._model.forward_features(input_tensor)
+    if model.__class__.__name__ == 'Dinov2FromFacebook':
+        last_hidden = model(input_tensor)
+            
+        cls_token = last_hidden['x_norm_clstoken']
+        patch_token = last_hidden['x_norm_patchtokens']
+        reg_token = last_hidden['x_norm_regtokens']
+        pre_norm = last_hidden['x_prenorm']
+        masks = last_hidden['masks']
         
-    cls_token = last_hidden['x_norm_clstoken']
-    patch_token = last_hidden['x_norm_patchtokens']
-    reg_token = last_hidden['x_norm_regtokens']
-    pre_norm = last_hidden['x_prenorm']
-    masks = last_hidden['masks']
-    
-    print("CLS Token Shape:", cls_token.shape)
-    print("Patch Tokens Shape:", patch_token.shape)
-    print("Reg Tokens Shape:", reg_token.shape)
-    print("Pre Norm Shape:", pre_norm.shape)
-    # print("Masks Shape:", masks.shape)
-    
-    import torch.nn.functional as F
-    mean_patch = patch_token.mean(dim=1)
-    similarity = F.cosine_similarity(cls_token, mean_patch)
-    print("CLS vs Mean Patch similarity:", similarity.item())
+        print("CLS Token Shape:", cls_token.shape)
+        print("Patch Tokens Shape:", patch_token.shape)
+        print("Reg Tokens Shape:", reg_token.shape)
+        print("Pre Norm Shape:", pre_norm.shape)
+        # print("Masks Shape:", masks.shape)
+        
+        import torch.nn.functional as F
+        mean_patch = patch_token.mean(dim=1)
+        similarity = F.cosine_similarity(cls_token, mean_patch)
+        print("CLS vs Mean Patch similarity:", similarity.item())
