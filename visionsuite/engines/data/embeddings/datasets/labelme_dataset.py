@@ -7,6 +7,7 @@ class LabelmeDataset:
         self.transform = transform
         self.roi = roi
         self.img_files = glob.glob(osp.join(root, f'*.{image_format}'))
+        # self.img_files = self.img_files[:10]
         print(f"There are {len(self.img_files)} image files")
         
     def __getitem__(self, idx):

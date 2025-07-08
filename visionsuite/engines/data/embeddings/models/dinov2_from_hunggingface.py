@@ -4,12 +4,12 @@ import numpy as np
 from transformers import AutoModel, AutoImageProcessor
 
 class Dinov2FromHuggingFace:
-    def __init__(self, output_dir, model_name, device='cuda'):
+    def __init__(self, output_dir, model_name, output_attentions=False, device='cuda'):
 
         self._processor = AutoImageProcessor.from_pretrained("facebook/dinov2-small", 
                                                              do_resize=False,
                                                              do_center_crop=False)
-        self._model = AutoModel.from_pretrained(f"facebook/{model_name}", output_attentions=False).to(device)
+        self._model = AutoModel.from_pretrained(f"facebook/{model_name}", output_attentions=output_attentions).to(device)
         self._model.eval()
         print("Model parameters:", f"{np.sum([int(np.prod(p.shape)) for p in self._model.parameters()]):,}")
         

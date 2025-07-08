@@ -54,7 +54,8 @@ class EmbeddingGenerator:
         if 'dinov2' in config['model_name']:
             # self._model = Dinov2FromFacebook(self._config['output_dir'], self._config['model_name'])
             # self._preprocess = None
-            self._model = Dinov2FromHuggingFace(self._config['output_dir'], self._config['model_name'])
+            self._model = Dinov2FromHuggingFace(self._config['output_dir'], self._config['model_name'],
+                                                output_attentions=True if self._config['post']['type'] == 'attention' else False)
             # self._preprocess = self._model._processor
             self._preprocess = None
             
@@ -107,8 +108,7 @@ class EmbeddingGenerator:
                         ### 1. L2-norm
                         norms = patch_feats.norm(dim=-1)  # (B, N)
                         weights = torch.nn.functional.softmax(norms, dim=1) # (B, N)
-                        weighted_avg = (patch_feats * weights.unsqueeze(-1)).sum(dim=1)  # (B, D)
-                        fetures = weighted_avg
+                        features = (patch_feats * weights.unsqueeze(-1)).sum(dim=1).cpu().detach()  # (B, D)
                         
                     elif self._config['post']['type'] == 'topk':
                         ### 2. saliency-like: top-k patch pooling 
@@ -119,7 +119,7 @@ class EmbeddingGenerator:
                         for i in range(patch_feats.shape[0]):
                             top_feats = patch_feats[i][indices[i]]  # (topk, 768)
                             pooled.append(top_feats.mean(dim=0))    # (768,)
-                        features = torch.stack(pooled, dim=0)    # (B, 768)
+                        features = torch.stack(pooled, dim=0).cpu().detach()    # (B, 768)
                     
                     elif self._config['post']['type'] == 'attention':
                         ### 3. self-attention 
@@ -127,7 +127,7 @@ class EmbeddingGenerator:
                         attn = attn_list[-1]                 # (4401, 768)
                         cls_attn = attn[:, :, 0, 1:]         # shape: (B, heads, tokens, tokens)   
                         avg_attn = cls_attn.mean(dim=1)      
-                        features = (patch_feats * avg_attn.unsqueeze(-1)).sum(dim=1)  # (1, D)
+                        features = (patch_feats * avg_attn.unsqueeze(-1)).sum(dim=1).cpu().detach()  # (1, D)
                         
                     else:
                         raise NotImplementedError(f"There is no such post method: {self._config['post']['type']}")
@@ -204,13 +204,18 @@ class EmbeddingGenerator:
         # feats_train, filenames_train = self.get_features_from_meta()
         feats_train, filenames_train = self.get_features_from_huggingface()
 
-        representations_dir = f"{config['output_dir']}/{config['model_name']}/clustering_{self._config['k']}"
+        if 'post' in self._config and self._config['post']:
+            if self._config['post']['type'] == 'clustering':
+                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['k']}"
+            else:
+                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}"
+                
         if not os.path.exists(representations_dir):
             os.makedirs(representations_dir)
 
-        np.save(f"{representations_dir}/{config['dataset_format']}_train.npy", feats_train)
+        np.save(f"{representations_dir}/train.npy", feats_train)
 
-        with open(f"{representations_dir}/{config['dataset_format']}_train_filenames.txt", 'w') as f:
+        with open(f"{representations_dir}/train_filenames.txt", 'w') as f:
             for path in filenames_train:
                 f.write(f"{path}\n")
 
@@ -221,17 +226,21 @@ if __name__ == '__main__':
     
     config = {'dataset_format': 'labelme', 
             # 'model_name': 'dinov2_vitb14',
-            'model_name': 'dinov2-base',
-            'batch_size': 2,
+            'model_name': 'dinov2-large',
+            'batch_size': 1,
             'input_dir': '/HDD/datasets/projects/benchmarks/mr/split_patch_dataset/train',
-            'output_dir': '/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/train',
+            'output_dir': '/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset',
             'device': 'cuda',
             'seed': 42,
-            'roi': [220, 60, 1340, 828],
+            'roi': [],
             'post': 
+                # {
+                #     'type': 'clustering',
+                #     'k': 50,
+                #     'cat_cls_token': True
+                # } 
                 {
-                    'type': 'clustering',
-                    'k': 50,
+                    'type': 'attention',
                     'cat_cls_token': True
                 } 
         }
