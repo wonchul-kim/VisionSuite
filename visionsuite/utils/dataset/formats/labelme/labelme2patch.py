@@ -197,8 +197,8 @@ def labelme2patch(input_dir, output_dir, modes, rois, patch_width, patch_height,
 
 if __name__ == '__main__':
         
-    input_dir = '/DeepLearning/research/data/unittests/unit_cost_test/split_interojo_dataset'
-    output_dir = '/DeepLearning/research/data/unittests/unit_cost_test/neurocle/split_interojo_dataset'
+    input_dir = '/HDD/datasets/projects/benchmarks/mr/split_dataset'
+    output_dir = '/HDD/datasets/projects/benchmarks/mr/split_patch_dataset'
     modes = ['train', 'val', 'test']
     classes_to_include = None
 
