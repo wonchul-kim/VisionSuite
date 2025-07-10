@@ -135,15 +135,16 @@ def visualize_kde(
     return fig, kl_dist
 
 make_clustered_dataset = True
-levels = ['3', '4', '5']
-last_level = 5
+level = '7'
 ratio = 0.05
-input_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_dataset'
-embedding_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False'
-output_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False'
+# project_name = 'tenneco'
+# input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
+project_name = 'mr'
+input_dir = '/HDD/datasets/projects/mr/split_dataset'
+output_dir = f'/HDD/etc/curation/{project_name}'
 
-ori_data = np.load(osp.join(embedding_dir, 'train.npy'), mmap_mode="r")
-ori_index_f = open(osp.join(embedding_dir, 'train_filenames.txt'), 'r')
+ori_data = np.load(f'/HDD/etc/curation/{project_name}/embeddings/representations/dinov2/labelme_train.npy', mmap_mode="r")
+ori_index_f = open(f'/HDD/etc/curation/{project_name}/embeddings/representations/dinov2/labelme_train_filenames.txt', 'r')
 ori_index = []
 while True:
     line = ori_index_f.readline()
@@ -157,16 +158,18 @@ print("data: ", ori_data.shape)
 fig, ax = plt.subplots(1, 1, figsize=(6 * 4, 5))
 ax.scatter(ori_data[:, 0], ori_data[:, 1], alpha=0.2, color='r')
 
-data1 = np.load(osp.join(embedding_dir, 'level1/centroids.npy'), mmap_mode="r")
-data2 = np.load(osp.join(embedding_dir, 'level2/centroids.npy'), mmap_mode="r")
-data3 = np.load(osp.join(embedding_dir, 'level3/centroids.npy'), mmap_mode="r")
-data4 = np.load(osp.join(embedding_dir, 'level4/centroids.npy'), mmap_mode="r")
-data5 = np.load(osp.join(embedding_dir, 'level5/centroids.npy'), mmap_mode="r")
+data1 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level1/centroids.npy', mmap_mode="r")
+data2 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level2/centroids.npy', mmap_mode="r")
+data3 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level3/centroids.npy', mmap_mode="r")
+data4 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level4/centroids.npy', mmap_mode="r")
+data5 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level5/centroids.npy', mmap_mode="r")
+data6 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level6/centroids.npy', mmap_mode="r")
+data7 = np.load(f'/HDD/etc/curation/{project_name}/outputs/level7/centroids.npy', mmap_mode="r")
 
 clusters = {}
 counts = []
-for _level in range(1, last_level + 1):
-    sorted_clusters = np.load(osp.join(embedding_dir, f'level{_level}/sorted_clusters.npy'), allow_pickle=True)
+for _level in range(1, 8):
+    sorted_clusters = np.load(f'/HDD/etc/curation/{project_name}/outputs/level{_level}/sorted_clusters.npy', allow_pickle=True)
     clusters[f'cluster_{_level}'] = sorted_clusters
     count = []
     for cluster in sorted_clusters:
@@ -175,6 +178,7 @@ for _level in range(1, last_level + 1):
     
 labels = [f"Group {i+1}" for i in range(len(counts))]
 
+# 데이터를 DataFrame으로 변환
 all_values = []
 group_labels = []
 for i, group in enumerate(counts):
@@ -186,7 +190,10 @@ df = pd.DataFrame({
     "Group": group_labels
 })
 
+# seaborn 스타일 설정
 sns.set(style="whitegrid", palette="pastel")
+
+# boxplot 그리기
 plt.figure(figsize=(8, 5))
 sns.boxplot(x="Group", y="Value", data=df, showmeans=True,
             meanprops={"marker": "o", "markerfacecolor": "black", "markeredgecolor": "black"},
@@ -202,9 +209,10 @@ plt.tight_layout()
 plt.savefig(osp.join(output_dir, 'clusters.png'))
 
 
-res = {"ori_data": ori_data, "data1": data1, "data2": data2, "data3": data3, "data4": data4, "data5": data5}
+res = {"ori_data": ori_data, "data1": data1, "data2": data2, "data3": data3, 
+       "data4": data4, "data5": data5, "data6": data6, "data7": data7}
 
-clustering_names = ['ori_data', 'data1', "data2", 'data3', "data4", 'data5']
+clustering_names = ['ori_data', 'data1', "data2", 'data3', "data4", 'data5', 'data6', 'data7']
 fig = draw_voronoi(
     res,
     clustering_names,
@@ -218,41 +226,40 @@ fig = draw_voronoi(
 )
 
 if make_clustered_dataset:
-    for level in levels:
-        clustered_dataset_dir = osp.join(output_dir, f'clustered_dataset_level{level}')
-        sorted_clusters = np.load(osp.join(embedding_dir, f'level{level}/sorted_clusters.npy'), allow_pickle=True)
-        sorted_clusters = np.concatenate(sorted_clusters)
+    clustered_dataset_dir = osp.join(output_dir, f'clustered_dataset_level{level}')
+    sorted_clusters = np.load(f'/HDD/etc/curation/{project_name}/outputs/level{level}/sorted_clusters.npy', allow_pickle=True)
+    sorted_clusters = np.concatenate(sorted_clusters)
 
-        clustered_dataset_train_dir = osp.join(clustered_dataset_dir, 'train')
-        os.makedirs(clustered_dataset_train_dir, exist_ok=True)
+    clustered_dataset_train_dir = osp.join(clustered_dataset_dir, 'train')
+    os.makedirs(clustered_dataset_train_dir, exist_ok=True)
 
-        for index in tqdm(sorted_clusters):
-            img_file = osp.join(input_dir, 'train', ori_index[index] + '.bmp')
-            json_file = osp.join(input_dir, 'train', ori_index[index] + '.json')
+    for index in tqdm(sorted_clusters):
+        img_file = osp.join(input_dir, 'train', ori_index[index] + '.bmp')
+        json_file = osp.join(input_dir, 'train', ori_index[index] + '.json')
+        assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
+        assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
+
+        shutil.copyfile(img_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.bmp'))
+        shutil.copyfile(json_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.json'))
+
+    clustered_dataset_val_dir = osp.join(clustered_dataset_dir, 'val')
+    os.makedirs(clustered_dataset_val_dir, exist_ok=True)
+    clustered_dataset_test_dir = osp.join(clustered_dataset_dir, 'test')
+    os.makedirs(clustered_dataset_test_dir, exist_ok=True)
+
+    for jdx, filename in tqdm(enumerate(ori_index)):
+        if jdx not in sorted_clusters:
+            img_file = osp.join(input_dir, 'train', ori_index[jdx] + '.bmp')
+            json_file = osp.join(input_dir, 'train', ori_index[jdx] + '.json')
             assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
             assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
 
-            shutil.copyfile(img_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.bmp'))
-            shutil.copyfile(json_file, osp.join(clustered_dataset_train_dir, ori_index[index] + '.json'))
-
-        clustered_dataset_val_dir = osp.join(clustered_dataset_dir, 'val')
-        os.makedirs(clustered_dataset_val_dir, exist_ok=True)
-        clustered_dataset_test_dir = osp.join(clustered_dataset_dir, 'test')
-        os.makedirs(clustered_dataset_test_dir, exist_ok=True)
-
-        for jdx, filename in tqdm(enumerate(ori_index)):
-            if jdx not in sorted_clusters:
-                img_file = osp.join(input_dir, 'train', ori_index[jdx] + '.bmp')
-                json_file = osp.join(input_dir, 'train', ori_index[jdx] + '.json')
-                assert osp.exists(img_file), RuntimeError(f'There is no such image file: {img_file}')
-                assert osp.exists(json_file), RuntimeError(f'There is no such json file: {json_file}')
-
-                if ratio > random.uniform(0, 1):
-                    shutil.copyfile(img_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.bmp'))
-                    shutil.copyfile(json_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.json'))
-                else:
-                    shutil.copyfile(img_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.bmp'))
-                    shutil.copyfile(json_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.json'))
+            if ratio > random.uniform(0, 1):
+                shutil.copyfile(img_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.bmp'))
+                shutil.copyfile(json_file, osp.join(clustered_dataset_val_dir, ori_index[jdx] + '.json'))
+            else:
+                shutil.copyfile(img_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.bmp'))
+                shutil.copyfile(json_file, osp.join(clustered_dataset_test_dir, ori_index[jdx] + '.json'))
 
 
 fig, kl_dist_1 = visualize_kde(

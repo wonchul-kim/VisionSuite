@@ -158,17 +158,20 @@ def split_clusters(
 
 if __name__ == "__main__":
     parser = ArgumentParser()
-    parser.add_argument("--data_path", default='/HDD/etc/curation/mr/embeddings/representations/dinov2/labelme_train.npy')
+    parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/train.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--clusters_path", default='/HDD/etc/curation/mr/outputs/level1/pre_clusters/sorted_clusters.npy')
+    parser.add_argument("--clusters_path", default='/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/pre_clusters/sorted_clusters.npy')
     parser.add_argument("--n_splits", default=100)
     parser.add_argument("--n_iters", default=50)
     parser.add_argument("--dtype", type=str, default="float32")
     parser.add_argument("--high_precision", type=str, default="float32")
-    parser.add_argument("--save_path", default='/HDD/etc/curation/mr/outputs/level1')
+    parser.add_argument("--save_path", default='/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/level1')
     parser.add_argument("--use_torchrun", action="store_true")
 
+
     args = parser.parse_args()
+    import os
+    os.makedirs(args.save_path, exist_ok=True)
     setup_logging()
 
     def parse_dtype(dtype):

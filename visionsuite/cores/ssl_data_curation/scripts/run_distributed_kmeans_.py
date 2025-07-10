@@ -225,36 +225,42 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/unit/embeddings/representations/dinov2/labelme_train.npy')
-    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/unit/outputs/level1/centroids.npy')
-    # parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/unit/outputs/level2/centroids.npy')
-    parser.add_argument("--data_path", default='/HDD/etc/curation/tenneco/unit/outputs/level3/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/train.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level1/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level2/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level3/centroids.npy')
+    parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level4/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level5/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level6/centroids.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--n_clusters", type=int, default=3)
+    parser.add_argument("--n_clusters", type=int, default=200) # 2000 10000 1000 500 200
     parser.add_argument("--chunk_size", type=int, default=1000)
     parser.add_argument("--dtype", type=str, default="float64")
     parser.add_argument("--high_precision", type=str, default="float64")
-    parser.add_argument("--checkpoint_period", type=int, default=100)
+    parser.add_argument("--checkpoint_period", type=int, default=1000)
     parser.add_argument(
         "--sort_cluster_checkpoint_period",
         type=int,
         default=-1
     )
-    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/unit/outputs/level1/pre_clusters")
-    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/unit/outputs/level2")
-    # parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/unit/outputs/level3")
-    parser.add_argument("--exp_dir", type=str, default="/HDD/etc/curation/tenneco/unit/outputs/level4")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/pre_clusters")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level2")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level3")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level4")
+    parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level5")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level6")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset/dinov2-large/clustering_50/level7")
     parser.add_argument("--n_iters", type=int, default=50)
     parser.add_argument("--use_torchrun", action="store_true")
 
     parser.add_argument(
-        "--n_steps", type=int, default=10, help="Number of resampling step"
+        "--n_steps", type=int, default=10, help="Number of resampling step" # 1 10 10 10 10 10
     )
     parser.add_argument(
         "--sample_size",
         type=int,
-        default=10,
-        help="Number of samples per cluster in resampling",
+        default=3,
+        help="Number of samples per cluster in resampling",  # 1 10 5 3 3
     )
     parser.add_argument(
         "--sampling_strategy",

@@ -5,7 +5,7 @@ n_iters: 50
 # Number of clusters in each level of hierarchical k-means.
 # For efficiency in the first level, we run first a k-means
 # with 100k clusters, then split each cluster into 100
-# smaller ones to have 10M clusters.
+# smaller ones to have 10M clusters. 10000000
 n_clusters: 
 - 100_000
 - 500_000

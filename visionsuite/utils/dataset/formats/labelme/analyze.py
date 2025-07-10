@@ -41,6 +41,12 @@ def analyze_labelme(input_dir, output_dir, project_name, title, subtitle):
             xs, ys = [], []
             for ann in anns:
                 label = ann['label']
+                shape_type = ann['shape_type']
+                points = ann['points']
+                
+                if len(points) == 1 or shape_type == 'point':
+                    continue
+                
                 # labels by mode
                 if label in mode_labels.keys():
                     mode_labels[label] += 1
@@ -54,7 +60,6 @@ def analyze_labelme(input_dir, output_dir, project_name, title, subtitle):
                     image_labels[label] = 1
                     
                 # objects
-                points = ann['points']
                 for point in points:
                     xs.append(point[0])
                     ys.append(point[1])
@@ -141,7 +146,7 @@ if __name__ == '__main__':
     # input_dir = '/DeepLearning/etc/_athena_tests/benchmark/sungwoo/inner_body/split_dataset'
     # output_dir = '/DeepLearning/etc/_athena_tests/benchmark/sungwoo/inner_body/reports'
 
-    # project_name = 'Sungwoo-inner-body'
+    # project_name = 'Sungwoo-inner-body'가자
     # title = "Dataset Analysis"
     # subtitle = f"The dataset is {project_name}"
     
@@ -157,8 +162,8 @@ if __name__ == '__main__':
     # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
     
     
-    input_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7'
-    output_dir = '/HDD/etc/curation/tenneco/clustered_dataset_level7'
+    input_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/clustered_dataset_level5'
+    output_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/clustered_dataset_level5'
 
     project_name = 'Tenneco'
     title = "Dataset Analysis"

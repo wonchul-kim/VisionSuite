@@ -206,9 +206,9 @@ class EmbeddingGenerator:
 
         if 'post' in self._config and self._config['post']:
             if self._config['post']['type'] == 'clustering':
-                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['k']}"
+                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['k']}_{self._config['post']['cat_cls_token']}"
             else:
-                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}"
+                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['cat_cls_token']}"
                 
         if not os.path.exists(representations_dir):
             os.makedirs(representations_dir)
@@ -226,13 +226,13 @@ if __name__ == '__main__':
     
     config = {'dataset_format': 'labelme', 
             # 'model_name': 'dinov2_vitb14',
-            'model_name': 'dinov2-large',
+            'model_name': 'dinov2-base',
             'batch_size': 1,
-            'input_dir': '/HDD/datasets/projects/benchmarks/mr/split_patch_dataset/train',
-            'output_dir': '/HDD/datasets/projects/benchmarks/mr/split_patch_embedding_dataset',
+            'input_dir': '/HDD/datasets/projects/benchmarks/tenneco/split_dataset/train',
+            'output_dir': '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset',
             'device': 'cuda',
             'seed': 42,
-            'roi': [],
+            'roi': [220, 60, 1340, 828],
             'post': 
                 # {
                 #     'type': 'clustering',
@@ -241,7 +241,7 @@ if __name__ == '__main__':
                 # } 
                 {
                     'type': 'attention',
-                    'cat_cls_token': True
+                    'cat_cls_token': False
                 } 
         }
     
