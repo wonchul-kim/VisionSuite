@@ -1,7 +1,6 @@
 import os
 import os.path as osp
 import cv2
-import numpy as np
 
 from base_tracker import BaseTracker
 
