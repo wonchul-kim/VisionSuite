@@ -37,7 +37,7 @@ if __name__ == "__main__":
 
     parser.add_argument(
         "--set",
-        default="train",
+        default="train", 
         type=str,
         choices=["val", "train", "trainval", "test"],
         help="Path of the image to load.",
@@ -46,7 +46,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--image_path",
         type=str,
-        default='/HDD/etc/outputs/most/images/ADE_val_00000029.jpg',
+        default='/HDD/etc/outputs/most/images/0_coaxial_20240624192557276_0.bmp',
+        # default='/HDD/datasets/projects/benchmarks/tenneco/split_dataset/val/18_31_124081211492957_3_Outer.bmp',
+        # default='/HDD/datasets/projects/benchmarks/interojo/train/123070112075361_7_br7.bmp',
+        # default='/HDD/datasets/projects/benchmarks/mr/split_patch_dataset/test/0_coaxial_20240920101422901_9.bmp',
         help="If want to apply only on one image, give file path.",
     )
 
@@ -131,8 +134,8 @@ if __name__ == "__main__":
         # ------------ IMAGE PROCESSING -------------------------------------------
         img = inp[0]
         init_image_size = img.shape
-        if (torch.tensor(init_image_size[1:]) > 1000).any():
-            continue
+        # if (torch.tensor(init_image_size[1:]) > 1000).any():
+        #     continue
         # Get the name of the image
         if not inp[1]:
             continue
@@ -177,7 +180,7 @@ if __name__ == "__main__":
                     feat_out["qkv"] = output
                 model._modules["blocks"][-1]._modules["attn"]._modules["qkv"].register_forward_hook(hook_fn_forward_qkv)
 
-                attentions = model.get_last_selfattention(img[None, :, :, :])
+                attentions = model.get_last_selfattention(img[None, :, :, :])# (bs, num_heads, tokens, tokens)
 
                 scales = [args.patch_size, args.patch_size]
 
@@ -185,7 +188,7 @@ if __name__ == "__main__":
                 nh = attentions.shape[1]  # Number of heads
                 nb_tokens = attentions.shape[2]  # Number of tokens
                 qkv = (
-                    feat_out["qkv"]
+                    feat_out["qkv"] # (bs, tokens, all qkv head_dim)
                     .reshape(nb_im, nb_tokens, 3, nh, -1 // nh) # (bs, tokens, qkv, nh, head_dim)
                     .permute(2, 0, 3, 1, 4) # (qkv, bs, nh, tokens, head_dim)
                 )
@@ -237,34 +240,21 @@ if __name__ == "__main__":
                                     im_name
                 )
         # Save the prediction
-        if args.dataset in ['ECSSD', 'DUTS', 'DUT-OMRON']:
-            if pred:
-                preds_dict[im_name] = np.max(np.stack(pred, axis=0),axis=0)
-            else:
-                preds_dict[im_name] = np.asarray([])
-        else:
-            preds_dict[im_name] = pred
+        preds_dict[im_name] = pred
 
 
     # Save predicted bounding boxes
-    if args.save_predictions:
-        folder = f"{args.output_dir}/{exp_name}"
-        os.makedirs(folder, exist_ok=True)
-        filename = os.path.join(folder, "preds.pkl")
-        with open(filename, "wb") as f:
-            pickle.dump(preds_dict, f)
-        print("Predictions saved at %s" % filename)
+    folder = f"{args.output_dir}/visualizations/{exp_name}"
+    os.makedirs(folder, exist_ok=True)
+    filename = os.path.join(folder, "preds.pkl")
+    with open(filename, "wb") as f:
+        pickle.dump(preds_dict, f)
+    print("Predictions saved at %s" % filename)
 
     # Evaluate
     result_file = os.path.join(folder, 'results.txt')
-    if args.dataset in ['ECSSD', 'DUTS', 'DUT-OMRON']:
-        print(f"F1: {int(np.sum(fbmax))}/{cnt}, IoU: {int(np.sum(iou_arr))}/{cnt}, Acc: {int(np.sum(acc))}/{cnt}")
-        res_str = 'fbmax,%.1f,iou,%.1f,acc,%.1f,,\n'%(100*np.sum(fbmax)/cnt,
-                                            100*np.sum(iou_arr)/cnt,
-                                            100*np.sum(acc)/cnt)
-    else:
-        print(f"corloc: {100*np.sum(corloc)/cnt:.2f} ({int(np.sum(corloc))}/{cnt})")
-        res_str = 'corloc,%.1f,,\n'%(100*np.sum(corloc)/cnt)
+    print(f"corloc: {100*np.sum(corloc)/cnt:.2f} ({int(np.sum(corloc))}/{cnt})")
+    res_str = 'corloc,%.1f,,\n'%(100*np.sum(corloc)/cnt)
     with open(result_file, 'w') as f:
         f.write(res_str)
     print('File saved at %s'%result_file)

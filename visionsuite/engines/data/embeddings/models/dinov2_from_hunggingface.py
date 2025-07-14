@@ -13,6 +13,14 @@ class Dinov2FromHuggingFace:
         self._model.eval()
         print("Model parameters:", f"{np.sum([int(np.prod(p.shape)) for p in self._model.parameters()]):,}")
         
+        self.qkv_outputs = []
+        def hook_fn_forward_qkv(module, input, output):
+            self.qkv_outputs.append(output)
+            
+        self._model.encoder.layer[-1].attention.attention.query.register_forward_hook(hook_fn_forward_qkv)
+        self._model.encoder.layer[-1].attention.attention.key.register_forward_hook(hook_fn_forward_qkv)
+        self._model.encoder.layer[-1].attention.attention.value.register_forward_hook(hook_fn_forward_qkv)
+        
         
     def preprocess(self, image, return_tensors):
         '''

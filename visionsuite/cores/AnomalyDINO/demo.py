@@ -69,14 +69,15 @@ model = get_model('dinov2_vits14', 'cuda', smaller_edge_size=32*20)
 # Load reference image
 object_name = "hazelnut" # change object/image as you like
 img_name = "001.png"
-image_ref = cv2.imread(f"{mvtec_path}/{object_name}/train/good/{img_name}")
+# image_ref = cv2.imread(f"{mvtec_path}/{object_name}/train/good/{img_name}")
+image_ref = cv2.imread('/HDD/etc/outputs/most/images/0_coaxial_20240624192655331_0.bmp')
 image_ref = cv2.cvtColor(image_ref, cv2.COLOR_BGR2RGB)
 
 masking = masking_default[object_name] # set masking = False for textures
 
 # Compute features and mask
 image_tensor1, grid_size1 = model.prepare_image(image_ref)
-features_ref = model.extract_features(image_tensor1)
+features_ref = model.extract_features(image_tensor1) # (bs, n_patches, emb_size)
 mask_ref = model.compute_background_mask(features_ref, grid_size1, threshold=10, masking_type=masking)
 vis_image_ref = model.get_embedding_visualization(features_ref, grid_size1)
 
@@ -84,9 +85,7 @@ vis_image_ref = model.get_embedding_visualization(features_ref, grid_size1)
 fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(12, 4))
 ax1.imshow(image_ref)
 ax2.imshow(vis_image_ref)
-resized_mask = resize_mask_img(mask_ref, image_ref.shape, grid_size1)
 ax3.imshow(image_ref)
-# prepare_mask
 ax3.imshow(resize_mask_img(mask_ref, image_ref.shape, grid_size1), alpha=0.3)
 # ax3.imshow(model.prepare_mask(mask_ref, image_ref.shape, grid_size1), alpha=0.3)
 fig.tight_layout()
@@ -96,7 +95,8 @@ ax2.axis('off')
 ax2.set_title("PCA of Features")
 ax3.axis('off')
 ax3.set_title("Zero-shot Masking")
-plt.show()
+plt.savefig('/HDD/etc/outputs/most/4.png')
+plt.close()
 
 ########################################################################################################################
 ########################################################################################################################

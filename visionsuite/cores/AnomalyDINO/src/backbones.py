@@ -156,10 +156,11 @@ class DINOv2Wrapper(VisionTransformerWrapper):
         return self.compute_background_mask(tokens, grid_size, threshold, masking_type)
 
 
-    def compute_background_mask(self, img_features, grid_size, threshold = 10, masking_type = False, kernel_size = 3, border = 0.2):
+    def compute_background_mask(self, img_features, grid_size, threshold = 10, 
+                                masking_type = False, kernel_size = 3, border = 0.2):
         # Kernel size for morphological operations should be odd
-        pca = PCA(n_components=1, svd_solver='randomized')
-        first_pc = pca.fit_transform(img_features.astype(np.float32))
+        pca = PCA(n_components=10, svd_solver='randomized')
+        first_pc = pca.fit_transform(img_features.astype(np.float32))[:, 0]
         if masking_type == True:
             mask = first_pc > threshold
             # test whether the center crop of the images is kept (adaptive masking), adapt if your objects of interest are not centered!
@@ -173,6 +174,24 @@ class DINOv2Wrapper(VisionTransformerWrapper):
             mask = np.ones_like(first_pc, dtype=bool)
         return mask.squeeze()
 
+    # def compute_background_mask(self, img_features, grid_size, threshold = 10, 
+    #                             masking_type = False, kernel_size = 3, border = 0.2):
+    #     # Kernel size for morphological operations should be odd
+    #     pca = PCA(n_components=1, svd_solver='randomized')
+    #     first_pc = pca.fit_transform(img_features.astype(np.float32))
+    #     if masking_type == True:
+    #         mask = first_pc > threshold
+    #         # test whether the center crop of the images is kept (adaptive masking), adapt if your objects of interest are not centered!
+    #         m = mask.reshape(grid_size)[int(grid_size[0] * border):int(grid_size[0] * (1-border)), int(grid_size[1] * border):int(grid_size[1] * (1-border))]
+    #         if m.sum() <=  m.size * 0.35:
+    #             mask = - first_pc > threshold
+    #         # postprocess mask, fill small holes in the mask, enlarge slightly
+    #         mask = cv2.dilate(mask.astype(np.uint8), np.ones((kernel_size, kernel_size), np.uint8)).astype(bool)
+    #         mask = cv2.morphologyEx(mask.astype(np.uint8), cv2.MORPH_CLOSE, np.ones((kernel_size, kernel_size), np.uint8)).astype(bool)
+    #     elif masking_type == False:
+    #         mask = np.ones_like(first_pc, dtype=bool)
+    #     return mask.squeeze()
+
 
 def get_model(model_name, device, smaller_edge_size=448):
     print(f"Loading model: {model_name}")
@@ -185,3 +204,12 @@ def get_model(model_name, device, smaller_edge_size=448):
         return DINOv2Wrapper(model_name, device, smaller_edge_size)
     else:
         raise ValueError(f"Unknown model name: {model_name}")
+    
+
+# import matplotlib.pyplot as plt
+# # i번째 patch의 similarity map
+# heatmap = m.cpu().detach().numpy()
+
+# plt.imshow(heatmap, cmap='hot')
+# plt.title(f"Semantic affinity from patch")
+# plt.savefig('/HDD/etc/outputs/most/mask.png')

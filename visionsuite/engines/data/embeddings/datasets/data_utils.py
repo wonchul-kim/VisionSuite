@@ -24,7 +24,8 @@ def _safe_to_tensor(x):
 def get_default_transforms():
     return transforms.Compose([
         # transforms.Resize((8652, 1022), interpolation=transforms.InterpolationMode.BICUBIC),
-        transforms.Resize((768, 1120), interpolation=transforms.InterpolationMode.BICUBIC),
+        # transforms.Resize((768, 1120), interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.Resize((512, 512), interpolation=transforms.InterpolationMode.BICUBIC),
         # transforms.Resize((350, 560), interpolation=transforms.InterpolationMode.BICUBIC),
         # transforms.Resize(256, interpolation=transforms.InterpolationMode.BICUBIC),
         # transforms.CenterCrop(224),
