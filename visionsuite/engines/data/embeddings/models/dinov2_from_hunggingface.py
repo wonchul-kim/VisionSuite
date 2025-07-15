@@ -15,7 +15,7 @@ class Dinov2FromHuggingFace:
         
         self.qkv_outputs = []
         def hook_fn_forward_qkv(module, input, output):
-            self.qkv_outputs.append(output)
+            self.qkv_outputs.append(output.detach().cpu())
             
         self._model.encoder.layer[-1].attention.attention.query.register_forward_hook(hook_fn_forward_qkv)
         self._model.encoder.layer[-1].attention.attention.key.register_forward_hook(hook_fn_forward_qkv)
@@ -46,6 +46,8 @@ class Dinov2FromHuggingFace:
         return self._processor(images=image, return_tensors=return_tensors)
         
     def __call__(self, **x):
+        
+        self.qkv_outputs.clear()
         
         return self._model(**x)        
         

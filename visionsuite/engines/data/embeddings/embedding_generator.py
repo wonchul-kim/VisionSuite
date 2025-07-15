@@ -47,7 +47,7 @@ class EmbeddingGenerator:
     def set_dataset(self):
         self._dataloader = get_dataloaders(config['dataset_format'], self._preprocess, 
                                      config['batch_size'], config['input_dir'],
-                                     roi=config['roi'])
+                                     roi=config['roi'], search_all=config['search_all'])
 
     def set_model(self):
         
@@ -78,6 +78,7 @@ class EmbeddingGenerator:
     def get_features_from_huggingface(self):
         all_features = []
         filenames = []
+        
         with torch.no_grad():
             for x, filename in tqdm(self._dataloader):
                 # x['pixel_values'] = x['pixel_values'][0].to(self._device)
@@ -126,61 +127,61 @@ class EmbeddingGenerator:
                         ### 3. self-attention 
                         # 현재 이미지의 CLS→patch attention
                         attn = attn_list[-1]                 # attn: (B, heads, tokens, tokens)
-                        cls_attn = attn[:, :, 0, 1:]         # 
+                        cls_attn = attn[:, :, 0, 1:]         # cls_attn: (B, heads, tokens)
                         avg_attn = cls_attn.mean(dim=1)  
                         
-                        attentions = attn # (bs, num_heads, tokens, tokens)
+                        # attentions = attn # (bs, num_heads, tokens, tokens)
 
-                        nb_im = attentions.shape[0]  
-                        nh = attentions.shape[1]  # Number of heads
-                        nb_tokens = attentions.shape[2]  # Number of tokens
+                        # nb_im = attentions.shape[0]  
+                        # nh = attentions.shape[1]  # Number of heads
+                        # nb_tokens = attentions.shape[2]  # Number of tokens
                         
-                        q =  self._model.qkv_outputs[0]
-                        k =  self._model.qkv_outputs[1]
-                        v =  self._model.qkv_outputs[2]
-                        feats = k[:, 1:, :]
+                        # q =  self._model.qkv_outputs[0]
+                        # k =  self._model.qkv_outputs[1]
+                        # v =  self._model.qkv_outputs[2]
+                        # feats = k[:, 1:, :]
                         
                         
-                        A = (feats @ feats.transpose(1, 2)).squeeze()
-                        seeds = []
-                        import math 
-                        for i in range(A.shape[0]):
+                        # A = (feats @ feats.transpose(1, 2)).squeeze()
+                        # seeds = []
+                        # import math 
+                        # for i in range(A.shape[0]):
 
-                            map_ = A[i].clone()
-                            map_[map_ <= 0] = 0
-                            map_ = map_.reshape(int(math.sqrt(feats.shape[1])), int(math.sqrt(feats.shape[1])))
+                        #     map_ = A[i].clone()
+                        #     map_[map_ <= 0] = 0
+                        #     map_ = map_.reshape(int(math.sqrt(feats.shape[1])), int(math.sqrt(feats.shape[1])))
 
-                            if True:
-                                import matplotlib.pyplot as plt
-                                # i번째 patch의 similarity map
-                                heatmap = map_.cpu().detach().numpy()
+                        #     if True:
+                        #         import matplotlib.pyplot as plt
+                        #         # i번째 patch의 similarity map
+                        #         heatmap = map_.cpu().detach().numpy()
 
-                                plt.imshow(heatmap, cmap='hot')
-                                plt.title(f"Semantic affinity from patch {i}")
-                                plt.savefig(f'/HDD/etc/outputs/curation/heatmap_{i}.png')
+                        #         plt.imshow(heatmap, cmap='hot')
+                        #         plt.title(f"Semantic affinity from patch {i}")
+                        #         plt.savefig(f'/HDD/etc/outputs/curation/heatmap_{i}.png')
 
 
-                            # ks = list(map(int, ks))
-                            # ks = list(set([min(k, min(dims)) for k in ks]))
-                            # ks.sort()
-                            # pool_dims = [[dims[0] - k+1, dims[1]-k+1] for k in ks]
-                            # feat_pool = [torch.nn.AdaptiveAvgPool2d(k) for k in pool_dims]
-                            # thresh = [1+(np.log(d[0])/np.log(2)) for d in pool_dims]
-                            # # compute entropy at each resolution
-                            # ents = compute_block_entropy(map_, feat_pool)
-                            # # Check if map contain any object
-                            # pass_ = [l < t for l, t in zip(ents, thresh)]
-                            # # If atleast 50% of the maps agree there is an object, we pick it
-                            # if sum(pass_) >= 0.5 * len(pass_):
-                            #     seeds.append(i)
+                        #     # ks = list(map(int, ks))
+                        #     # ks = list(set([min(k, min(dims)) for k in ks]))
+                        #     # ks.sort()
+                        #     # pool_dims = [[dims[0] - k+1, dims[1]-k+1] for k in ks]
+                        #     # feat_pool = [torch.nn.AdaptiveAvgPool2d(k) for k in pool_dims]
+                        #     # thresh = [1+(np.log(d[0])/np.log(2)) for d in pool_dims]
+                        #     # # compute entropy at each resolution
+                        #     # ents = compute_block_entropy(map_, feat_pool)
+                        #     # # Check if map contain any object
+                        #     # pass_ = [l < t for l, t in zip(ents, thresh)]
+                        #     # # If atleast 50% of the maps agree there is an object, we pick it
+                        #     # if sum(pass_) >= 0.5 * len(pass_):
+                        #     #     seeds.append(i)
                                     
 
-                        ### topk 
-                        # topk = 5
-                        # _, important_idx = avg_attn.topk(topk, dim=1)  # (B, topk)
+                        # ### topk 
+                        # # topk = 5
+                        # # _, important_idx = avg_attn.topk(topk, dim=1)  # (B, topk)
 
-                        # # (B, topk, D)
-                        # important_patch_feats = patch_feats.gather(1, important_idx.unsqueeze(-1).expand(-1, -1, patch_feats.size(-1)))
+                        # # # (B, topk, D)
+                        # # important_patch_feats = patch_feats.gather(1, important_idx.unsqueeze(-1).expand(-1, -1, patch_feats.size(-1)))
                         
                             
                         features = (patch_feats * avg_attn.unsqueeze(-1)).sum(dim=1).cpu().detach()  # (1, D)
@@ -198,9 +199,28 @@ class EmbeddingGenerator:
     
                 all_features.append(features)
                 filenames.extend(filename)
+                
+                
+                if len(all_features)%100000 == 0:
+                    
+                    feats_train, filenames_train = torch.cat(all_features).numpy(), filenames
 
-        return torch.cat(all_features).numpy(), filenames
-        
+                    if 'post' in self._config and self._config['post']:
+                        if self._config['post']['type'] == 'clustering':
+                            representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['k']}_{self._config['post']['cat_cls_token']}"
+                        else:
+                            representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['cat_cls_token']}"
+                            
+                    if not os.path.exists(representations_dir):
+                        os.makedirs(representations_dir)
+
+                    np.save(f"{representations_dir}/train_{len(all_features)}.npy", feats_train)
+
+                    with open(f"{representations_dir}/train_filenames_{len(all_features)}.txt", 'w') as f:
+                        for path in filenames_train:
+                            f.write(f"{path}\n")
+                
+
         
     def get_features_from_meta(self):
         all_features = []
@@ -256,35 +276,36 @@ class EmbeddingGenerator:
         return torch.cat(all_features).numpy(), filenames
         
     def run(self):
-        
-        # feats_train, filenames_train = self.get_features_from_meta()
-        feats_train, filenames_train = self.get_features_from_huggingface()
+        self.get_features_from_huggingface()
+        # # feats_train, filenames_train = self.get_features_from_meta()
+        # feats_train, filenames_train = self.get_features_from_huggingface()
 
-        if 'post' in self._config and self._config['post']:
-            if self._config['post']['type'] == 'clustering':
-                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['k']}_{self._config['post']['cat_cls_token']}"
-            else:
-                representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['cat_cls_token']}"
+        # if 'post' in self._config and self._config['post']:
+        #     if self._config['post']['type'] == 'clustering':
+        #         representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['k']}_{self._config['post']['cat_cls_token']}"
+        #     else:
+        #         representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['post']['type']}_{self._config['post']['cat_cls_token']}"
                 
-        if not os.path.exists(representations_dir):
-            os.makedirs(representations_dir)
+        # if not os.path.exists(representations_dir):
+        #     os.makedirs(representations_dir)
 
-        np.save(f"{representations_dir}/train.npy", feats_train)
+        # np.save(f"{representations_dir}/train.npy", feats_train)
 
-        with open(f"{representations_dir}/train_filenames.txt", 'w') as f:
-            for path in filenames_train:
-                f.write(f"{path}\n")
+        # with open(f"{representations_dir}/train_filenames.txt", 'w') as f:
+        #     for path in filenames_train:
+        #         f.write(f"{path}\n")
 
 
 if __name__ == '__main__':
     import os
-        
+
     config = {'dataset_format': 'labelme', 
             # 'model_name': 'dinov2_vitb14',
-            'model_name': 'dinov2-small',
+            'model_name': 'dinov2-large',
             'batch_size': 1,
-            'input_dir': '/HDD/datasets/projects/benchmarks/mr/split_dataset/train',
-            'output_dir': '/HDD/datasets/projects/benchmarks/mr/split_embedding_dataset',
+            'input_dir': '/HDD/datasets/projects/benchmarks/mr_ad_bench/data',
+            'output_dir': '/HDD/datasets/projects/benchmarks/mr_ad_bench/embedding_data',
+            'search_all': True,
             'device': 'cuda',
             'seed': 42,
             'roi': [],
@@ -299,12 +320,14 @@ if __name__ == '__main__':
                     'cat_cls_token': False
                 } 
         }
+        
     
     # config = {'dataset_format': 'labelme', 
     #         # 'model_name': 'dinov2_vitb14',
     #         'model_name': 'dinov2-base',
     #         'batch_size': 1,
     #         'input_dir': '/HDD/datasets/projects/benchmarks/tenneco/split_dataset/train',
+    #         'search_all': False,
     #         'output_dir': '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset',
     #         'device': 'cuda',
     #         'seed': 42,

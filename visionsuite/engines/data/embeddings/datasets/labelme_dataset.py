@@ -3,10 +3,13 @@ import glob
 from PIL import Image 
 
 class LabelmeDataset:
-    def __init__(self, root, transform, roi=[], image_format='bmp'):
+    def __init__(self, root, transform, roi=[], image_format='bmp', search_all=False):
         self.transform = transform
         self.roi = roi
-        self.img_files = glob.glob(osp.join(root, f'*.{image_format}'))
+        if search_all:
+            self.img_files = glob.glob(osp.join(root, f'*/*.{image_format}'))
+        else:
+            self.img_files = glob.glob(osp.join(root, f'*.{image_format}'))
         # self.img_files = self.img_files[:10]
         print(f"There are {len(self.img_files)} image files")
         

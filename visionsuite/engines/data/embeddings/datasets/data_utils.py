@@ -35,16 +35,16 @@ def get_default_transforms():
     ])
 
 
-def get_dataloaders(dataset, transform, batch_size, root_dir, roi=[]):
+def get_dataloaders(dataset, transform, batch_size, root_dir, roi=[], search_all=False):
     if transform is None:
         # just dummy resize -> both CLIP and DINO support 224 size of the image
         transform = get_default_transforms()
-    dataset = get_datasets(dataset, transform, root_dir, roi=roi)
+    dataset = get_datasets(dataset, transform, root_dir, roi=roi, search_all=search_all)
     dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=10)
     return dataloader
 
 
-def get_datasets(dataset, transform, root_dir, roi=[]):
+def get_datasets(dataset, transform, root_dir, roi=[], search_all=False):
     data_path = os.path.join(root_dir)#, 'datasets')
 
     # if dataset == 'cifar10':
@@ -67,7 +67,7 @@ def get_datasets(dataset, transform, root_dir, roi=[]):
     #     val_dataset = dsets.ImageFolder(root=os.path.join(data_path, "imagenet/val"), transform=transform)
         
     # elif dataset == 'labelme':
-    dataset = LabelmeDataset(root=data_path, transform=transform, roi=roi)
+    dataset = LabelmeDataset(root=data_path, transform=transform, roi=roi, search_all=search_all)
 
     return dataset
 
