@@ -78,6 +78,7 @@ class EmbeddingGenerator:
     def get_features_from_huggingface(self):
         all_features = []
         filenames = []
+        cnt = 1
         
         with torch.no_grad():
             for x, filename in tqdm(self._dataloader):
@@ -169,8 +170,7 @@ class EmbeddingGenerator:
                 all_features.append(features)
                 filenames.extend(filename)
                 
-                
-                if len(all_features) != 0 and len(all_features)%self._config['save_embedding_number'] == 0:
+                if len(all_features) != 0 and len(all_features) == self._config['save_embedding_number']:
                     
                     feats_train, filenames_train = torch.cat(all_features).numpy(), filenames
 
@@ -183,14 +183,15 @@ class EmbeddingGenerator:
                     if not os.path.exists(representations_dir):
                         os.makedirs(representations_dir)
 
-                    np.save(f"{representations_dir}/train_{len(all_features)}.npy", feats_train)
+                    np.save(f"{representations_dir}/train_{cnt}.npy", feats_train)
 
-                    with open(f"{representations_dir}/train_filenames_{len(all_features)}.txt", 'w') as f:
+                    with open(f"{representations_dir}/train_filenames_{cnt}.txt", 'w') as f:
                         for path in filenames_train:
                             f.write(f"{path}\n")
                             
                     all_features.clear()
                     filenames.clear()
+                cnt += 1
                 
 
             feats_train, filenames_train = torch.cat(all_features).numpy(), filenames
@@ -204,9 +205,9 @@ class EmbeddingGenerator:
             if not os.path.exists(representations_dir):
                 os.makedirs(representations_dir)
 
-            np.save(f"{representations_dir}/train_{len(all_features)}.npy", feats_train)
+            np.save(f"{representations_dir}/train_{cnt}.npy", feats_train)
 
-            with open(f"{representations_dir}/train_filenames_{len(all_features)}.txt", 'w') as f:
+            with open(f"{representations_dir}/train_filenames_{cnt}.txt", 'w') as f:
                 for path in filenames_train:
                     f.write(f"{path}\n")
                     
@@ -291,7 +292,7 @@ class EmbeddingGenerator:
 if __name__ == '__main__':
 
     import os
-    os.environ['CUDA_VISIBLE_DEVICES'] = '3'
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2'
     
     config = {'dataset_format': 'labelme', 
             # 'model_name': 'dinov2_vitb14',
