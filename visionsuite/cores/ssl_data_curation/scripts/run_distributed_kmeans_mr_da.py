@@ -241,7 +241,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/embedding_data_each')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--n_clusters", type=int, default=350000) ### 668985 :->  350000 -> 100000 -> 50000 -> 10000 -> 5000 -> 1000 -> 500
+    parser.add_argument("--n_clusters", type=int, default=150000) ### 668985 :->  150000 -> 200000 -> 50000 -> 10000 -> 5000 -> 1000 -> 500
     parser.add_argument("--chunk_size", type=int, default=1000)
     parser.add_argument("--dtype", type=str, default="float64")
     parser.add_argument("--high_precision", type=str, default="float64")
