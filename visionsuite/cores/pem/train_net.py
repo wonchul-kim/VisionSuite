@@ -27,7 +27,7 @@ import torch
 import detectron2.utils.comm as comm
 from detectron2.checkpoint import DetectionCheckpointer
 from detectron2.config import get_cfg
-from detectron2.data import MetadataCatalog, build_detection_train_loader
+from detectron2.data import MetadataCatalog, build_detection_train_loader, DatasetCatalog
 from detectron2.engine import (
     DefaultTrainer,
     default_argument_parser,
@@ -279,6 +279,11 @@ def setup(args):
     """
     cfg = get_cfg()
     # for poly lr schedule
+    
+    cfg.OUTPUT_DIR = '/HDD/etc/outputs/pem'
+    
+    
+    
     add_deeplab_config(cfg)
     add_maskformer2_config(cfg)
     cfg.merge_from_file(args.config_file)
@@ -311,13 +316,70 @@ def main(args):
 
 
 if __name__ == "__main__":
+    
+    import os 
+    
+    def get_ade20k_dicts(img_dir, mask_dir):
+        dataset_dicts = []
+        img_files = sorted(os.listdir(img_dir))
+        for idx, img_file in enumerate(img_files):
+            if not img_file.endswith(".jpg"):
+                continue
+            record = {}
+
+            filename = os.path.join(img_dir, img_file)
+            maskname = os.path.join(mask_dir, img_file.replace(".jpg", ".png"))
+
+            record["file_name"] = filename
+            record["sem_seg_file_name"] = maskname
+            record["image_id"] = idx
+
+            # ADE20K는 전부 같은 크기라면 생략, 아니라면 실제 이미지 읽어서 width/height도 추가
+            dataset_dicts.append(record)
+        return dataset_dicts
+
+    # 실제 경로로 수정
+    train_img_dir = "/HDD/datasets/public/ade20k_2016/ADEChallengeData2016/images/training"
+    train_mask_dir = "/HDD/datasets/public/ade20k_2016/ADEChallengeData2016/annotations/training"
+    val_img_dir = "/HDD/datasets/public/ade20k_2016/ADEChallengeData2016/images/validation"
+    val_mask_dir = "/HDD/datasets/public/ade20k_2016/ADEChallengeData2016/annotations/validation"
+
+    DatasetCatalog.register(
+        "my_ade20k_train",
+        lambda: get_ade20k_dicts(train_img_dir, train_mask_dir)
+    )
+    DatasetCatalog.register(
+        "my_ade20k_val",
+        lambda: get_ade20k_dicts(val_img_dir, val_mask_dir)
+    )
+
+    MetadataCatalog.get("my_ade20k_train").set(
+        ignore_label=255,
+        stuff_classes=[
+            "wall", "building", "sky", #... # ADE20K에 맞는 카테고리 이름, 생략 가능
+        ],
+        # 별도 카테고리 ID 정의 필요 시 여기에 추가
+    )
+    
+    MetadataCatalog.get("my_ade20k_val").set(
+        ignore_label=255,
+        stuff_classes=[
+            "wall", "building", "sky", #... # ADE20K에 맞는 카테고리 이름, 생략 가능
+        ],
+        # 별도 카테고리 ID 정의 필요 시 여기에 추가
+    )
+    
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
-    launch(
-        main,
-        args.num_gpus,
-        num_machines=args.num_machines,
-        machine_rank=args.machine_rank,
-        dist_url='auto',
-        args=(args,),
-    )
+    # launch(
+    #     main,
+    #     args.num_gpus,
+    #     num_machines=args.num_machines,
+    #     machine_rank=args.machine_rank,
+    #     dist_url='auto',
+    #     args=(args,),
+    # )
+    
+    args.config_file = "/HDD/_projects/github/VisionSuite/visionsuite/cores/pem/configs/ade20k/semantic-segmentation/pem_R50_bs32_160k.yaml"
+    args.num_gpus = 2    
+    main(args)
