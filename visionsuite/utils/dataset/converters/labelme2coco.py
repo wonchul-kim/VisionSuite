@@ -121,11 +121,11 @@ def labelme2coco(input_dir, output_dir, noviz,
             with open(filename, 'r') as jf:
                 label_file = json.load(jf)
 
-
-            
             base = osp.splitext(osp.basename(filename))[0]
-            if base == '3_5_124071615341242_12_Outer':
-                print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            
+            # if base == '3_5_124071615341242_12_Outer':
+            #     print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
+            
             if assert_image_path:
                 assert base == osp.splitext(label_file['imagePath'])[0]
             image_ext = osp.splitext(label_file['imagePath'])[-1]
@@ -157,7 +157,6 @@ def labelme2coco(input_dir, output_dir, noviz,
                 shape_type = shape.get("shape_type", "polygon")
                 mask = shape_to_mask(img.shape[:2], points, shape_type, ignore_shape_types=ignore_shape_types)
 
-        
                 if label not in class_name_to_id:
                     class_id = len(class_name_to_id) + 1
                     class_name_to_id[label] = class_id
@@ -254,8 +253,8 @@ def labelme2coco(input_dir, output_dir, noviz,
 if __name__ == "__main__":
     # parser.add_argument("--input_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_dataset')
     # parser.add_argument("--output_dir", default='/HDD/datasets/projects/Tenneco/Metalbearing/outer/250110/split_coco_dataset')
-    input_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_dataset'
-    output_dir = '/HDD/datasets/projects/Tenneco/Metalbearing/outer/250211/split_coco_dataset'
+    input_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_dataset'
+    output_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_coco_dataset'
     noviz = False
     assert_image_path = False
     modes = ['train', 'val']
