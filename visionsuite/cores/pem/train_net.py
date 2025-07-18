@@ -369,6 +369,23 @@ if __name__ == "__main__":
         # 별도 카테고리 ID 정의 필요 시 여기에 추가
     )
     
+    
+    # from detectron2.data.datasets import register_coco_instances
+
+    # # 예시: train, val 데이터셋을 각각 등록
+    # register_coco_instances(
+    #     "tenneco_coco_train", {}, 
+    #     "/HDD/datasets/projects/benchmarks/tenneco/split_coco_dataset/train.json", 
+    #     "/HDD/datasets/projects/benchmarks/tenneco/split_coco_dataset/train"
+    # )
+    # register_coco_instances(
+    #     "tenneco_coco_val", {}, 
+    #     "/HDD/datasets/projects/benchmarks/tenneco/split_coco_dataset/val.json", 
+    #     "/HDD/datasets/projects/benchmarks/tenneco/split_coco_dataset/val"
+    # )
+    # MetadataCatalog.get("tenneco_coco_train").set(ignore_label=255)
+    # MetadataCatalog.get("tenneco_coco_val").set(ignore_label=255)
+
     args = default_argument_parser().parse_args()
     print("Command Line Args:", args)
     # launch(

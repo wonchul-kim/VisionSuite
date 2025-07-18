@@ -121,6 +121,19 @@ class MaskFormerSemanticDatasetMapper:
                     dataset_dict["file_name"]
                 )
             )
+        # import cv2
+        # seg_seg_gt = np.zeros((dataset_dict['height'], dataset_dict['width']))
+        # for anntotation in dataset_dict['annotations']:
+        #     points, point = [], []
+        #     for idx, val in enumerate(anntotation['segmentation'][0]):
+        #         point.append(int(val))
+        #         if len(point) == 2:
+        #             points.append(point)
+        #             point = []
+                    
+        #     cv2.fillPoly(seg_seg_gt, [np.array(points)], color=(anntotation['category_id'] + 1))
+
+        # del dataset_dict['annotations']        
 
         aug_input = T.AugInput(image, sem_seg=sem_seg_gt)
         aug_input, transforms = T.apply_transform_gens(self.tfm_gens, aug_input)

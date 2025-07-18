@@ -14,6 +14,8 @@ MODEL:
     # NORM: "SyncBN"
     RES5_MULTI_GRID: [1, 1, 1]  # not used
 DATASETS:
+  # TRAIN: ("tenneco_coco_train",)
+  # TEST: ("tenneco_coco_val",)
   TRAIN: ("my_ade20k_train",)
   TEST: ("my_ade20k_val",)
 SOLVER:
