@@ -250,7 +250,7 @@ if __name__ == "__main__":
     # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/level2/centroids.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
     parser.add_argument("--n_clusters", type=int, default=200000) ### 668985 :->  150000 -> 200000 -> 50000 -> 10000 -> 5000 -> 1000 -> 500
-    parser.add_argument("--chunk_size", type=int, default=1000)
+    parser.add_argument("--chunk_size", type=int, default=2000)
     parser.add_argument("--dtype", type=str, default="float64")
     parser.add_argument("--high_precision", type=str, default="float64")
     parser.add_argument("--checkpoint_period", type=int, default=10000)

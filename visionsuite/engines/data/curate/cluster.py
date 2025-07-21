@@ -233,45 +233,25 @@ def main(args):
 
     logger.info("Finished all steps!")
 
-'''
-torchrun --nnodes=1 --nproc_per_node=4 visionsuite/engines/data/curate/run_kmeans.py --use_torchrun
-'''
 
 if __name__ == "__main__":
+
+    import os.path as osp
+    import yaml
+    
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/embedding_data_each')
-    parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--n_clusters", type=int, default=1000) ### 668985 :->  150000 -> 200000 -> 50000 -> 10000 -> 5000 -> 1000 -> 500
-    parser.add_argument("--chunk_size", type=int, default=1000)
-    parser.add_argument("--dtype", type=str, default="float64")
-    parser.add_argument("--high_precision", type=str, default="float64")
-    parser.add_argument("--checkpoint_period", type=int, default=10000)
-    parser.add_argument(
-        "--sort_cluster_checkpoint_period",
-        type=int,
-        default=-1
-    )
-    parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/preclusters")
-    parser.add_argument("--n_iters", type=int, default=50)
-    parser.add_argument("--use_torchrun", action="store_true")
-
-    parser.add_argument(
-        "--n_steps", type=int, default=10, help="Number of resampling step" # 1 10 10 10 10 10 10 
-    )
-    parser.add_argument(
-        "--sample_size",
-        type=int,
-        default=10,
-        help="Number of samples per cluster in resampling",  # 3 10 5 5 5 5
-    )
-    parser.add_argument(
-        "--sampling_strategy",
-        type=str,
-        default="c",
-        help="resampling with closest (c) or random (r) strategy",
-    )
-
+    parser.add_argument("--config", default='/HDD/_projects/github/VisionSuite/visionsuite/engines/data/curate/data/unit_test/cluster.yaml')
+    parser.add_argument('--use_torchrun', action="store_true")
     args = parser.parse_args()
+
+    assert osp.exists(args.config), ValueError(f'There is no such config file at {args.config}')
+    with open(args.config, 'r') as yf:
+        config = yaml.load(yf)
+    
+    config = argparse.Namespace(**config)
+    config.use_torchrun = args.use_torchrun
+    print(f"CONFIG: {config}")
+    
     setup_logging()
 
     def parse_dtype(dtype):
@@ -282,17 +262,17 @@ if __name__ == "__main__":
         elif dtype == "float16":
             return torch.float16
         else:
-            raise ValueError(f"Value of args.dtype ({args.dtype}) not regconised")
+            raise ValueError(f"Value of config.dtype ({config.dtype}) not regconised")
 
-    args.dtype = parse_dtype(args.dtype)
-    args.high_precision = parse_dtype(args.high_precision)
-    if args.dtype == torch.float64:
-        args.high_precision = torch.float64
-    assert args.high_precision in [torch.float32, torch.float64]
+    config.dtype = parse_dtype(config.dtype)
+    config.high_precision = parse_dtype(config.high_precision)
+    if config.dtype == torch.float64:
+        config.high_precision = torch.float64
+    assert config.high_precision in [torch.float32, torch.float64]
 
-    logger.info(f"Args: {args}")
+    logger.info(f"Args: {config}")
     import os 
-    os.makedirs(args.exp_dir, exist_ok=True)
+    os.makedirs(config.exp_dir, exist_ok=True)
 
-    main(args)
+    main(config)
     synchronize()

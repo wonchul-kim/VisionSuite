@@ -1,0 +1,9 @@
+data_path: /HDD/etc/outputs/curation/embeddings/labelme_train.npy
+save_path: /HDD/etc/outputs/curation/results/level1
+clusters_path: /HDD/etc/outputs/curation/results/pre_clusters/sorted_clusters.npy
+subset_indices_path: null
+n_splits: 100
+n_iters: 50
+dtype: float32
+high_precision: float32
+use_torchrun: false

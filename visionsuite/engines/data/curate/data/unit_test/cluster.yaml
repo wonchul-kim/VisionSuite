@@ -1,0 +1,14 @@
+data_path: /HDD/etc/outputs/curation/embeddings/labelme_train.npy
+exp_dir: /HDD/etc/outputs/curation/results/pre_clusters
+subset_indices_path : null
+n_clusters: 5
+chunk_size: 1000
+dtype: float64
+high_precision: float64
+checkpoint_period: 10000
+sort_cluster_checkpoint_period: -1
+n_iters: 50
+use_torchrun: false
+n_steps: 1 # 1 10 10 10 10 10 10 
+sample_size: 3 # 3 10 5 5 5 5 
+sampling_strategy: c # resampling with closest (c) or random (r) strategy

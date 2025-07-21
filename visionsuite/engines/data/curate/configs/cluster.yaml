@@ -1,0 +1,14 @@
+data_path: /HDD/datasets/projects/benchmarks/mr_ad_bench/embedding_data_each
+subset_indices_path : null
+n_clusters: 1000 
+chunk_size: 1000
+dtype: float64
+high_precision: float64
+checkpoint_period: 10000
+sort_cluster_checkpoint_period: -1
+exp_dir: /HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/preclusters
+n_iters: 50
+use_torchrun: false
+n_steps: 1 # 1 10 10 10 10 10 10 
+sample_size: 3 # 3 10 5 5 5 5 5
+sampling_strategy: c # resampling with closest (c) or random (r) strategy
