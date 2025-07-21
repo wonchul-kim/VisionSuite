@@ -4,6 +4,9 @@
 -----------------------------------------------------------------------------
 ## How to run 
 
+NEED to repeat `process 1` after runing each of `process 1 and 2` sequentially depending on how many times you curate the dataset.
+
+
 1. `cluster.py`
 ```shell
 torchrun --nnodes=1 --nproc_per_node=<num_of_gpus> visionsuite/engines/data/curate/cluster.py --config <path_to_config_file> --use_torchrun
