@@ -54,15 +54,18 @@ def main(args):
 
     folders = [folder.split("/")[-1] for folder in glob(osp.join(args.data_path, "**")) if not osp.isfile(folder)]
 
-    embeddings = []
+    
+    embeddings = [] 
     for folder in tqdm(folders):
         embedding_files = glob(osp.join(args.data_path, folder, 'dinov2-large/attention_False', '*.npy'))
         for embedding_file in embedding_files:
             embeddings.append(np.load(embedding_file, mmap_mode='r'))
 
-    X_ori = np.concatenate(embeddings, axis=0)
-    print("******** X_ori.shape: ", X_ori.shape) # 668985
-    # X_ori = np.load(args.data_path, mmap_mode="r")
+    try:
+        X_ori = np.concatenate(embeddings, axis=0)
+        print("******** X_ori.shape: ", X_ori.shape) # 668985
+    except:
+        X_ori = np.load(args.data_path, mmap_mode="r")
     if args.subset_indices_path is not None:
         logger.info(f"Using subset with indices in {args.subset_indices_path}")
         subset_indices = np.load(args.subset_indices_path)
@@ -236,12 +239,17 @@ def main(args):
 
     logger.info("Finished all steps!")
 
+'''
+torchrun --nnodes=1 --nproc_per_node=4 visionsuite/cores/ssl_data_curation/scripts/run_distributed_kmeans_mr_da.py --use_torchrun
+'''
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/embedding_data_each')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/embedding_data_each')
+    parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/level1/centroids.npy')
+    # parser.add_argument("--data_path", default='/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/level2/centroids.npy')
     parser.add_argument("--subset_indices_path", type=str, default=None)
-    parser.add_argument("--n_clusters", type=int, default=150000) ### 668985 :->  150000 -> 200000 -> 50000 -> 10000 -> 5000 -> 1000 -> 500
+    parser.add_argument("--n_clusters", type=int, default=200000) ### 668985 :->  150000 -> 200000 -> 50000 -> 10000 -> 5000 -> 1000 -> 500
     parser.add_argument("--chunk_size", type=int, default=1000)
     parser.add_argument("--dtype", type=str, default="float64")
     parser.add_argument("--high_precision", type=str, default="float64")
@@ -251,17 +259,19 @@ if __name__ == "__main__":
         type=int,
         default=-1
     )
-    parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/preclusters")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/preclusters")
+    parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/level2")
+    # parser.add_argument("--exp_dir", type=str, default="/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/level3")
     parser.add_argument("--n_iters", type=int, default=50)
     parser.add_argument("--use_torchrun", action="store_true")
 
     parser.add_argument(
-        "--n_steps", type=int, default=1, help="Number of resampling step" # 1 10 10 10 10 10 10 
+        "--n_steps", type=int, default=10, help="Number of resampling step" # 1 10 10 10 10 10 10 
     )
     parser.add_argument(
         "--sample_size",
         type=int,
-        default=3,
+        default=10,
         help="Number of samples per cluster in resampling",  # 3 10 5 5 5 5
     )
     parser.add_argument(

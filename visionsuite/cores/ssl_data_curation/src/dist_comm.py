@@ -153,20 +153,33 @@ class _TorchDistributedEnvironment:
             return self._set_from_slurm_env()
 
         env_vars = _collect_env_vars()
+        print(f">>> env_vars: {env_vars}")
+        
         if not env_vars:
             # Environment is not set
+            print(f"1111111111111111: {env_vars}")
             pass
         elif len(env_vars) == len(_TORCH_DISTRIBUTED_ENV_VARS):
             # Environment is fully set
+            print(f"2222222222222222: {env_vars}")
             return self._set_from_preset_env()
         else:
             # Environment is partially set
             collected_env_vars = ", ".join(env_vars.keys())
+            print(f"3333333333333333: {env_vars}")
             raise RuntimeError(f"Partially set environment: {collected_env_vars}")
 
         if torch.cuda.device_count() > 0:
+            print(f"There are {torch.cuda.device_count()} devices")
+            print(f"44444444444444444444: {env_vars}")
             return self._set_from_local()
 
+
+        print("===========================================")
+        print(f"self.rank: {self.rank}")
+        print(f"self.world_size: {self.world_size}")
+        print(f"self.local_rank: {self.local_rank}")
+        print(f"self.local_world_size: {self.local_world_size}")
         raise RuntimeError("Can't initialize PyTorch distributed environment")
 
     # Slurm job created with sbatch, submitit, etc...
