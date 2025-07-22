@@ -137,7 +137,6 @@ class EmbeddingGenerator:
                     all_features.clear()
                     filenames.clear()
                 cnt += 1
-                synchronize()
                 
             feats_train, filenames_train = torch.cat(all_features).numpy(), filenames
 
@@ -146,11 +145,12 @@ class EmbeddingGenerator:
                     representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['features']['type']}_{self._config['features']['k']}_{self._config['features']['cat_cls_token']}"
                 else:
                     representations_dir = f"{self._config['output_dir']}/{self._config['model_name']}/{self._config['features']['type']}_{self._config['features']['cat_cls_token']}"
-                    
+
             if not os.path.exists(representations_dir):
                 os.makedirs(representations_dir)
 
             np.save(f"{representations_dir}/train_rank_{rank}_{cnt}.npy", feats_train)
+            synchronize()
 
             with open(f"{representations_dir}/train_filenames_rank_{rank}_{cnt}.txt", 'w') as f:
                 for path in filenames_train:
@@ -161,16 +161,13 @@ class EmbeddingGenerator:
             print(f"FINSHED RANK ({rank}) .......!!!!!!!!!!!!!!!!!!!!!")
             synchronize()
             
-        print("awl;efjawlkefjawelkfjawklefjakwlejf")
-
-
-        
+       
     def run(self):
         self.get_features_from_huggingface()
         print("=======================================>>> DONE")
-        gc.collect()
-        del self._dataloader
-        torch.cuda.empty_cache()
+        # gc.collect()
+        # del self._dataloader
+        # torch.cuda.empty_cache()
         synchronize()
 
 if __name__ == '__main__':
@@ -229,7 +226,7 @@ if __name__ == '__main__':
     
     emb_generator = EmbeddingGenerator(config)
     emb_generator.run()
-    cleanup()
     print('dkdkdddddddddddddddddddddd')
-    synchronize()
     print("awlkefjawlkefjawklefjklawejf")
+    synchronize()
+    cleanup()

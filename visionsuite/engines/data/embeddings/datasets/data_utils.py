@@ -1,9 +1,10 @@
 import os
 import torchvision.transforms as transforms
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, DistributedSampler
 import torch
 
 from .labelme_dataset import LabelmeDataset
+from visionsuite.engines.utils.torch_utils.torch_dist_env import enable_distributed, synchronize, get_global_rank, cleanup
 
 IMAGENET_DEFAULT_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_DEFAULT_STD = (0.229, 0.224, 0.225)
@@ -40,7 +41,10 @@ def get_dataloaders(dataset, transform, batch_size, root_dir, roi=[], search_all
         # just dummy resize -> both CLIP and DINO support 224 size of the image
         transform = get_default_transforms()
     dataset = get_datasets(dataset, transform, root_dir, roi=roi, search_all=search_all)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=10)
+    
+    # sampler = DistributedSampler(dataset, num_replicas=2, rank=get_global_rank(), shuffle=False)
+    # dataloader = DataLoader(dataset, batch_size=batch_size, sampler=sampler, num_workers=4)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
     return dataloader
 
 
