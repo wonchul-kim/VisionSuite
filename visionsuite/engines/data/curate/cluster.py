@@ -246,7 +246,7 @@ if __name__ == "__main__":
 
     assert osp.exists(args.config), ValueError(f'There is no such config file at {args.config}')
     with open(args.config, 'r') as yf:
-        config = yaml.load(yf)
+        config = yaml.full_load(yf)
     
     config = argparse.Namespace(**config)
     config.use_torchrun = args.use_torchrun

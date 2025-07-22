@@ -1,17 +1,21 @@
 import torch
 import os.path as osp
+from typing import Dict
 import numpy as np
 import random
 from tqdm import tqdm
+import gc
 
 from datasets.data_utils import get_dataloaders
 from models.dinov2_from_hunggingface import Dinov2FromHuggingFace
 from visionsuite.engines.data.embeddings.utils.features import *
+from visionsuite.engines.utils.torch_utils.torch_dist_env import enable_distributed, synchronize, get_global_rank, cleanup
 
 import matplotlib.pyplot as plt
 import numpy as np
+import torch.distributed as dist
 
-    
+
 class EmbeddingGenerator:
     def __init__(self, config):
         
@@ -27,6 +31,7 @@ class EmbeddingGenerator:
     
     def _set(self):
         self._set_seed()
+        self._set_dist()
         
     def _set_seed(self):
         if 'seed' not in self._config:
@@ -40,9 +45,14 @@ class EmbeddingGenerator:
         torch.backends.cudnn.deterministic = True
         torch.backends.cudnn.benchmark = False
         
-        self._device = torch.device(self._config['device'])
-            
-    
+        
+    def _set_dist(self, use_torchrun=False, set_cuda_current_device: bool = True, overwrite: bool = False):
+        enable_distributed(
+            use_torchrun=use_torchrun,
+            set_cuda_current_device=set_cuda_current_device,
+            overwrite=overwrite,
+        )
+        
     def set_dataset(self):
         self._dataloader = get_dataloaders(config['dataset_format'], self._preprocess, 
                                      config['batch_size'], config['input_dir'],
@@ -71,10 +81,10 @@ class EmbeddingGenerator:
         all_features = []
         filenames = []
         cnt = 1
-        
+        rank = get_global_rank()
         with torch.no_grad():
             for x, filename in tqdm(self._dataloader):
-                ori_features = self._model(pixel_values=x.to(self._device))
+                ori_features = self._model(pixel_values=x.to(f'cuda:{rank}'))
                 cls_embedding = ori_features.last_hidden_state[:, 0, :]      # [CLS] token embedding
                 patch_embeddings = ori_features.last_hidden_state[:, 1:, :]  # patch-level embeddings
                 attn_list = ori_features.attentions  # List[Tensor], one per layer > each attention: (bs, num_heads, num_tokens, num_tokens)
@@ -118,17 +128,17 @@ class EmbeddingGenerator:
                     if not os.path.exists(representations_dir):
                         os.makedirs(representations_dir)
 
-                    np.save(f"{representations_dir}/train_{cnt}.npy", feats_train)
+                    np.save(f"{representations_dir}/train_rank_{rank}_{cnt}.npy", feats_train)
 
-                    with open(f"{representations_dir}/train_filenames_{cnt}.txt", 'w') as f:
+                    with open(f"{representations_dir}/train_filenames_rank_{rank}_{cnt}.txt", 'w') as f:
                         for path in filenames_train:
                             f.write(f"{path}\n")
                             
                     all_features.clear()
                     filenames.clear()
                 cnt += 1
+                synchronize()
                 
-
             feats_train, filenames_train = torch.cat(all_features).numpy(), filenames
 
             if 'features' in self._config and self._config['features']:
@@ -140,19 +150,28 @@ class EmbeddingGenerator:
             if not os.path.exists(representations_dir):
                 os.makedirs(representations_dir)
 
-            np.save(f"{representations_dir}/train_{cnt}.npy", feats_train)
+            np.save(f"{representations_dir}/train_rank_{rank}_{cnt}.npy", feats_train)
 
-            with open(f"{representations_dir}/train_filenames_{cnt}.txt", 'w') as f:
+            with open(f"{representations_dir}/train_filenames_rank_{rank}_{cnt}.txt", 'w') as f:
                 for path in filenames_train:
                     f.write(f"{path}\n")
                     
             all_features.clear()
             filenames.clear()
+            print(f"FINSHED RANK ({rank}) .......!!!!!!!!!!!!!!!!!!!!!")
+            synchronize()
+            
+        print("awl;efjawlkefjawelkfjawklefjakwlejf")
+
 
         
     def run(self):
         self.get_features_from_huggingface()
-
+        print("=======================================>>> DONE")
+        gc.collect()
+        del self._dataloader
+        torch.cuda.empty_cache()
+        synchronize()
 
 if __name__ == '__main__':
 
@@ -210,3 +229,7 @@ if __name__ == '__main__':
     
     emb_generator = EmbeddingGenerator(config)
     emb_generator.run()
+    cleanup()
+    print('dkdkdddddddddddddddddddddd')
+    synchronize()
+    print("awlkefjawlkefjawklefjklawejf")
