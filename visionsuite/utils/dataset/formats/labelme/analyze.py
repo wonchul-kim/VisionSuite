@@ -12,11 +12,13 @@ sns.set_style('darkgrid')
 from visionsuite.utils.dataset.formats.labelme.charts import draw_dist_chart, draw_pie_chart
 from pdf import create_pdf
 
-def analyze_labelme(input_dir, output_dir, project_name, title, subtitle):
+def analyze_labelme(input_dir, output_dir, project_name, title, subtitle, modes=None):
     if not osp.exists(output_dir):
         os.mkdir(output_dir)
         
-    modes = [folder.split("/")[-1] for folder in glob.glob(osp.join(input_dir, "**")) if not osp.isfile(folder)]
+    if not modes:
+        modes = [folder.split("/")[-1] for folder in glob.glob(osp.join(input_dir, "**")) if not osp.isfile(folder)]
+    
 
     if len(modes) == 0:
         modes = ['./']
@@ -162,12 +164,13 @@ if __name__ == '__main__':
     # analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
     
     
-    input_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/clustered_dataset_level5'
-    output_dir = '/HDD/datasets/projects/benchmarks/tenneco/split_embedding_dataset/dinov2-base/attention_False/clustered_dataset_level5'
+    input_dir = '/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/clustered_dataset_level5'
+    output_dir = '/HDD/datasets/projects/benchmarks/mr_ad_bench/clustered/dinov2-large/attention_False/clustered_dataset_level5'
 
-    project_name = 'Tenneco'
+    project_name = 'MR Infra'
     title = "Dataset Analysis"
     subtitle = f"The dataset is {project_name}"
+    modes = ['train', 'val']
     
-    analyze_labelme(input_dir, output_dir, project_name, title, subtitle)
+    analyze_labelme(input_dir, output_dir, project_name, title, subtitle, modes=modes)
     
