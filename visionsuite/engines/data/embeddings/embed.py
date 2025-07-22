@@ -168,7 +168,7 @@ class EmbeddingGenerator:
         # gc.collect()
         # del self._dataloader
         # torch.cuda.empty_cache()
-        synchronize()
+        # synchronize()
 
 if __name__ == '__main__':
 
@@ -228,5 +228,7 @@ if __name__ == '__main__':
     emb_generator.run()
     print('dkdkdddddddddddddddddddddd')
     print("awlkefjawlkefjawklefjklawejf")
-    synchronize()
-    cleanup()
+    # synchronize()
+    # dist.barrier()
+    # cleanup()
+    # print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")

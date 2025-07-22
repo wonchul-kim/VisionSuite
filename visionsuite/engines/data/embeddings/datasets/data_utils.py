@@ -44,7 +44,7 @@ def get_dataloaders(dataset, transform, batch_size, root_dir, roi=[], search_all
     
     # sampler = DistributedSampler(dataset, num_replicas=2, rank=get_global_rank(), shuffle=False)
     # dataloader = DataLoader(dataset, batch_size=batch_size, sampler=sampler, num_workers=4)
-    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0)
+    dataloader = DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=10)
     return dataloader
 
 
